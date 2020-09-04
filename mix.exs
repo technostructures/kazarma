@@ -42,7 +42,9 @@ defmodule Kazarma.MixProject do
       {:telemetry_poller, "~> 0.4"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+      {:matrix_app_service, "~> 0.1.0", path: "./matrix_app_service"},
+      {:activity_pub, "~> 0.1.0", path: "./activity_pub"}
     ]
   end
 
