@@ -1,6 +1,8 @@
 defmodule KazarmaWeb.Router do
   use KazarmaWeb, :router
 
+  use ActivityPubWeb.Router
+
   pipeline :api do
     plug :accepts, ["json"]
   end
