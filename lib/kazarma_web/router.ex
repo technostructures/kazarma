@@ -1,15 +1,18 @@
 defmodule KazarmaWeb.Router do
   use KazarmaWeb, :router
 
+  require MatrixAppService.Phoenix.Router
   use ActivityPubWeb.Router
 
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
+  # pipeline :api do
+  #   plug :accepts, ["json"]
+  # end
 
-  scope "/api", KazarmaWeb do
-    pipe_through :api
-  end
+  # scope "/api", KazarmaWeb do
+  #   pipe_through :api
+  # end
+
+  MatrixAppService.Phoenix.Router.routes()
 
   # Enables LiveDashboard only for development
   #

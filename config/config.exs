@@ -58,6 +58,12 @@ config :activity_pub, :http,
 
 config :activity_pub, Oban, queues: [federator_incoming: 50, federator_outgoing: 50]
 
+# MatrixAppService configuration
+config :matrix_app_service,
+  transaction_module: Kazarma.Matrix.Transaction,
+  room_module: Kazarma.Matrix.Room,
+  path: "/matrix"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
