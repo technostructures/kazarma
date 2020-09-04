@@ -29,6 +29,7 @@ config :phoenix, :json_library, Jason
 # ActivityPub configuration
 config :activity_pub, :adapter, Kazarma.MyAdapter
 config :activity_pub, :repo, Kazarma.Repo
+config :activity_pub, :base_url, "http://matrix.kazarma.local"
 
 config :activity_pub, :mrf_simple,
   media_removal: [],

@@ -2,10 +2,10 @@ use Mix.Config
 
 # Configure your database
 config :kazarma, Kazarma.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: System.get_env("POSTGRES_USER") || "postgres",
+  password: System.get_env("POSTGRES_PASSWORD") || "postgres",
   database: "kazarma_dev",
-  hostname: "localhost",
+  hostname: System.get_env("POSTGRES_HOST") || "localhost",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
@@ -17,6 +17,7 @@ config :kazarma, Kazarma.Repo,
 # with webpack to recompile .js and .css sources.
 config :kazarma, KazarmaWeb.Endpoint,
   http: [port: 4000],
+  url: [host: "matrix.kazarma.local", port: 80],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
