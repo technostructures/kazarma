@@ -1,0 +1,184 @@
+version: '3.7'
+
+volumes:
+  kazarma_deps:
+  kazarma_node_deps:
+  kazarma_build_files:
+  postgres_kazarma_files:
+  postgres_commonspub_files:
+  postgres_pleroma_files:
+  postgres_synapse_files:
+  synapse_files:
+  pleroma_uploads:
+
+services:
+  
+  kazarma:
+    build: .
+    hostname: kazarma.kazarma.local
+    # ports:
+    #   - "4000:4000"
+    volumes:
+      # - ./lib:/opt/app/lib
+      # - ./assets:/opt/app/assets
+      # - ./priv:/opt/app/priv
+      # - ./_build:/opt/app/_build
+      - ./:/opt/app:rw
+      - kazarma_deps:/opt/app/deps
+      - kazarma_node_deps:/opt/app/assets/node_modules
+      - kazarma_build_files:/opt/app/_build
+    depends_on:
+      - postgres_kazarma
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.kazarma.loadbalancer.server.port=4000
+      - traefik.http.routers.kazarma.entrypoints=kazarma
+      - traefik.http.routers.kazarma.rule=Host(`matrix.kazarma.local`)
+    environment:
+      - POSTGRES_HOST=postgres_kazarma
+      - POSTGRES_USER=kazarma
+      - POSTGRES_DB=kazarma
+      - POSTGRES_PASSWORD=postgres
+
+  synapse:
+    image: docker.io/matrixdotorg/synapse:v1.12.4-py3
+    hostname: synapse.kazarma.local
+    # domainname: matrix.local
+    # Since synapse does not retry to connect to the database, restart upon
+    # failure
+    restart: unless-stopped
+    # Need to do it via YAML
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.synapse.loadbalancer.server.port=8008
+      - traefik.http.routers.synapse.entrypoints=synapse
+      - traefik.http.routers.synapse.rule=Host(`matrix.kazarma.local`)
+    environment:
+      - SYNAPSE_SERVER_NAME=matrix.local
+      - SYNAPSE_REPORT_STATS=no
+      - SYNAPSE_ENABLE_REGISTRATION=yes
+      - SYNAPSE_LOG_LEVEL=INFO
+      # - SYNAPSE_LOG_LEVEL=DEBUG
+      - POSTGRES_HOST=postgres_synapse
+      - POSTGRES_USER=synapse
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      # You may either store all the files in a local folder
+      - synapse_files:/data
+      - ./infra/dev/synapse-homeserver.yaml:/data/homeserver.yaml
+      - ./infra/dev/synapse-kazarma.yaml:/data/appservices/kazarma.yaml
+      - ./infra/dev/synapse-log.config:/data/log.config
+      # .. or you may split this between different storage points
+      # - ./files:/data
+      # - /path/to/ssd:/data/uploads
+      # - /path/to/large_hdd:/data/media
+    depends_on:
+      - postgres_synapse
+    # ports:
+    #   - 8008:8008/tcp
+    #   - 8448:8448/tcp
+
+  traefik:
+    image: traefik:v2.2.0
+    # command: --web --docker --docker.domain=local --logLevel=DEBUG
+    command:
+      - --entrypoints.kazarma.address=:80
+      - --entrypoints.synapse.address=:8008
+      - --providers.docker=true
+      - --api.insecure
+    hostname: matrix.kazarma.local
+    depends_on:
+      - kazarma
+      - synapse
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # - /dev/null:/traefik.toml
+
+
+  pleroma:
+    environment:
+    - DOMAIN=pleroma.kazarma.local
+    - DB_HOST=postgres_pleroma
+    - DB_PASS=postgres
+    image: epenguincom/pleroma:2.0.2-alpine
+    # build: ../pleroma/
+    init: true
+    hostname: pleroma.kazarma.local
+    labels:
+      - traefik.enable=false
+    restart: unless-stopped
+    depends_on:
+      - postgres_pleroma
+    # ports: ['5000:4000']
+    volumes:
+        # - ./pleroma_config.exs:/pleroma/config/prod.secret.exs
+        - pleroma_uploads:/pleroma/uploads
+        - ./infra/dev/pleroma-docker-config.exs:/var/lib/pleroma/config.exs
+      # - ./pleroma/custom.d:/custom.d:ro
+      # - ./pleroma/config/dev.secret.exs:/home/pleroma/pleroma/config/prod.secret.exs:ro
+      # - ./pleroma/config/dev.secret.exs:/home/pleroma/pleroma/config/dev.secret.exs:ro
+      # - ./pleroma/uploads:/uploads
+      # - ./pleroma/_build:/_build
+
+
+  postgres_kazarma:
+    image: postgres:12.0-alpine
+    domainname: postgres_kazarma
+    labels:
+      - traefik.enable=false
+    # ports: ['5435:5432']
+    environment:
+      - POSTGRES_USER=kazarma
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      # You may store the database tables in a local folder..
+      - postgres_kazarma_files:/var/lib/postgresql/data
+      # .. or store them on some high performance storage for better results
+      # - /path/to/ssd/storage:/var/lib/postgresql/data
+
+        #  postgres_commonspub:
+        #    image: postgres:12.0-alpine
+        #    domainname: postgres_commonspub
+        #    labels:
+        #      - traefik.enable=false
+        #    # ports: ['5434:5432']
+        #    environment:
+        #      - POSTGRES_USER=commonspub
+        #      - POSTGRES_PASSWORD=postgres
+        #    volumes:
+        #      # You may store the database tables in a local folder..
+        #      - postgres_commonspub_files:/var/lib/postgresql/data
+        #      # .. or store them on some high performance storage for better results
+        #      # - /path/to/ssd/storage:/var/lib/postgresql/data
+
+  postgres_pleroma:
+    image: postgres:12-alpine
+    domainname: postgres_pleroma
+    labels:
+      - traefik.enable=false
+    # init: true
+    # restart: unless-stopped
+    # ports: ['5433:5432']
+    environment:
+      - POSTGRES_USER=pleroma
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_pleroma_files:/var/lib/postgresql/data
+      # - ./pleroma/initdb.sql:/docker-entrypoint-initdb.d/pleroma.sql
+
+  postgres_synapse:
+    # image: docker.io/postgres:10-alpine
+    image: postgres:12.0-alpine
+    domainname: postgres_synapse
+    labels:
+      - traefik.enable=false
+    # ports: ['5432:5432']
+    environment:
+      - POSTGRES_USER=synapse
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      # You may store the database tables in a local folder..
+      - postgres_synapse_files:/var/lib/postgresql/data
+      # .. or store them on some high performance storage for better results
+      # - /path/to/ssd/storage:/var/lib/postgresql/data
