@@ -34,6 +34,10 @@ services:
       - POSTGRES_USER=kazarma
       - POSTGRES_DB=kazarma
       - POSTGRES_PASSWORD=postgres
+    networks:
+      default:
+        aliases:
+          - kazarma.kazarma.local
 
   synapse:
     image: docker.io/matrixdotorg/synapse:v1.12.4-py3
@@ -49,7 +53,7 @@ services:
       - traefik.http.routers.synapse.entrypoints=synapse
       - traefik.http.routers.synapse.rule=Host(`matrix.kazarma.local`)
     environment:
-      - SYNAPSE_SERVER_NAME=matrix.local
+      - SYNAPSE_SERVER_NAME=kazarma.local
       - SYNAPSE_REPORT_STATS=no
       - SYNAPSE_ENABLE_REGISTRATION=yes
       - SYNAPSE_LOG_LEVEL=INFO
@@ -72,6 +76,10 @@ services:
     # ports:
     #   - 8008:8008/tcp
     #   - 8448:8448/tcp
+    networks:
+      default:
+        aliases:
+          - synapse.kazarma.local
 
   # traefik:
   #   image: traefik:v2.2.0
@@ -105,22 +113,26 @@ services:
       - traefik.http.routers.delegation.rule=Host(`kazarma.local`) && PathPrefix(`/.well-known/matrix`)
       - traefik.http.routers.delegation.middlewares=https_redirect
       - traefik.http.routers.delegation.middlewares=delegation-strip
+    networks:
+      default:
+        aliases:
+          - kazarma.local
 
   element:
     image: vectorim/riot-web
-    hostname: element.kazarma.local
+    hostname: element.local
     volumes:
       - ./infra/dev/element-config.json:/app/config.json
 
   pleroma:
     environment:
-    - DOMAIN=pleroma.kazarma.local
+    - DOMAIN=pleroma.local
     - DB_HOST=postgres_pleroma
     - DB_PASS=postgres
     image: epenguincom/pleroma:2.0.2-alpine
     # build: ../pleroma/
     init: true
-    hostname: pleroma.kazarma.local
+    hostname: pleroma.local
     labels:
       - traefik.enable=false
     restart: unless-stopped

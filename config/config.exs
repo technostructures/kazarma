@@ -26,10 +26,17 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :mime, :types, %{
+  "application/xml" => ["xml"],
+  "application/xrd+xml" => ["xrd+xml"],
+  "application/jrd+json" => ["jrd+json"],
+  "application/activity+json" => ["activity+json"],
+  "application/ld+json" => ["activity+json"]
+}
+
 # ActivityPub configuration
-config :activity_pub, :adapter, Kazarma.MyAdapter
+config :activity_pub, :adapter, Kazarma.ActivityPub.Adapter
 config :activity_pub, :repo, Kazarma.Repo
-config :activity_pub, :base_url, "http://matrix.kazarma.local"
 
 config :activity_pub, :mrf_simple,
   media_removal: [],

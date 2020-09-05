@@ -5,6 +5,7 @@ config :pleroma, Pleroma.Web.Endpoint,
     http: [ip: {0, 0, 0, 0}, port: 4000]
 
 config :pleroma, :instance,
+  federating: true,
   registrations_open: true
 
 config :pleroma, Pleroma.Captcha,
