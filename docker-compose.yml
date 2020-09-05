@@ -29,11 +29,6 @@ services:
       - kazarma_build_files:/opt/app/_build
     depends_on:
       - postgres_kazarma
-    labels:
-      - traefik.enable=true
-      - traefik.http.services.kazarma.loadbalancer.server.port=4000
-      - traefik.http.routers.kazarma.entrypoints=kazarma
-      - traefik.http.routers.kazarma.rule=Host(`matrix.kazarma.local`)
     environment:
       - POSTGRES_HOST=postgres_kazarma
       - POSTGRES_USER=kazarma
@@ -78,22 +73,44 @@ services:
     #   - 8008:8008/tcp
     #   - 8448:8448/tcp
 
-  traefik:
-    image: traefik:v2.2.0
-    # command: --web --docker --docker.domain=local --logLevel=DEBUG
-    command:
-      - --entrypoints.kazarma.address=:80
-      - --entrypoints.synapse.address=:8008
-      - --providers.docker=true
-      - --api.insecure
-    hostname: matrix.kazarma.local
-    depends_on:
-      - kazarma
-      - synapse
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      # - /dev/null:/traefik.toml
+  # traefik:
+  #   image: traefik:v2.2.0
+  #   # command: --web --docker --docker.domain=local --logLevel=DEBUG
+  #   command:
+  #     - --entrypoints.delegation.address=:80
+  #     - --entrypoints.synapse.address=:8008
+  #     - --providers.docker=true
+  #     - --api.insecure
+  #   hostname: kazarma.local
+  #   depends_on:
+  #     - kazarma
+  #     - synapse
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     # - /dev/null:/traefik.toml
+  #   networks:
+  #     default:
+  #       aliases:
+  #         - kazarma.local
 
+  delegation:
+    image: nginx:1.19
+    hostname: kazarma.local
+    volumes:
+      - ./infra/dev/delegation-matrix:/usr/share/nginx/html/.well-known/matrix:ro
+      - ./infra/dev/host-meta:/usr/share/nginx/html/.well-known/host-meta:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.delegation.entryPoints=http
+      - traefik.http.routers.delegation.rule=Host(`kazarma.local`) && PathPrefix(`/.well-known/matrix`)
+      - traefik.http.routers.delegation.middlewares=https_redirect
+      - traefik.http.routers.delegation.middlewares=delegation-strip
+
+  element:
+    image: vectorim/riot-web
+    hostname: element.kazarma.local
+    volumes:
+      - ./infra/dev/element-config.json:/app/config.json
 
   pleroma:
     environment:

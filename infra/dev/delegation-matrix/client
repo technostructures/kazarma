@@ -1,0 +1,5 @@
+{
+	"m.homeserver": {
+		"base_url": "http://synapse.kazarma.local:8008"
+	}
+}

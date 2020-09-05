@@ -1,0 +1,14 @@
+{
+    "brand": "Matrix side",
+    "default_server_config": {
+        "m.homeserver": {
+            "base_url": "http://synapse.kazarma.local:8008",
+            "server_name": "kazarma.local"
+        }
+    },
+    "roomDirectory": {
+        "servers": [
+            "matrix.org"
+        ]
+    }
+}
