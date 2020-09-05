@@ -44,7 +44,8 @@ defmodule Kazarma.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:matrix_app_service, "~> 0.1.0", path: "./matrix_app_service"},
-      {:activity_pub, "~> 0.1.0", path: "./activity_pub"}
+      {:activity_pub, "~> 0.1.0", path: "./activity_pub"},
+      {:polyjuice_client, "~> 0.2.2", path: "./polyjuice_client", override: true}
     ]
   end
 

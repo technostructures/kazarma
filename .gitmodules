@@ -4,3 +4,6 @@
 [submodule "matrix_app_service"]
 	path = matrix_app_service
 	url = https://gitlab.com/kazarma/matrix_app_service.ex.git
+[submodule "polyjuice_client"]
+	path = polyjuice_client
+	url = https://gitlab.com/kazarma/polyjuice_client.git
