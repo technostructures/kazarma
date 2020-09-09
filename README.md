@@ -13,13 +13,15 @@ git submodule update --init --recursive
 docker-compose run synapse generate
 docker-compose run kazarma mix ecto.setup
 docker-compose up
+```
 
-# Use docker-hoster to make container domains accessible:
-docker run \
+To use `docker-hoster` to make container domains accessible (careful, mounting the Docker socket **will give root access on your host to the mounted `docker-hoster` container**):
+```
+docker run -d \
     -v /var/run/docker.sock:/tmp/docker.sock \
     -v /etc/hosts:/tmp/hosts \
     --name docker-hoster \
-    dvdarias/docker-hoster
+    dvdarias/docker-hoster@sha256:2b0e0f8155446e55f965fa33691da828c1db50b24d5916d690b47439524291ba
 ```
 
 This should run containers with those services:
