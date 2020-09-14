@@ -52,6 +52,9 @@ config :activity_pub, :instance,
   federating: true,
   rewrite_policy: []
 
+config :http_signatures, adapter: ActivityPub.Signature
+config :tesla, adapter: Tesla.Adapter.Hackney
+
 config :activity_pub, :http,
   proxy_url: nil,
   send_user_agent: true,
@@ -68,8 +71,9 @@ config :activity_pub, Oban, queues: [federator_incoming: 50, federator_outgoing:
 
 # MatrixAppService configuration
 config :matrix_app_service,
-  transaction_module: Kazarma.Matrix.Transaction,
-  room_module: Kazarma.Matrix.Room,
+  transaction_adapter: Kazarma.Matrix.Transaction,
+  room_adapter: Kazarma.Matrix.Room,
+  user_adapter: Kazarma.Matrix.User,
   path: "/matrix"
 
 # Import environment specific config. This must remain at the bottom
