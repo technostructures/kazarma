@@ -19,16 +19,14 @@ services:
     # ports:
     #   - "4000:4000"
     volumes:
-      # - ./lib:/opt/app/lib
-      # - ./assets:/opt/app/assets
-      # - ./priv:/opt/app/priv
-      # - ./_build:/opt/app/_build
       - ./:/opt/app:rw
       - kazarma_deps:/opt/app/deps
       - kazarma_node_deps:/opt/app/assets/node_modules
       - kazarma_build_files:/opt/app/_build
     depends_on:
       - postgres_kazarma
+    labels:
+      - traefik.enable=false
     environment:
       - POSTGRES_HOST=postgres_kazarma
       - POSTGRES_USER=kazarma
@@ -48,10 +46,10 @@ services:
     restart: unless-stopped
     # Need to do it via YAML
     labels:
-      - traefik.enable=true
-      - traefik.http.services.synapse.loadbalancer.server.port=8008
-      - traefik.http.routers.synapse.entrypoints=synapse
-      - traefik.http.routers.synapse.rule=Host(`matrix.kazarma.local`)
+      - traefik.enable=false
+      # - traefik.http.services.synapse.loadbalancer.server.port=8008
+      # - traefik.http.routers.synapse.entrypoints=synapse
+      # - traefik.http.routers.synapse.rule=Host(`matrix.kazarma.local`)
     environment:
       - SYNAPSE_SERVER_NAME=kazarma.local
       - SYNAPSE_REPORT_STATS=no
@@ -62,44 +60,18 @@ services:
       - POSTGRES_USER=synapse
       - POSTGRES_PASSWORD=postgres
     volumes:
-      # You may either store all the files in a local folder
       - synapse_files:/data
       - ./infra/dev/synapse-homeserver.yaml:/data/homeserver.yaml
       - ./infra/dev/synapse-kazarma.yaml:/data/appservices/kazarma.yaml
       - ./infra/dev/synapse-log.config:/data/log.config
-      # .. or you may split this between different storage points
-      # - ./files:/data
-      # - /path/to/ssd:/data/uploads
-      # - /path/to/large_hdd:/data/media
     depends_on:
       - postgres_synapse
     # ports:
     #   - 8008:8008/tcp
-    #   - 8448:8448/tcp
     networks:
       default:
         aliases:
           - synapse.kazarma.local
-
-  # traefik:
-  #   image: traefik:v2.2.0
-  #   # command: --web --docker --docker.domain=local --logLevel=DEBUG
-  #   command:
-  #     - --entrypoints.delegation.address=:80
-  #     - --entrypoints.synapse.address=:8008
-  #     - --providers.docker=true
-  #     - --api.insecure
-  #   hostname: kazarma.local
-  #   depends_on:
-  #     - kazarma
-  #     - synapse
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     # - /dev/null:/traefik.toml
-  #   networks:
-  #     default:
-  #       aliases:
-  #         - kazarma.local
 
   delegation:
     image: nginx:1.19
@@ -108,11 +80,11 @@ services:
       - ./infra/dev/delegation-matrix:/usr/share/nginx/html/.well-known/matrix:ro
       - ./infra/dev/host-meta:/usr/share/nginx/html/.well-known/host-meta:ro
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.delegation.entryPoints=http
-      - traefik.http.routers.delegation.rule=Host(`kazarma.local`) && PathPrefix(`/.well-known/matrix`)
-      - traefik.http.routers.delegation.middlewares=https_redirect
-      - traefik.http.routers.delegation.middlewares=delegation-strip
+      - traefik.enable=false
+      # - traefik.http.routers.delegation.entryPoints=http
+      # - traefik.http.routers.delegation.rule=Host(`kazarma.local`) && PathPrefix(`/.well-known/matrix`)
+      # - traefik.http.routers.delegation.middlewares=https_redirect
+      # - traefik.http.routers.delegation.middlewares=delegation-strip
     networks:
       default:
         aliases:
@@ -121,6 +93,8 @@ services:
   element:
     image: vectorim/riot-web
     hostname: element.local
+    labels:
+      - traefik.enable=false
     volumes:
       - ./infra/dev/element-config.json:/app/config.json
 
@@ -132,9 +106,11 @@ services:
     image: epenguincom/pleroma:2.0.2-alpine
     # build: ../pleroma/
     init: true
-    hostname: pleroma.local
     labels:
-      - traefik.enable=false
+      - traefik.enable=true
+      - traefik.http.services.pleroma.loadbalancer.server.port=4000
+      - traefik.http.routers.pleroma.entrypoints=http
+      - traefik.http.routers.pleroma.rule=Host(`pleroma.local`)
     restart: unless-stopped
     depends_on:
       - postgres_pleroma
@@ -149,36 +125,34 @@ services:
       # - ./pleroma/uploads:/uploads
       # - ./pleroma/_build:/_build
 
+  pleroma_reverse:
+    image: traefik:v2.2.0
+    # command: --web --docker --docker.domain=local --logLevel=DEBUG
+    command:
+      - --entrypoints.http.address=:80
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      - --api.insecure
+    hostname: pleroma.local
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # - /dev/null:/traefik.toml
+    networks:
+      default:
+        aliases:
+          - pleroma.local
+
 
   postgres_kazarma:
     image: postgres:12.0-alpine
     domainname: postgres_kazarma
     labels:
       - traefik.enable=false
-    # ports: ['5435:5432']
     environment:
       - POSTGRES_USER=kazarma
       - POSTGRES_PASSWORD=postgres
     volumes:
-      # You may store the database tables in a local folder..
       - postgres_kazarma_files:/var/lib/postgresql/data
-      # .. or store them on some high performance storage for better results
-      # - /path/to/ssd/storage:/var/lib/postgresql/data
-
-        #  postgres_commonspub:
-        #    image: postgres:12.0-alpine
-        #    domainname: postgres_commonspub
-        #    labels:
-        #      - traefik.enable=false
-        #    # ports: ['5434:5432']
-        #    environment:
-        #      - POSTGRES_USER=commonspub
-        #      - POSTGRES_PASSWORD=postgres
-        #    volumes:
-        #      # You may store the database tables in a local folder..
-        #      - postgres_commonspub_files:/var/lib/postgresql/data
-        #      # .. or store them on some high performance storage for better results
-        #      # - /path/to/ssd/storage:/var/lib/postgresql/data
 
   postgres_pleroma:
     image: postgres:12-alpine
@@ -187,7 +161,6 @@ services:
       - traefik.enable=false
     # init: true
     # restart: unless-stopped
-    # ports: ['5433:5432']
     environment:
       - POSTGRES_USER=pleroma
       - POSTGRES_PASSWORD=postgres
@@ -201,13 +174,9 @@ services:
     domainname: postgres_synapse
     labels:
       - traefik.enable=false
-    # ports: ['5432:5432']
     environment:
       - POSTGRES_USER=synapse
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
-      # You may store the database tables in a local folder..
       - postgres_synapse_files:/var/lib/postgresql/data
-      # .. or store them on some high performance storage for better results
-      # - /path/to/ssd/storage:/var/lib/postgresql/data

@@ -27,9 +27,9 @@ docker run -d \
 This should run containers with those services:
 - [kazarma.kazarma.local:4000](http://kazarma.kazarma.local:4000) -> Kazarma itself
 - [synapse.kazarma.local:8008](http://synapse.kazarma.local:8008) -> Synapse (Matrix server)
-- [kazarma.local](http://kazarma.local)(:80) -> serves .well-known routes that allow Matrix and Kazarma.ActivityPub to use simple `kazarma.local` domain (for users, etc)
-- [pleroma.local:4000](http://pleroma.local:4000) -> Pleroma, should be able to address Matrix users using `kazarma.local` domain
-- [element.local](http://element.local)(:80) -> Element, will connect to Synapse, should then be able to address Pleroma users using `pleroma.local:4000` domain
+- [kazarma.local](http://kazarma.local) -> serves .well-known routes that allow Matrix and Kazarma.ActivityPub to use simple `kazarma.local` domain (for users, etc)
+- [pleroma.local](http://pleroma.local) -> Pleroma, should be able to address Matrix users using `kazarma.local` domain
+- [element.local](http://element.local) -> Element, will connect to Synapse, should then be able to address Pleroma users using `pleroma.local` domain
 
 ### Locally
 

@@ -1,7 +1,7 @@
 import Config
 
 config :pleroma, Pleroma.Web.Endpoint,
-  url: [host: System.get_env("DOMAIN", "localhost"), scheme: "http", port: 4000],
+  url: [host: System.get_env("DOMAIN", "localhost"), scheme: "http", port: 80],
     http: [ip: {0, 0, 0, 0}, port: 4000]
 
 config :pleroma, :instance,
