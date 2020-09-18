@@ -1,6 +1,8 @@
 defmodule Kazarma.Matrix.User do
+  @behaviour MatrixAppService.Adapter.User
   require Logger
 
+  @impl MatrixAppService.Adapter.User
   def query_user(user_id) do
     Logger.debug("Received ask for user #{user_id}")
 
@@ -10,8 +12,15 @@ defmodule Kazarma.Matrix.User do
     with %{"localpart" => localpart, "remote_domain" => remote_domain} <-
            Regex.named_captures(regex, user_id),
          username = "#{localpart}@#{remote_domain}",
-         {:ok, _actor} <- ActivityPub.Actor.get_or_fetch_by_username(username) do
-      # TODO: create corresponding Matrix user
+         {:ok, _actor} <- ActivityPub.Actor.get_or_fetch_by_username(username),
+         {:ok, _matrix_id} <-
+           MatrixAppService.Client.register(
+             username: "ap_#{localpart}=#{remote_domain}",
+             device_id: "KAZARMA_APP_SERVICE",
+             initial_device_display_name: "Kazarma"
+           ) do
+      # :ok <- MatrixAppService.Client.set_displayname(...),
+      # :ok <- MatrixAppService.Client.set_avatar_url(...),
       :ok
     else
       _ -> :error

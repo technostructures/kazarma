@@ -1,8 +1,8 @@
 defmodule Kazarma.Matrix.Transaction do
-  @behaviour MatrixAppService.TransactionModule
+  @behaviour MatrixAppService.Adapter.Transaction
   require Logger
 
-  @impl MatrixAppService.TransactionModule
+  @impl MatrixAppService.Adapter.Transaction
   def new_event(%MatrixAppService.Event{
         type: "m.room.create",
         content: %{"creator" => creator_id}

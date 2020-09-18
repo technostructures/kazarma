@@ -52,6 +52,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.error(inspect(new_data))
 
     # TODO: this is used to set private key, store in account_data
+    # MatrixAppService.Client.set_account_data("activity_pub_key", key, user_id: matrix_id)
 
     {:ok, Map.merge(actor, new_data)}
   end
@@ -60,6 +61,13 @@ defmodule Kazarma.ActivityPub.Adapter do
   def maybe_create_remote_actor(%Actor{} = actor) do
     Logger.error("should create new remote actor")
     Logger.error(inspect(actor))
+
+    # with {:ok, _matrix_id} <-
+    #   MatrixAppService.Client.register(
+    #     username: "ap_#{localpart}=#{remote_domain}",
+    #     device_id: "KAZARMA_APP_SERVICE",
+    #     initial_device_display_name: "Kazarma"
+    #   ) do
 
     # TODO: create Matrix bridged user
 
@@ -72,6 +80,8 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.error(inspect(object))
 
     # TODO: update Matrix bridged user
+    # :ok <- MatrixAppService.Client.set_displayname(...),
+    # :ok <- MatrixAppService.Client.set_avatar_url(...),
 
     :ok
   end

@@ -1,7 +1,7 @@
 defmodule KazarmaWeb.Router do
   use KazarmaWeb, :router
 
-  require MatrixAppService.Phoenix.Router
+  require MatrixAppServiceWeb.Router
   use ActivityPubWeb.Router
 
   # pipeline :api do
@@ -12,7 +12,7 @@ defmodule KazarmaWeb.Router do
   #   pipe_through :api
   # end
 
-  MatrixAppService.Phoenix.Router.routes()
+  MatrixAppServiceWeb.Router.routes()
 
   # Enables LiveDashboard only for development
   #
