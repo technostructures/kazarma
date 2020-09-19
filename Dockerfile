@@ -9,6 +9,7 @@ COPY ./mix.exs ./mix.lock /opt/app/
 COPY ./config /opt/app/config/
 COPY ./activity_pub /opt/app/activity_pub/
 COPY ./matrix_app_service /opt/app/matrix_app_service
+COPY ./polyjuice_client /opt/app/polyjuice_client
 RUN mix do deps.get, deps.compile
 
 # Same with npm deps
