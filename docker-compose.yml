@@ -144,7 +144,7 @@ services:
 
 
   postgres_kazarma:
-    image: postgres:12.0-alpine
+    image: postgres:12-alpine
     domainname: postgres_kazarma
     labels:
       - traefik.enable=false
@@ -170,7 +170,7 @@ services:
 
   postgres_synapse:
     # image: docker.io/postgres:10-alpine
-    image: postgres:12.0-alpine
+    image: postgres:12-alpine
     domainname: postgres_synapse
     labels:
       - traefik.enable=false
