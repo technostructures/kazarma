@@ -62,17 +62,13 @@ To edit diagrams use [asciiflow](http://asciiflow.com/) and paste the result in 
 
 - Matrix Application Services docs: https://matrix.org/docs/guides/application-services/
 - Matrix Application Services API specification: https://matrix.org/docs/spec/application_service/unstable
-- matrix-appservice-bridge: https://github.com/matrix-org/matrix-appservice-bridge/
 - MXToot - Matrix-Mastodon bot written in Java: https://github.com/ma1uta/mxtoot
 
 ### ActivityPub
 
 - W3C ActivityPub reference: https://www.w3.org/TR/activitypub/
 - [blogpost on reading AP](https://tinysubversions.com/notes/reading-activitypub/)
-- [talk on getting a working AP implementation to talk to mastodon](https://conf.tube/videos/watch/56c17fb8-bf55-4963-9d4e-e6345bee8de4)
 - [CommonsPub official website](commonspub.org/)
-- [Go library](https://github.com/go-fed) for handling ActivityPub
-- [express-activitypub](https://github.com/dariusk/express-activitypub): A very simple reference implementation of an ActivityPub server using Express.js
 
 ### Elixir/Phoenix
 - Elixir official website: https://elixir-lang.org/
