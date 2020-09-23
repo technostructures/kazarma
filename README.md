@@ -4,6 +4,8 @@
 
 A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://github.com/commonspub/ActivityPub) and [those](https://gitlab.com/kazarma/matrix_app_service.ex) Matrix [libraries](https://gitlab.com/uhoreg/polyjuice_client).
 
+![overview](doc_diagrams/overview.png)
+
 ## Development environment
 
 ### Using Docker
@@ -43,6 +45,14 @@ iex -S mix phx.server
 
 Submodules use HTTPS so they can be easily pulled from automated systems.
 To use SSH when contributing, follow [these instructions](https://stackoverflow.com/questions/11200237/how-do-i-get-git-to-default-to-ssh-and-not-https-for-new-repositories/36500841#36500841).
+
+### Generate Doc
+
+We use [ditaa](http://ditaa.sourceforge.net) to generate diagrams and integrate them into HexDoc.
+- Install [ditaa](http://ditaa.sourceforge.net).
+- Launch : `rm doc_diagrams/*.png && ditaa doc_diagrams/*.html && mix docs`
+
+To edit diagrams use [asciiflow](http://asciiflow.com/) and paste the result in HTML files in the `doc_diagrams` folder.
 
 ## Learn more
 
