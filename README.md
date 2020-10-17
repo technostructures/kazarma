@@ -6,6 +6,12 @@ A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://githu
 
 ![overview](doc_diagrams/overview.png)
 
+## Resources
+
+- Installation
+- [Specs](https://gitlab.com/kazarma/kazarma/-/wikis/Specs)
+- [API documentation](https://kazarma.gitlab.io/matrix_app_service.ex)
+
 ## Development environment
 
 ### Using Docker
@@ -13,7 +19,7 @@ A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://githu
 ```bash
 git submodule update --init --recursive
 docker-compose run synapse generate
-docker-compose run kazarma mix ecto.setup
+docker-compose run kazarma mix do deps.get, ecto.setup
 docker-compose up
 ```
 
@@ -54,29 +60,8 @@ We use [ditaa](http://ditaa.sourceforge.net) to generate diagrams and integrate 
 
 To edit diagrams use [asciiflow](http://asciiflow.com/) and paste the result in HTML files in the `doc_diagrams` folder.
 
-## Learn more
-
-### Architecture
-
-### Matrix
-
-- Matrix Application Services docs: https://matrix.org/docs/guides/application-services/
-- Matrix Application Services API specification: https://matrix.org/docs/spec/application_service/unstable
-- MXToot - Matrix-Mastodon bot written in Java: https://github.com/ma1uta/mxtoot
-
-### ActivityPub
-
-- W3C ActivityPub reference: https://www.w3.org/TR/activitypub/
-- [blogpost on reading AP](https://tinysubversions.com/notes/reading-activitypub/)
-- [CommonsPub official website](commonspub.org/)
-
-### Elixir/Phoenix
-- Elixir official website: https://elixir-lang.org/
-- Phoenix Docs: https://hexdocs.pm/phoenix
-- Phoenix Guides: https://hexdocs.pm/phoenix/overview.html
-
-
 ## Sponsors
+
 The [NLNet foundation](https://nlnet.nl/) [selected this project](https://nlnet.nl/project/Matrix-CommonsPub/) as part of the Next Generation Internet initiative (thank you!).
 
 They redistribute public European funding (EU'S R&D programme called "Horizon 2020") to finance programming efforts on a "resilient,trustworthy and sustainable" Internet. if you're interested, [check out how to apply in this video](https://media.ccc.de/v/36c3-10795-ngi_zero_a_treasure_trove_of_it_innovation)!
