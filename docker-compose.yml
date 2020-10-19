@@ -10,8 +10,6 @@ volumes:
   postgres_synapse_files:
   synapse_files:
   pleroma_uploads:
-  docker_sock:
-  hosts:
 
 services:
   

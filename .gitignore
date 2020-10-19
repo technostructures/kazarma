@@ -21,7 +21,6 @@ erl_crash.dump
 
 # Ignore package tarball (built via "mix hex.build").
 kazarma-*.tar
-docker-compose.yml.dev
 
 # Since we are building assets from assets/,
 # we ignore priv/static. You may want to comment
