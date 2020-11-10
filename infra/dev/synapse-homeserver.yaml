@@ -1609,9 +1609,9 @@ email:
 # rebuild the user_directory search indexes, see
 # https://github.com/matrix-org/synapse/blob/master/docs/user_directory.md
 #
-#user_directory:
-#  enabled: true
-#  search_all_users: false
+user_directory:
+ enabled: true
+ search_all_users: true
 
 
 # User Consent configuration
