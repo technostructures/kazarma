@@ -8,5 +8,7 @@ namespaces:
     - exclusive: false
       regex: "#ap_.+=.+:kazarma.local"
   users:
-    - exclusive: false
+    - exclusive: true
       regex: "@ap_.+=.+:kazarma.local"
+    - exclusive: false
+      regex: "@.+:kazarma.local"
