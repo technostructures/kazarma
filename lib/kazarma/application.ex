@@ -14,7 +14,8 @@ defmodule Kazarma.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Kazarma.PubSub},
       # Start the Endpoint (http/https)
-      KazarmaWeb.Endpoint
+      KazarmaWeb.Endpoint,
+      {Oban, oban_config()}
       # Start a worker by calling: Kazarma.Worker.start_link(arg)
       # {Kazarma.Worker, arg}
     ]
@@ -30,5 +31,10 @@ defmodule Kazarma.Application do
   def config_change(changed, _new, removed) do
     KazarmaWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  # Conditionally disable crontab, queues, or plugins here.
+  defp oban_config() do
+    Application.get_env(:kazarma, Oban)
   end
 end

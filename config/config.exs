@@ -67,7 +67,9 @@ config :activity_pub, :http,
     ]
   ]
 
-config :activity_pub, Oban, queues: [federator_incoming: 50, federator_outgoing: 50]
+config :kazarma, Oban,
+  queues: [federator_incoming: 50, federator_outgoing: 50],
+  repo: Kazarma.Repo
 
 # MatrixAppService configuration
 config :matrix_app_service,
