@@ -72,7 +72,7 @@ config :kazarma, Oban,
   repo: Kazarma.Repo
 
 # MatrixAppService configuration
-config :matrix_app_service,
+config :matrix_app_service, :app_service,
   transaction_adapter: Kazarma.Matrix.Transaction,
   room_adapter: Kazarma.Matrix.Room,
   user_adapter: Kazarma.Matrix.User,
