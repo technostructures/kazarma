@@ -131,6 +131,9 @@ defmodule Kazarma.ActivityPub.Adapter do
              user_id: Address.ap_to_matrix(from_id)
            ) do
       :ok
+    else
+      {:error, _code, %{"error" => error}} -> Logger.error(error)
+      {:error, error} -> Logger.error(inspect(error))
     end
   end
 
@@ -141,35 +144,44 @@ defmodule Kazarma.ActivityPub.Adapter do
     :ok
   end
 
-  defp get_or_create_direct_chat(from_id, to_id) do
+  defp get_direct_room(from_id, to_id) do
     with {:ok, data} <-
-           Polyjuice.Client.Account.get_data(
-             MatrixAppService.Client.client(user_id: to_id),
-             to_id,
-             "m.direct"
-           ),
+      Polyjuice.Client.Account.get_data(
+        MatrixAppService.Client.client(user_id: to_id),
+        to_id,
+        "m.direct"
+      ),
          %{^from_id => [room_id | _]} <- data do
-      {:ok, room_id}
+           {:ok, room_id}
     else
-      {:error, 404, error} ->
-        # IO.inspect(error)
+      {:error, 404, _error} ->
+        {:error, :not_found}
+      data when is_map(data) ->
+        {:error, :not_found}
+         end
+  end
 
+
+  defp get_or_create_direct_chat(from_id, to_id) do
+    with {:error, :not_found} <-
+      get_direct_room(from_id, to_id),
+         {:ok, %{"room_id" => room_id}} <-
         MatrixAppService.Client.create_room(
           [
             visibility: :private,
             name: "Name",
             topic: "Topic2",
             is_direct: true,
-            invite: [to_id]
+            invite: [to_id],
+            room_version: "5"
           ],
           user_id: from_id
         )
-
-      {:error, error} ->
-        {:error, error}
-
-      _ ->
-        {:error, nil}
-    end
+         do
+      {:ok, room_id}
+    else
+      {:ok, room_id} -> {:ok, room_id}
+      {:error, error} -> {:error, error}
+  end
   end
 end
