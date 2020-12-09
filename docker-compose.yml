@@ -28,6 +28,7 @@ services:
     labels:
       - traefik.enable=false
     environment:
+      - AP_BASE_PATH=/
       - POSTGRES_HOST=postgres_kazarma
       - POSTGRES_USER=kazarma
       - POSTGRES_DB=kazarma
