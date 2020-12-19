@@ -8,6 +8,11 @@ defmodule Kazarma.ActivityPub.Adapter do
   alias ActivityPub.Actor
   alias ActivityPub.Object
 
+  defp matrix_client() do
+    Application.get_env(:kazarma, :matrix)
+    |> Keyword.fetch!(:client)
+  end
+
   @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
     Logger.info("asked for local Matrix user #{username}")
@@ -16,9 +21,9 @@ defmodule Kazarma.ActivityPub.Adapter do
     username = String.replace_suffix(username, "@" <> domain, "")
     matrix_id = "@#{username}:#{domain}"
 
-    with client <- MatrixAppService.Client.client(),
-         {:ok, profile} <- Polyjuice.Client.Profile.get_profile(client, matrix_id),
-         _ = Logger.error(inspect(profile)),
+    with client <- matrix_client().client(),
+         {:ok, profile} <- matrix_client().get_profile(client, matrix_id),
+         # _ = Logger.debug(inspect(profile)),
          # {:ok, private_key} <- ActivityPub.Keys.generate_rsa_pem(),
          ap_id = Routes.activity_pub_url(Endpoint, :actor, username),
          bridge_user = Kazarma.Matrix.Bridge.get_user_by_remote_id(ap_id),
@@ -73,13 +78,13 @@ defmodule Kazarma.ActivityPub.Adapter do
     with %{"localpart" => localpart, "remote_domain" => remote_domain} <-
            Regex.named_captures(regex, username),
          {:ok, %{"user_id" => matrix_id}} <-
-           MatrixAppService.Client.register(
+           matrix_client().register(
              username: "ap_#{localpart}=#{remote_domain}",
              device_id: "KAZARMA_APP_SERVICE",
              initial_device_display_name: "Kazarma"
            ) do
-      Polyjuice.Client.Profile.modify_displayname(
-        MatrixAppService.Client.client(user_id: matrix_id),
+      matrix_client().modify_displayname(
+        matrix_client().client(user_id: matrix_id),
         matrix_id,
         name
       )
@@ -94,8 +99,8 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug(inspect(object))
 
     # TODO: update Matrix bridged user
-    # :ok <- MatrixAppService.Client.set_displayname(...),
-    # :ok <- MatrixAppService.Client.set_avatar_url(...),
+    # :ok <- matrix_client().set_displayname(...),
+    # :ok <- matrix_client().set_avatar_url(...),
 
     :ok
   end
@@ -143,7 +148,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     with {:ok, room_id} <-
            get_or_create_direct_chat(from_id, to_id),
          {:ok, _} <-
-           MatrixAppService.Client.send_message(room_id, {body <> " \ufeff", body <> " \ufeff"},
+           matrix_client().send_message(room_id, {body <> " \ufeff", body <> " \ufeff"},
              user_id: Address.ap_to_matrix(from_id)
            ) do
       :ok
@@ -169,7 +174,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     with {:error, :not_found} <-
            get_direct_room(from_matrix_id, to_matrix_id),
          {:ok, %{"room_id" => room_id}} <-
-           MatrixAppService.Client.create_room(
+           matrix_client().create_room(
              [
                visibility: :private,
                name: nil,
@@ -196,8 +201,8 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   defp get_direct_room(from_matrix_id, to_matrix_id) do
     with {:ok, data} <-
-           Polyjuice.Client.Account.get_data(
-             MatrixAppService.Client.client(user_id: to_matrix_id),
+           matrix_client().get_data(
+             matrix_client().client(user_id: to_matrix_id),
              to_matrix_id,
              "m.direct"
            ),

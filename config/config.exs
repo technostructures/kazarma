@@ -72,6 +72,8 @@ config :kazarma, Oban,
   queues: [federator_incoming: 50, federator_outgoing: 50],
   repo: Kazarma.Repo
 
+config :kazarma, :matrix, client: MatrixAppService.Client
+
 # MatrixAppService configuration
 config :matrix_app_service, :app_service,
   transaction_adapter: Kazarma.Matrix.Transaction,

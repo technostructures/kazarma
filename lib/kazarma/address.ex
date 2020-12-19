@@ -24,15 +24,16 @@ defmodule Kazarma.Address do
   def matrix_to_ap(matrix_id) do
     regex = ~r/@(?<localpart>[a-z0-9_\.-]+):(?<domain>[a-z0-9\.-]+)/
 
+    # TODO should also handle remote matrix users
+    # 
     with %{"localpart" => localpart} <-
-      # TODO should also handle remote matrix users
-      # 
-      Regex.named_captures(regex, matrix_id) do
-        Routes.activity_pub_url(Endpoint, :actor, localpart)
-      end
+           Regex.named_captures(regex, matrix_id) do
+      Routes.activity_pub_url(Endpoint, :actor, localpart)
+    end
   end
 
   def puppet_matrix_to_ap(_matrix_id) do
-    raise "no implemented" # see in Kazarma.Matrix.User
+    # see in Kazarma.Matrix.User
+    raise "no implemented"
   end
 end

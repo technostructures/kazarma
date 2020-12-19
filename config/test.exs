@@ -18,5 +18,14 @@ config :kazarma, KazarmaWeb.Endpoint,
   http: [port: 4002],
   server: false
 
-# Print only warnings and errors during test
-config :logger, level: :warn
+config :kazarma, :matrix, client: Kazarma.Matrix.TestClient
+
+config :matrix_app_service, :app_service,
+  base_url: "http://homeserver",
+  access_token: "access_token",
+  homeserver_token: "homeserver_token"
+
+config :activity_pub, :base_url, "http://kazarma"
+config :activity_pub, :domain, "kazarma"
+
+config :logger, level: :debug
