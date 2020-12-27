@@ -169,7 +169,6 @@ defmodule Kazarma.ActivityPub.Adapter do
     from_matrix_id = Address.ap_to_matrix(from_ap_id)
     to_matrix_id = Address.ap_to_matrix(to_ap_id)
     Logger.debug("from " <> inspect(from_matrix_id) <> " to " <> inspect(to_matrix_id))
-    Logger.debug("gorc")
 
     with {:error, :not_found} <-
            get_direct_room(from_matrix_id, to_matrix_id),
