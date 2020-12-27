@@ -9,19 +9,38 @@ defmodule Kazarma.ActivityPub.AdapterTest do
 
     test "when asked for an existing matrix users returns the corresponding actor" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn () -> nil end)
+      |> expect(:client, fn -> nil end)
       |> expect(:get_profile, fn _, "@alice:kazarma" ->
         {:ok, %{"displayname" => "Alice"}}
       end)
 
       assert {:ok, actor} = get_actor_by_username("alice")
-      assert %ActivityPub.Actor{} = actor
-      # TODO: test more
+
+      assert %ActivityPub.Actor{
+               local: true,
+               deactivated: false,
+               username: "alice@kazarma",
+               ap_id: "http://kazarma/pub/actors/alice",
+               data: %{
+                 "preferredUsername" => "alice",
+                 "id" => "http://kazarma/pub/actors/alice",
+                 "type" => "Person",
+                 "name" => "Alice",
+                 "followers" => "http://kazarma/pub/actors/alice/followers",
+                 "followings" => "http://kazarma/pub/actors/alice/following",
+                 "inbox" => "http://kazarma/pub/actors/alice/inbox",
+                 "outbox" => "http://kazarma/pub/actors/alice/outbox",
+                 "manuallyApprovesFollowers" => false,
+                 endpoints: %{
+                   "sharedInbox" => "http://kazarma/pub/shared_inbox"
+                 }
+               }
+             } = actor
     end
 
     test "when asked for a nonexisting matrix users returns an error tuple" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn () -> nil end)
+      |> expect(:client, fn -> nil end)
       |> expect(:get_profile, fn _, "@nonexisting:kazarma" ->
         {:error, :not_found}
       end)

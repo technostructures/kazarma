@@ -8,10 +8,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   alias ActivityPub.Actor
   alias ActivityPub.Object
 
-  defp matrix_client() do
-    Application.get_env(:kazarma, :matrix)
-    |> Keyword.fetch!(:client)
-  end
+  @matrix_client Application.get_env(:kazarma, :matrix) |> Keyword.fetch!(:client)
 
   @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
@@ -21,36 +18,12 @@ defmodule Kazarma.ActivityPub.Adapter do
     username = String.replace_suffix(username, "@" <> domain, "")
     matrix_id = "@#{username}:#{domain}"
 
-    with client <- matrix_client().client(),
-         {:ok, profile} <- matrix_client().get_profile(client, matrix_id),
-         # _ = Logger.debug(inspect(profile)),
-         # {:ok, private_key} <- ActivityPub.Keys.generate_rsa_pem(),
+    with client <- @matrix_client.client(),
+         {:ok, profile} <- @matrix_client.get_profile(client, matrix_id),
          ap_id = Routes.activity_pub_url(Endpoint, :actor, username),
          bridge_user = Kazarma.Matrix.Bridge.get_user_by_remote_id(ap_id),
-         actor = %Actor{
-           local: true,
-           deactivated: false,
-           username: "#{username}@#{Application.fetch_env!(:activity_pub, :domain)}",
-           ap_id: ap_id,
-           data: %{
-             "preferredUsername" => username,
-             "id" => ap_id,
-             "type" => "Person",
-             "name" => profile["displayname"],
-             "followers" => Routes.activity_pub_url(Endpoint, :followers, username),
-             "followings" => Routes.activity_pub_url(Endpoint, :following, username),
-             "inbox" => Routes.activity_pub_url(Endpoint, :inbox, username),
-             "outbox" => Routes.activity_pub_url(Endpoint, :noop, username),
-             "manuallyApprovesFollowers" => false,
-             endpoints: %{
-               "sharedInbox" => Routes.activity_pub_url(Endpoint, :inbox)
-             }
-           },
-           # data: %{"icon" => %{"type" => "Image", "url" => } (get avatar_url
-           # TODO: set avatar url that's in profile["avatar_url"]
-           # nil # private_key
-           keys: bridge_user.data["keys"]
-         } do
+         actor = Kazarma.ActivityPub.Actor.build_actor(username, ap_id, profile, bridge_user)
+          do
       {:ok, actor}
     else
       _ -> {:error, :not_found}
@@ -58,14 +31,14 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl ActivityPub.Adapter
-  def update_local_actor(%Actor{ap_id: ap_id} = actor, new_data) do
+  def update_local_actor(%Actor{ap_id: ap_id} = actor, data) do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_local_actor/2")
     Logger.debug(inspect(actor))
-    Logger.debug(inspect(new_data))
+    Logger.debug(inspect(data))
 
-    {:ok, _updated} = Kazarma.Matrix.Bridge.upsert_user(%{"data" => new_data}, remote_id: ap_id)
+    {:ok, _updated} = Kazarma.Matrix.Bridge.upsert_user(%{"data" => data}, remote_id: ap_id)
 
-    {:ok, Map.merge(actor, new_data)}
+    {:ok, Map.merge(actor, data)}
   end
 
   @impl ActivityPub.Adapter
@@ -78,13 +51,13 @@ defmodule Kazarma.ActivityPub.Adapter do
     with %{"localpart" => localpart, "remote_domain" => remote_domain} <-
            Regex.named_captures(regex, username),
          {:ok, %{"user_id" => matrix_id}} <-
-           matrix_client().register(
+           @matrix_client.register(
              username: "ap_#{localpart}=#{remote_domain}",
              device_id: "KAZARMA_APP_SERVICE",
              initial_device_display_name: "Kazarma"
            ) do
-      matrix_client().modify_displayname(
-        matrix_client().client(user_id: matrix_id),
+      @matrix_client.modify_displayname(
+        @matrix_client.client(user_id: matrix_id),
         matrix_id,
         name
       )
@@ -99,8 +72,8 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug(inspect(object))
 
     # TODO: update Matrix bridged user
-    # :ok <- matrix_client().set_displayname(...),
-    # :ok <- matrix_client().set_avatar_url(...),
+    # :ok <- @matrix_client.set_displayname(...),
+    # :ok <- @matrix_client.set_avatar_url(...),
 
     :ok
   end
@@ -148,7 +121,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     with {:ok, room_id} <-
            get_or_create_direct_chat(from_id, to_id),
          {:ok, _} <-
-           matrix_client().send_message(room_id, {body <> " \ufeff", body <> " \ufeff"},
+           @matrix_client.send_message(room_id, {body <> " \ufeff", body <> " \ufeff"},
              user_id: Address.ap_to_matrix(from_id)
            ) do
       :ok
@@ -173,7 +146,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     with {:error, :not_found} <-
            get_direct_room(from_matrix_id, to_matrix_id),
          {:ok, %{"room_id" => room_id}} <-
-           matrix_client().create_room(
+           @matrix_client.create_room(
              [
                visibility: :private,
                name: nil,
@@ -200,20 +173,35 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   defp get_direct_room(from_matrix_id, to_matrix_id) do
     with {:ok, data} <-
-           matrix_client().get_data(
-             matrix_client().client(user_id: to_matrix_id),
+           @matrix_client.get_data(
+             @matrix_client.client(user_id: to_matrix_id),
              to_matrix_id,
              "m.direct"
            ),
-         _ = Logger.debug("weird: " <> inspect(data)),
+         _ = Logger.debug("fetched m.direct account data, got: " <> inspect(data)),
          %{^from_matrix_id => [room_id | _]} <- data do
       {:ok, room_id}
     else
       {:error, 404, _error} ->
+        # receiver has no "m.direct" account data set
         {:error, :not_found}
 
       data when is_map(data) ->
+        # receiver has "m.direct" acount data set but not for sender
         {:error, :not_found}
     end
   end
+
+  @impl true
+  def get_actor_by_id(_id) do
+    Logger.error("get_actor_by_id called")
+
+    {:error, :not_found}
+  end
+
+  @impl true
+  def get_follower_local_ids(_actor), do: []
+
+  @impl true
+  def get_following_local_ids(_actor), do: []
 end

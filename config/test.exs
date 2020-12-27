@@ -16,6 +16,7 @@ config :kazarma, Kazarma.Repo,
 # you can enable the server option below.
 config :kazarma, KazarmaWeb.Endpoint,
   http: [port: 4002],
+  url: [host: "kazarma", port: 80],
   server: false
 
 config :kazarma, :matrix, client: Kazarma.Matrix.TestClient
