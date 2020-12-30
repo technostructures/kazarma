@@ -7,6 +7,8 @@ defmodule Kazarma.ActivityPub.Adapter do
   alias KazarmaWeb.Endpoint
   alias ActivityPub.Actor
   alias ActivityPub.Object
+  alias MatrixAppService.Bridge
+  alias MatrixAppService.Bridge.Room
 
   @matrix_client Application.get_env(:kazarma, :matrix) |> Keyword.fetch!(:client)
 
@@ -17,6 +19,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     # TODO usernames can be for remote matrix users
     username = String.replace_suffix(username, "@" <> domain, "")
     matrix_id = "@#{username}:#{domain}"
+    # Logger.debug(matrix_id)
 
     with client <- @matrix_client.client(),
          {:ok, profile} <- @matrix_client.get_profile(client, matrix_id),
@@ -33,8 +36,8 @@ defmodule Kazarma.ActivityPub.Adapter do
   @impl ActivityPub.Adapter
   def update_local_actor(%Actor{ap_id: ap_id} = actor, data) do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_local_actor/2")
-    Logger.debug(inspect(actor))
-    Logger.debug(inspect(data))
+    # Logger.debug(inspect(actor))
+    # Logger.debug(inspect(data))
 
     {:ok, _updated} = Kazarma.Matrix.Bridge.upsert_user(%{"data" => data}, remote_id: ap_id)
 
@@ -69,7 +72,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   @impl ActivityPub.Adapter
   def update_remote_actor(%Object{} = object) do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_remote_actor/1")
-    Logger.debug(inspect(object))
+    # Logger.debug(inspect(object))
 
     # TODO: update Matrix bridged user
     # :ok <- @matrix_client.set_displayname(...),
@@ -81,20 +84,68 @@ defmodule Kazarma.ActivityPub.Adapter do
   @impl ActivityPub.Adapter
   # Mastodon style message
   def handle_activity(%{
-        data: %{"type" => "Create"},
+        data: %{"type" => "Create", "to" => to},
         object: %Object{
           data: %{
             "type" => "Note",
             "content" => _body,
-            "actor" => _from_id,
+            "source" => source,
+            "actor" => from,
             "context" => _context,
-            "conversation" => _conversation
+            "conversation" => conversation
           }
         }
-      }) do
+      } = activity) do
     Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (Mastodon message)")
+    # Logger.debug(inspect(activity))
 
-    :ok
+
+    from = Address.ap_to_matrix(from)
+    to = Enum.map(to, &Address.ap_to_matrix/1)
+
+    with {:ok, room_id} <-
+           get_or_create_conversation(conversation, from, to),
+         {:ok, _} <-
+           @matrix_client.send_message(room_id, {source <> " \ufeff", source <> " \ufeff"},
+             user_id: from
+           ) do
+      :ok
+    else
+      {:error, _code, %{"error" => error}} -> Logger.error(error)
+      {:error, error} -> Logger.error(inspect(error))
+    end
+  end
+
+  defp get_or_create_conversation(conversation, creator, invites) do
+    # from_matrix_id = Address.ap_to_matrix(from_ap_id)
+    # to_matrix_id = Address.ap_to_matrix(to_ap_id)
+    # Logger.debug("from " <> inspect(from_matrix_id) <> " to " <> inspect(to_matrix_id))
+
+    with %Room{local_id: nil} <- Kazarma.Matrix.Bridge.get_room_by_remote_id(conversation),
+         {:ok, %{"room_id" => room_id}} <-
+           @matrix_client.create_room(
+             [
+               visibility: :private,
+               name: nil,
+               topic: nil,
+               is_direct: false,
+               invite: invites,
+               room_version: "5"
+             ],
+             user_id: creator
+           ),
+         {:ok, _} <-
+           Kazarma.Matrix.Bridge.create_room(%{
+             local_id: room_id,
+             remote_id: conversation,
+             data: %{type: :note, to: [creator | invites]}
+           }) do
+      {:ok, room_id}
+    else
+      %Room{local_id: local_id} -> {:ok, local_id}
+      # {:ok, room_id} -> {:ok, room_id}
+      {:error, error} -> {:error, error}
+    end
   end
 
   # Pleroma style message
@@ -141,7 +192,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   defp get_or_create_direct_chat(from_ap_id, to_ap_id) do
     from_matrix_id = Address.ap_to_matrix(from_ap_id)
     to_matrix_id = Address.ap_to_matrix(to_ap_id)
-    Logger.debug("from " <> inspect(from_matrix_id) <> " to " <> inspect(to_matrix_id))
+    # Logger.debug("from " <> inspect(from_matrix_id) <> " to " <> inspect(to_matrix_id))
 
     with {:error, :not_found} <-
            get_direct_room(from_matrix_id, to_matrix_id),
@@ -178,7 +229,7 @@ defmodule Kazarma.ActivityPub.Adapter do
              to_matrix_id,
              "m.direct"
            ),
-         _ = Logger.debug("fetched m.direct account data, got: " <> inspect(data)),
+         # _ = Logger.debug("fetched m.direct account data, got: " <> inspect(data)),
          %{^from_matrix_id => [room_id | _]} <- data do
       {:ok, room_id}
     else

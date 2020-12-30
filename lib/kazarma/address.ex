@@ -1,11 +1,9 @@
 defmodule Kazarma.Address do
   require Logger
 
-  alias KazarmaWeb.Router.Helpers, as: Routes
-  alias KazarmaWeb.Endpoint
-
   def ap_to_matrix(ap_id) do
     regex = ~r/(?<localpart>[a-z0-9_\.-]+)@(?<remote_domain>[a-z0-9\.-]+)/
+    # Logger.debug(inspect(ap_id))
 
     with {:ok, %ActivityPub.Actor{username: username}} <-
            ActivityPub.Actor.get_cached_by_ap_id(ap_id),
@@ -22,14 +20,22 @@ defmodule Kazarma.Address do
   end
 
   def matrix_to_ap(matrix_id) do
-    regex = ~r/@(?<localpart>[a-z0-9_\.-]+):(?<domain>[a-z0-9\.-]+)/
+    regex = ~r/@(?<localpart>[a-z0-9_\.-=]+):(?<domain>[a-z0-9\.-]+)/
+    sub_regex = ~r/ap_(?<localpart>[a-z0-9_\.-]+)=(?<domain>[a-z0-9\.-]+)/
+    # Logger.error(inspect(matrix_id))
+    
+    {:ok, actor} =
+      case Regex.named_captures(regex, matrix_id) do
+        %{"localpart" => localpart, "domain" => domain} ->
+          case Regex.named_captures(sub_regex, localpart) do
+            %{"localpart" => sub_localpart, "domain" => sub_domain} ->
+              ActivityPub.Actor.get_or_fetch_by_username("#{sub_localpart}@#{sub_domain}")
+            nil ->
+              ActivityPub.Actor.get_or_fetch_by_username("#{localpart}@#{domain}")
+          end
+      end
 
-    # TODO should also handle remote matrix users
-    # 
-    with %{"localpart" => localpart} <-
-           Regex.named_captures(regex, matrix_id) do
-      Routes.activity_pub_url(Endpoint, :actor, localpart)
-    end
+    actor.ap_id
   end
 
   def puppet_matrix_to_ap(_matrix_id) do

@@ -25,7 +25,7 @@ defmodule Kazarma.Matrix.Transaction do
 
     if !is_tagged_message(event) do
       with %Room{} = room <- Bridge.get_room_by_local_id(room_id) |> IO.inspect() do
-        forward_event(event |> IO.inspect(), room |> IO.inspect())
+        forward_event(event, room)
       end
     end
   rescue
@@ -41,7 +41,60 @@ defmodule Kazarma.Matrix.Transaction do
 
   defp forward_event(
          %Event{
+           content: %{"body" => content, "msgtype" => "m.text"},
+           # room_id: "!TpRetYdVcCUBdZmZLZ:kazarma.local",
            sender: sender,
+           type: "m.room.message"
+         },
+         %Room{
+           data: %{"type" => "note", "to" => to},
+           # local_id: "!TpRetYdVcCUBdZmZLZ:kazarma.local",
+           remote_id: remote_id
+         }
+       ) do
+    {:ok, actor} = Kazarma.ActivityPub.Actor.get_by_matrix_id(sender)
+
+    to =
+      List.delete(to, sender)
+      |> Enum.map(fn matrix_id ->
+        case Kazarma.ActivityPub.Actor.get_by_matrix_id(matrix_id) do
+          {:ok, actor} -> actor.ap_id
+          _ -> nil
+        end
+      end)
+
+    object = %{
+      "type" => "Note",
+      "content" => content,
+      "actor" => actor.ap_id,
+      "attributedTo" => actor.ap_id,
+      "to" => to,
+      "context" => remote_id,
+      "conversation" => remote_id
+      # "tag" => [
+      #   %{
+      #     "href" => "http://pleroma.local/users/mike",
+      #     "name" => "@mike@pleroma.local",
+      #     "type" => "Mention"
+      #   }
+      # ]
+    }
+
+    params = %{
+      actor: actor,
+      # ActivityPub.Utils.generate_context_id(),
+      context: remote_id,
+      object: object,
+      to: to
+    }
+
+    {:ok, _activity} = ActivityPub.create(params)
+  end
+
+  defp forward_event(
+         %Event{
+           sender: sender,
+           type: "m.room.message",
            content: %{"msgtype" => "m.text", "body" => content}
          },
          %Room{data: %{"type" => "chat_message", "to_ap" => ap_id}}
