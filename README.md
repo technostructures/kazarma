@@ -14,7 +14,7 @@ A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://githu
 
 ## Development environment
 
-### Using Docker
+### Using [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
 
 ```bash
 git submodule update --init --recursive
@@ -43,7 +43,7 @@ This should run containers with those services:
 
 ```bash
 git submodule update --init --recursive
-mix ecto.setup
+mix do deps.get, ecto.setup
 iex -S mix phx.server
 ```
 
