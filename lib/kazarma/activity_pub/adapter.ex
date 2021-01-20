@@ -121,7 +121,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     # to_matrix_id = Address.ap_to_matrix(to_ap_id)
     # Logger.debug("from " <> inspect(from_matrix_id) <> " to " <> inspect(to_matrix_id))
 
-    with %Room{local_id: nil} <- Kazarma.Matrix.Bridge.get_room_by_remote_id(conversation),
+    with nil <- Kazarma.Matrix.Bridge.get_room_by_remote_id(conversation),
          {:ok, %{"room_id" => room_id}} <-
            @matrix_client.create_room(
              [
@@ -230,8 +230,8 @@ defmodule Kazarma.ActivityPub.Adapter do
              "m.direct"
            ),
          # _ = Logger.debug("fetched m.direct account data, got: " <> inspect(data)),
-         %{^from_matrix_id => [room_id | _]} <- data do
-      {:ok, room_id}
+         %{^from_matrix_id => rooms} when is_list(rooms) <- data do
+      {:ok, List.last(rooms)}
     else
       {:error, 404, _error} ->
         # receiver has no "m.direct" account data set

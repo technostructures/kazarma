@@ -24,7 +24,8 @@ defmodule Kazarma.Matrix.Transaction do
     Logger.debug("Received m.room.message from Synapse")
 
     if !is_tagged_message(event) do
-      with %Room{} = room <- Bridge.get_room_by_local_id(room_id) |> IO.inspect() do
+      # room = Bridge.get_room_by_local_id(room_id) || Bridge.create_room(local_id: room_id, )
+      with %Room{} = room <- Bridge.get_room_by_local_id(room_id) do
         forward_event(event, room)
       end
     end
@@ -35,8 +36,55 @@ defmodule Kazarma.Matrix.Transaction do
       :ok
   end
 
-  def new_event(%Event{type: type}) do
+  # %{"access_token" => "MDAyMGxvY2F0aW9uIG1hdHJpeC5pbWFnby5sb2NhbAowMDEzaWRlbnRpZmllciBrZXkKMDAxMGNpZCBnZW4gPSAxCjAwMmNjaWQgdXNlcl9pZCA9IEBhbGljZTptYXRyaXguaW1hZ28ubG9jYWwKMDAxNmNpZCB0eXBlID0gYWNjZXNzCjAwMjFjaWQgbm9uY2UgPSBjcX4jazVTUDNeUlk2WnRECjAwMmZzaWduYXR1cmUg_K2biF-xm5ue7985RkAomVadF7yfy3UiEpH-e15m0esK", "events" => [%{"age" => 802, "content" => %{"is_direct" => true, "membership" => "invite"}, "event_id" => "$Z4mzNi1CtkGqKAvHc_VEkxeqJ1Nr-Yzr6_77hB0hBXw", "origin_server_ts" => 1610182036132, "room_id" => "!gvcurdLVxqoQvwaRom:kazarma.local", "sender" => "@muser90:kazarma.local", "state_key" => "@ap_pluser91=pleroma.local:kazarma.local", "type" => "m.room.member", "unsigned" => %{"age" => 802}, "user_id" => "@muser90:kazarma.local"}], "txn_id" => "93"}
+
+  def new_event(%Event{
+        type: "m.room.member",
+        content: %{"membership" => "invite", "is_direct" => true},
+        room_id: room_id,
+        sender: sender,
+        state_key: "@ap_" <> _rest = user_id
+      }) do
+    {:ok, actor} = Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id)
+    Bridge.create_room(%{local_id: room_id, data: %{type: :chat_message, to_ap: actor.ap_id}})
+    Polyjuice.Client.Room.join(MatrixAppService.Client.client(user_id: user_id), room_id)
+    :ok
+  end
+
+  def new_event(%Event{
+        type: "m.room.member",
+        content: %{"membership" => "invite"},
+        room_id: room_id,
+        sender: sender,
+        state_key: "@ap_" <> _rest = user_id
+      }) do
+    # {:ok, actor} = Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id)
+
+    room =
+      case Bridge.get_room_by_local_id(room_id) do
+        nil ->
+          {:ok, room} =
+            Bridge.create_room(%{
+              local_id: room_id,
+              remote_id: ActivityPub.Utils.generate_context_id(),
+              data: %{type: :note, to: []}
+            })
+
+          room
+
+        room ->
+          room
+      end
+
+    updated_room_data = update_in(room.data["to"], &[user_id | &1]).data
+    {:ok, b} = Bridge.update_room(room, %{"data" => updated_room_data})
+    Polyjuice.Client.Room.join(MatrixAppService.Client.client(user_id: user_id), room_id)
+    :ok
+  end
+
+  def new_event(%Event{type: type} = event) do
     Logger.debug("Received #{type} from Synapse")
+    Logger.debug(inspect(event))
   end
 
   defp forward_event(
