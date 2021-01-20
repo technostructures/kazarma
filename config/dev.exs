@@ -17,7 +17,7 @@ config :kazarma, Kazarma.Repo,
 # with webpack to recompile .js and .css sources.
 config :kazarma, KazarmaWeb.Endpoint,
   http: [port: 4000],
-  url: [host: "kazarma.kazarma.local", port: 4000],
+  url: [host: "kazarma.kazarma.local", scheme: "https", port: 443],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,

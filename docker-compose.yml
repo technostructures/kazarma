@@ -26,17 +26,20 @@ services:
     depends_on:
       - postgres_kazarma
     labels:
-      - traefik.enable=false
+      - traefik.enable=true
+      - traefik.http.services.kazarma.loadbalancer.server.port=4000
+      - traefik.http.routers.kazarma.entryPoints=http
+      - traefik.http.routers.kazarma.rule=Host(`kazarma.kazarma.local`)
+      # - traefik.http.routers.kazarma.middlewares=https_redirect
+      - traefik.http.routers.kazarmas.entryPoints=https
+      - traefik.http.routers.kazarmas.rule=Host(`kazarma.kazarma.local`)
+      - traefik.http.routers.kazarmas.tls=true
     environment:
       - AP_BASE_PATH=/
       - POSTGRES_HOST=postgres_kazarma
       - POSTGRES_USER=kazarma
       - POSTGRES_DB=kazarma
       - POSTGRES_PASSWORD=postgres
-    networks:
-      default:
-        aliases:
-          - kazarma.kazarma.local
 
   synapse:
     image: docker.io/matrixdotorg/synapse:v1.12.4-py3
@@ -81,15 +84,14 @@ services:
       - ./infra/dev/delegation-matrix:/usr/share/nginx/html/.well-known/matrix:ro
       - ./infra/dev/host-meta:/usr/share/nginx/html/.well-known/host-meta:ro
     labels:
-      - traefik.enable=false
-      # - traefik.http.routers.delegation.entryPoints=http
-      # - traefik.http.routers.delegation.rule=Host(`kazarma.local`) && PathPrefix(`/.well-known/matrix`)
+      - traefik.enable=true
+      - traefik.http.services.delegation.loadbalancer.server.port=80
+      - traefik.http.routers.delegation.entryPoints=http
+      - traefik.http.routers.delegation.rule=Host(`kazarma.local`)
       # - traefik.http.routers.delegation.middlewares=https_redirect
-      # - traefik.http.routers.delegation.middlewares=delegation-strip
-    networks:
-      default:
-        aliases:
-          - kazarma.local
+      - traefik.http.routers.delegations.entryPoints=https
+      - traefik.http.routers.delegations.rule=Host(`kazarma.local`)
+      - traefik.http.routers.delegations.tls=true
 
   element:
     image: vectorim/riot-web
@@ -110,8 +112,12 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.services.pleroma.loadbalancer.server.port=4000
-      - traefik.http.routers.pleroma.entrypoints=http
+      - traefik.http.routers.pleroma.entryPoints=http
       - traefik.http.routers.pleroma.rule=Host(`pleroma.local`)
+      # - traefik.http.routers.pleroma.middlewares=https_redirect
+      - traefik.http.routers.pleromas.entryPoints=https
+      - traefik.http.routers.pleromas.rule=Host(`pleroma.local`)
+      - traefik.http.routers.pleromas.tls=true
     restart: unless-stopped
     depends_on:
       - postgres_pleroma
@@ -126,22 +132,28 @@ services:
       # - ./pleroma/uploads:/uploads
       # - ./pleroma/_build:/_build
 
-  pleroma_reverse:
+  traefik:
     image: traefik:v2.2.0
     # command: --web --docker --docker.domain=local --logLevel=DEBUG
     command:
       - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false
       - --api.insecure
-    hostname: pleroma.local
+      - --providers.file.filename=/config/traefik.yaml
+    # hostname: pleroma.local
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./infra/dev/traefik.yaml:/config/traefik.yaml
+      - ./infra/dev/certs:/certs
       # - /dev/null:/traefik.toml
     networks:
       default:
         aliases:
           - pleroma.local
+          - kazarma.local
+          - kazarma.kazarma.local
 
 
   postgres_kazarma:
