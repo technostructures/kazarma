@@ -2,7 +2,11 @@ tls:
   certificates:
     - certFile: /certs/pleroma.local.pem
       keyFile: /certs/pleroma.local-key.pem
+    - certFile: /certs/element.local.pem
+      keyFile: /certs/element.local-key.pem
     - certFile: /certs/kazarma.local.pem
       keyFile: /certs/kazarma.local-key.pem
+    - certFile: /certs/matrix.kazarma.local.pem
+      keyFile: /certs/matrix.kazarma.local-key.pem
     - certFile: /certs/kazarma.kazarma.local.pem
       keyFile: /certs/kazarma.kazarma.local-key.pem

@@ -43,17 +43,20 @@ services:
 
   synapse:
     image: docker.io/matrixdotorg/synapse:v1.12.4-py3
-    hostname: synapse.kazarma.local
     # domainname: matrix.local
     # Since synapse does not retry to connect to the database, restart upon
     # failure
     restart: unless-stopped
     # Need to do it via YAML
     labels:
-      - traefik.enable=false
-      # - traefik.http.services.synapse.loadbalancer.server.port=8008
-      # - traefik.http.routers.synapse.entrypoints=synapse
-      # - traefik.http.routers.synapse.rule=Host(`matrix.kazarma.local`)
+      - traefik.enable=true
+      - traefik.http.services.matrix.loadbalancer.server.port=8008
+      - traefik.http.routers.matrix.entryPoints=http
+      - traefik.http.routers.matrix.rule=Host(`matrix.kazarma.local`)
+      # - traefik.http.routers.matrix.middlewares=https_redirect
+      - traefik.http.routers.matrixs.entryPoints=https
+      - traefik.http.routers.matrixs.rule=Host(`matrix.kazarma.local`)
+      - traefik.http.routers.matrixs.tls=true
     environment:
       - SYNAPSE_SERVER_NAME=kazarma.local
       - SYNAPSE_REPORT_STATS=no
@@ -72,10 +75,32 @@ services:
     #   - postgres_synapse
     # ports:
     #   - 8008:8008/tcp
-    networks:
-      default:
-        aliases:
-          - synapse.kazarma.local
+
+  # dendrite:
+  #   image: matrixdotorg/dendrite-monolith:latest
+  #   command: [
+  #     "--tls-cert=server.crt",
+  #     "--tls-key=server.key"
+  #   ]
+  #   # ports:
+  #   #   - 8008:8008
+  #   #   - 8448:8448
+  #   volumes:
+  #     - ./infra/dev/dendrite:/etc/dendrite
+  #   depends_on:
+  #     - postgres_dendrite
+
+  # postgres_dendrite:
+  #   image: postgres:11
+  #   restart: always
+  #   volumes:
+  #     - ./infra/dev/dendrite/create_db.sh:/docker-entrypoint-initdb.d/20-create_db.sh
+  #   # To persist your PostgreSQL databases outside of the Docker image, to 
+  #   # prevent data loss, you will need to add something like this:
+  #   #  - ./path/to/persistent/storage:/var/lib/postgresql/data
+  #   environment:
+  #     POSTGRES_PASSWORD: itsasecret
+  #     POSTGRES_USER: dendrite
 
   delegation:
     image: nginx:1.19
@@ -95,9 +120,15 @@ services:
 
   element:
     image: vectorim/riot-web
-    hostname: element.local
     labels:
-      - traefik.enable=false
+      - traefik.enable=true
+      - traefik.http.services.element.loadbalancer.server.port=80
+      - traefik.http.routers.element.entryPoints=http
+      - traefik.http.routers.element.rule=Host(`element.local`)
+      # - traefik.http.routers.elements.middlewares=https_redirect
+      - traefik.http.routers.elements.entryPoints=https
+      - traefik.http.routers.elements.rule=Host(`element.local`)
+      - traefik.http.routers.elements.tls=true
     volumes:
       - ./infra/dev/element/config.json:/app/config.json
 
@@ -138,6 +169,8 @@ services:
     command:
       - --entrypoints.http.address=:80
       - --entrypoints.https.address=:443
+      # - --entrypoints.http.http.redirections.entryPoint.to=https
+      # - --entrypoints.http.http.redirections.entryPoint.scheme=https
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false
       - --api.insecure
@@ -152,8 +185,10 @@ services:
       default:
         aliases:
           - pleroma.local
+          - element.local
           - kazarma.local
           - kazarma.kazarma.local
+          - matrix.kazarma.local
 
 
   postgres_kazarma:

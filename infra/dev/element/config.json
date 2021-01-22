@@ -2,7 +2,7 @@
     "brand": "Matrix side",
     "default_server_config": {
         "m.homeserver": {
-            "base_url": "http://synapse.kazarma.local:8008",
+            "base_url": "http://synapse.kazarma.local",
             "server_name": "kazarma.local"
         }
     },
