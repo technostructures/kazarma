@@ -137,7 +137,7 @@ services:
     - DOMAIN=pleroma.local
     - DB_HOST=postgres_pleroma
     - DB_PASS=postgres
-    image: epenguincom/pleroma:2.2.0
+    image: epenguincom/pleroma:2.2.1
     # build: ./pleroma/
     init: true
     labels:
