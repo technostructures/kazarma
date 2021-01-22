@@ -15,7 +15,7 @@ services:
   
   kazarma:
     build: .
-    hostname: kazarma.kazarma.local
+    # hostname: kazarma.kazarma.local
     # ports:
     #   - "4000:4000"
     volumes:
@@ -65,9 +65,9 @@ services:
       # - POSTGRES_PASSWORD=postgres
     volumes:
       - synapse_files:/data
-      - ./infra/dev/synapse-homeserver.yaml:/data/homeserver.yaml
-      - ./infra/dev/synapse-kazarma.yaml:/data/appservices/kazarma.yaml
-      - ./infra/dev/synapse-log.config:/data/log.config
+      - ./infra/dev/synapse/homeserver.yaml:/data/homeserver.yaml
+      - ./infra/dev/synapse/kazarma.yaml:/data/appservices/kazarma.yaml
+      - ./infra/dev/synapse/log.config:/data/log.config
     # depends_on:
     #   - postgres_synapse
     # ports:
@@ -81,8 +81,8 @@ services:
     image: nginx:1.19
     hostname: kazarma.local
     volumes:
-      - ./infra/dev/delegation-matrix:/usr/share/nginx/html/.well-known/matrix:ro
-      - ./infra/dev/host-meta:/usr/share/nginx/html/.well-known/host-meta:ro
+      - ./infra/dev/delegation/matrix:/usr/share/nginx/html/.well-known/matrix:ro
+      - ./infra/dev/delegation/host-meta:/usr/share/nginx/html/.well-known/host-meta:ro
     labels:
       - traefik.enable=true
       - traefik.http.services.delegation.loadbalancer.server.port=80
@@ -99,7 +99,7 @@ services:
     labels:
       - traefik.enable=false
     volumes:
-      - ./infra/dev/element-config.json:/app/config.json
+      - ./infra/dev/element/config.json:/app/config.json
 
   pleroma:
     environment:
@@ -125,7 +125,7 @@ services:
     volumes:
         # - ./pleroma_config.exs:/pleroma/config/prod.secret.exs
         - pleroma_uploads:/pleroma/uploads
-        - ./infra/dev/pleroma-docker-config.exs:/var/lib/pleroma/config.exs
+        - ./infra/dev/pleroma/config.exs:/var/lib/pleroma/config.exs
       # - ./pleroma/custom.d:/custom.d:ro
       # - ./pleroma/config/dev.secret.exs:/home/pleroma/pleroma/config/prod.secret.exs:ro
       # - ./pleroma/config/dev.secret.exs:/home/pleroma/pleroma/config/dev.secret.exs:ro
@@ -145,8 +145,8 @@ services:
     # hostname: pleroma.local
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./infra/dev/traefik.yaml:/config/traefik.yaml
-      - ./infra/dev/certs:/certs
+      - ./infra/dev/traefik/traefik.yaml:/config/traefik.yaml
+      - ./infra/dev/traefik/certs:/certs
       # - /dev/null:/traefik.toml
     networks:
       default:
