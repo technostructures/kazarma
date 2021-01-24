@@ -9,6 +9,7 @@ defmodule Kazarma.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
+      dialyzer: [plt_add_apps: [:ex_unit]],
       aliases: aliases(),
       deps: deps(),
       # Docs
@@ -51,7 +52,11 @@ defmodule Kazarma.MixProject do
       {:polyjuice_client, "~> 0.3.0", path: "./polyjuice_client", override: true},
       {:matrix_app_service, "~> 0.2.0", path: "./matrix_app_service"},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
-      {:mox, "~> 1.0", only: :test}
+      {:mox, "~> 1.0", only: :test},
+      {:junit_formatter, "~> 3.1", only: :test},
+      {:cobertura_cover, "~> 0.9.0", only: :test},
+      {:credo, "~> 1.4.1", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false}
     ]
   end
 

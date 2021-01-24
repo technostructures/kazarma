@@ -1,0 +1,122 @@
+stages:
+  - setup
+  - test
+  - format
+  - credo
+  - dialyzer
+  - docs
+
+image: bitwalker/alpine-elixir:1.10.4
+
+cache: &global_cache
+  key: cache-test
+  when: always
+  policy: pull
+  paths:
+    - _build
+    - deps
+
+variables:
+  MIX_ENV: test
+  GIT_SUBMODULE_STRATEGY: recursive
+
+prepare_test:
+  stage: setup
+  script:
+    - mix deps.get
+    - mix compile
+  cache:
+    <<: *global_cache
+    policy: pull-push
+
+test:
+  stage: test
+  needs:
+    - prepare_test
+  services:
+    - postgres:latest
+  variables:
+    POSTGRES_DB: kazarma_test
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_HOST: postgres
+    POSTGRES_HOST_AUTH_METHOD: trust
+    MIX_ENV: test
+  before_script:
+    - mix ecto.create
+    - mix ecto.migrate
+  script:
+    - mix test --cover
+  artifacts:
+    when: always
+    paths:
+      - cover
+    reports:
+      junit: _build/test/lib/matrix_app_service/test-junit-report.xml
+      cobertura: coverage.xml
+
+format:
+  stage: format
+  needs:
+    - prepare_test
+  script:
+    - mix format --check-formatted
+
+credo:
+  stage: credo
+  needs:
+    - prepare_test
+  script:
+    - mix credo suggest --only readability | tee credo.log
+  artifacts:
+    when: always
+    paths:
+      - "credo.log"
+
+dialyzer:
+  stage: dialyzer
+  needs:
+    - prepare_test
+  script:
+    - mix dialyzer
+  cache: 
+    <<: *global_cache
+    policy: pull-push
+    paths:
+      - _build
+      - deps
+      - priv/plts
+
+
+# Doc generation
+
+prepare_dev:
+  stage: setup
+  only:
+    - master
+  variables:
+    MIX_ENV: dev
+  script:
+    - mix deps.get
+    - mix compile
+  cache:
+    <<: *global_cache
+    policy: pull-push
+    key: cache-dev
+
+pages:
+  stage: docs
+  only:
+    - master
+  needs:
+    - prepare_dev
+  variables:
+    MIX_ENV: dev
+  script:
+    - mix docs -o public
+  cache:
+    <<: *global_cache
+    key: cache-dev
+  artifacts:
+    paths:
+      - public

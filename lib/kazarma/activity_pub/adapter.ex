@@ -1,12 +1,15 @@
 defmodule Kazarma.ActivityPub.Adapter do
+  @moduledoc """
+  Implementation of `ActivityPub.Adapter`.
+  """
   require Logger
   @behaviour ActivityPub.Adapter
 
-  alias Kazarma.Address
-  alias KazarmaWeb.Router.Helpers, as: Routes
-  alias KazarmaWeb.Endpoint
   alias ActivityPub.Actor
   alias ActivityPub.Object
+  alias Kazarma.Address
+  alias KazarmaWeb.Endpoint
+  alias KazarmaWeb.Router.Helpers, as: Routes
   alias MatrixAppService.Bridge
   alias MatrixAppService.Bridge.Room
 
@@ -25,8 +28,7 @@ defmodule Kazarma.ActivityPub.Adapter do
          {:ok, profile} <- @matrix_client.get_profile(client, matrix_id),
          ap_id = Routes.activity_pub_url(Endpoint, :actor, username),
          bridge_user = Kazarma.Matrix.Bridge.get_user_by_remote_id(ap_id),
-         actor = Kazarma.ActivityPub.Actor.build_actor(username, ap_id, profile, bridge_user)
-          do
+         actor = Kazarma.ActivityPub.Actor.build_actor(username, ap_id, profile, bridge_user) do
       {:ok, actor}
     else
       _ -> {:error, :not_found}
@@ -83,22 +85,23 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   @impl ActivityPub.Adapter
   # Mastodon style message
-  def handle_activity(%{
-        data: %{"type" => "Create", "to" => to},
-        object: %Object{
-          data: %{
-            "type" => "Note",
-            "content" => _body,
-            "source" => source,
-            "actor" => from,
-            "context" => _context,
-            "conversation" => conversation
+  def handle_activity(
+        %{
+          data: %{"type" => "Create", "to" => to},
+          object: %Object{
+            data: %{
+              "type" => "Note",
+              "content" => _body,
+              "source" => source,
+              "actor" => from,
+              "context" => _context,
+              "conversation" => conversation
+            }
           }
-        }
-      } = activity) do
+        } = activity
+      ) do
     Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (Mastodon message)")
     # Logger.debug(inspect(activity))
-
 
     from = Address.ap_to_matrix(from)
     to = Enum.map(to, &Address.ap_to_matrix/1)
@@ -145,6 +148,7 @@ defmodule Kazarma.ActivityPub.Adapter do
       %Room{local_id: local_id} -> {:ok, local_id}
       # {:ok, room_id} -> {:ok, room_id}
       {:error, error} -> {:error, error}
+      _ -> {:error, :unknown_error}
     end
   end
 

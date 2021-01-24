@@ -1,4 +1,7 @@
 defmodule Kazarma.Matrix.User do
+  @moduledoc """
+  Implementation of `MatrixAppService.Adapter.User`.
+  """
   @behaviour MatrixAppService.Adapter.User
   require Logger
 

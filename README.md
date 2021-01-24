@@ -47,11 +47,6 @@ mix do deps.get, ecto.setup
 iex -S mix phx.server
 ```
 
-### Use git-over-SSH when working with submodules
-
-Submodules use HTTPS so they can be easily pulled from automated systems.
-To use SSH when contributing, follow [these instructions](https://stackoverflow.com/questions/11200237/how-do-i-get-git-to-default-to-ssh-and-not-https-for-new-repositories/36500841#36500841).
-
 ### Generate Doc
 
 We use [ditaa](http://ditaa.sourceforge.net) to generate diagrams and integrate them into HexDoc.

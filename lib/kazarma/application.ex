@@ -34,7 +34,7 @@ defmodule Kazarma.Application do
   end
 
   # Conditionally disable crontab, queues, or plugins here.
-  defp oban_config() do
+  defp oban_config do
     Application.get_env(:kazarma, Oban)
   end
 end
