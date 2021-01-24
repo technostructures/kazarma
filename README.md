@@ -23,7 +23,7 @@ docker-compose run kazarma mix do deps.get, ecto.setup
 docker-compose up
 ```
 
-To use `docker-hoster` to make container domains accessible (careful, mounting the Docker socket **will give root access on your host to the mounted `docker-hoster` container**):
+Use `docker-hoster` to make container domains accessible:
 ```
 docker run -d \
     -v /var/run/docker.sock:/tmp/docker.sock \
@@ -33,8 +33,8 @@ docker run -d \
 ```
 
 This should run containers with those services:
-- [kazarma.kazarma.local:4000](http://kazarma.kazarma.local:4000) -> Kazarma itself
-- [synapse.kazarma.local:8008](http://synapse.kazarma.local:8008) -> Synapse (Matrix server)
+- [kazarma.kazarma.local](http://kazarma.kazarma.local) -> Kazarma itself
+- [matrix.kazarma.local](http://matrix.kazarma.local) -> Matrix server
 - [kazarma.local](http://kazarma.local) -> serves .well-known routes that allow Matrix and Kazarma.ActivityPub to use simple `kazarma.local` domain (for users, etc)
 - [pleroma.local](http://pleroma.local) -> Pleroma, should be able to address Matrix users using `kazarma.local` domain
 - [element.local](http://element.local) -> Element, will connect to Synapse, should then be able to address Pleroma users using `pleroma.local` domain
@@ -59,4 +59,4 @@ To edit diagrams use [asciiflow](http://asciiflow.com/) and paste the result in 
 
 The [NLNet foundation](https://nlnet.nl/) [selected this project](https://nlnet.nl/project/Matrix-CommonsPub/) as part of the Next Generation Internet initiative (thank you!).
 
-They redistribute public European funding (EU'S R&D programme called "Horizon 2020") to finance programming efforts on a "resilient,trustworthy and sustainable" Internet. if you're interested, [check out how to apply in this video](https://media.ccc.de/v/36c3-10795-ngi_zero_a_treasure_trove_of_it_innovation)!
+They redistribute public European funding (EU'S R&D programme called "Horizon 2020") to finance programming efforts on a "resilient, trustworthy and sustainable" Internet. if you're interested, [check out how to apply in this video](https://media.ccc.de/v/36c3-10795-ngi_zero_a_treasure_trove_of_it_innovation)!
