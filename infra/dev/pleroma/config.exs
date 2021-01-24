@@ -11,5 +11,5 @@ config :pleroma, :instance,
 config :pleroma, Pleroma.Captcha,
   enabled: false
 
-config :logger, :console, level: :info
-config :logger, :ex_syslogger, level: :info
+config :logger, :console, level: :warn
+config :logger, :ex_syslogger, level: :warn
