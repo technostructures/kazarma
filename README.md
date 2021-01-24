@@ -23,7 +23,7 @@ docker-compose run kazarma mix do deps.get, ecto.setup
 docker-compose up
 ```
 
-To use `docker-hoster` to make container domains accessible (careful, mounting the Docker socket **will give root access on your host to the mounted `docker-hoster` container**):
+Use `docker-hoster` to make container domains accessible:
 ```
 docker run -d \
     -v /var/run/docker.sock:/tmp/docker.sock \
@@ -59,4 +59,4 @@ To edit diagrams use [asciiflow](http://asciiflow.com/) and paste the result in 
 
 The [NLNet foundation](https://nlnet.nl/) [selected this project](https://nlnet.nl/project/Matrix-CommonsPub/) as part of the Next Generation Internet initiative (thank you!).
 
-They redistribute public European funding (EU'S R&D programme called "Horizon 2020") to finance programming efforts on a "resilient,trustworthy and sustainable" Internet. if you're interested, [check out how to apply in this video](https://media.ccc.de/v/36c3-10795-ngi_zero_a_treasure_trove_of_it_innovation)!
+They redistribute public European funding (EU'S R&D programme called "Horizon 2020") to finance programming efforts on a "resilient, trustworthy and sustainable" Internet. if you're interested, [check out how to apply in this video](https://media.ccc.de/v/36c3-10795-ngi_zero_a_treasure_trove_of_it_innovation)!
