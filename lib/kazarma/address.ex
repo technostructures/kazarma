@@ -1,4 +1,7 @@
 defmodule Kazarma.Address do
+  @moduledoc """
+  Functions about Matrix and ActivityPub addresses conversion.
+  """
   require Logger
 
   def ap_to_matrix(ap_id) do
@@ -23,13 +26,14 @@ defmodule Kazarma.Address do
     regex = ~r/@(?<localpart>[a-z0-9_\.-=]+):(?<domain>[a-z0-9\.-]+)/
     sub_regex = ~r/ap_(?<localpart>[a-z0-9_\.-]+)=(?<domain>[a-z0-9\.-]+)/
     # Logger.error(inspect(matrix_id))
-    
+
     {:ok, actor} =
       case Regex.named_captures(regex, matrix_id) do
         %{"localpart" => localpart, "domain" => domain} ->
           case Regex.named_captures(sub_regex, localpart) do
             %{"localpart" => sub_localpart, "domain" => sub_domain} ->
               ActivityPub.Actor.get_or_fetch_by_username("#{sub_localpart}@#{sub_domain}")
+
             nil ->
               ActivityPub.Actor.get_or_fetch_by_username("#{localpart}@#{domain}")
           end

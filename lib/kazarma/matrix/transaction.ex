@@ -1,9 +1,12 @@
 defmodule Kazarma.Matrix.Transaction do
+  @moduledoc """
+  Implementation of `MatrixAppService.Adapter.Transaction`.
+  """
   @behaviour MatrixAppService.Adapter.Transaction
   require Logger
-  alias MatrixAppService.Event
-  alias MatrixAppService.Bridge.Room
   alias Kazarma.Matrix.Bridge
+  alias MatrixAppService.Bridge.Room
+  alias MatrixAppService.Event
 
   @impl MatrixAppService.Adapter.Transaction
   def new_event(%Event{

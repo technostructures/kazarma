@@ -1,4 +1,7 @@
 defmodule Kazarma.Matrix.Room do
+  @moduledoc """
+  Implementation of `MatrixAppService.Adapter.Room`.
+  """
   @behaviour MatrixAppService.Adapter.Room
   require Logger
 

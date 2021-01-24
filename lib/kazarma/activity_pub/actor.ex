@@ -1,7 +1,10 @@
 defmodule Kazarma.ActivityPub.Actor do
+  @moduledoc """
+  Functions concerning ActivityPub actors.
+  """
   alias ActivityPub.Actor
-  alias KazarmaWeb.Router.Helpers, as: Routes
   alias KazarmaWeb.Endpoint
+  alias KazarmaWeb.Router.Helpers, as: Routes
 
   def build_actor(username, ap_id, matrix_profile, bridge_user) do
     %Actor{
@@ -26,7 +29,7 @@ defmodule Kazarma.ActivityPub.Actor do
       },
       # data: %{"icon" => %{"type" => "Image", "url" => } (get avatar_url
       # TODO: set avatar url that's in profile["avatar_url"]
-      keys: bridge_user.data["keys"]
+      keys: bridge_user && bridge_user.data["keys"]
     }
   end
 
@@ -36,7 +39,7 @@ defmodule Kazarma.ActivityPub.Actor do
     # Logger.error(inspect(matrix_id))
 
     domain = ActivityPub.domain()
-    
+
     case Regex.named_captures(regex, matrix_id) do
       %{"localpart" => localpart, "domain" => ^domain} ->
         # local Matrix user
@@ -44,13 +47,17 @@ defmodule Kazarma.ActivityPub.Actor do
           %{"localpart" => sub_localpart, "domain" => sub_domain} ->
             # bridged ActivityPub user
             ActivityPub.Actor.get_or_fetch_by_username("#{sub_localpart}@#{sub_domain}")
+
           nil ->
             # real local user
             ActivityPub.Actor.get_cached_by_username(localpart)
         end
+
       %{"localpart" => localpart, "domain" => remote_domain} ->
         # remote Matrix user
-        {:error, :not_implemented_yet} # TODO
+        # TODO
+        {:error, :not_implemented_yet}
+
       nil ->
         {:error, :invalid_address}
     end
