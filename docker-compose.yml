@@ -8,6 +8,7 @@ volumes:
   postgres_commonspub_files:
   postgres_pleroma_files:
   postgres_synapse_files:
+  postgres_dendrite_files:
   synapse_files:
   pleroma_uploads:
 
@@ -82,6 +83,15 @@ services:
   #     "--tls-cert=server.crt",
   #     "--tls-key=server.key"
   #   ]
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.http.services.matrix.loadbalancer.server.port=8008
+  #     - traefik.http.routers.matrix.entryPoints=http
+  #     - traefik.http.routers.matrix.rule=Host(`matrix.kazarma.local`)
+  #     # - traefik.http.routers.matrix.middlewares=https_redirect
+  #     - traefik.http.routers.matrixs.entryPoints=https
+  #     - traefik.http.routers.matrixs.rule=Host(`matrix.kazarma.local`)
+  #     - traefik.http.routers.matrixs.tls=true
   #   # ports:
   #   #   - 8008:8008
   #   #   - 8448:8448
@@ -93,11 +103,11 @@ services:
   # postgres_dendrite:
   #   image: postgres:11
   #   restart: always
+  #   labels:
+  #     - traefik.enable=false
   #   volumes:
   #     - ./infra/dev/dendrite/create_db.sh:/docker-entrypoint-initdb.d/20-create_db.sh
-  #   # To persist your PostgreSQL databases outside of the Docker image, to 
-  #   # prevent data loss, you will need to add something like this:
-  #   #  - ./path/to/persistent/storage:/var/lib/postgresql/data
+  #     - postgres_dendrite_files:/var/lib/postgresql/data
   #   environment:
   #     POSTGRES_PASSWORD: itsasecret
   #     POSTGRES_USER: dendrite
