@@ -61,7 +61,7 @@ defmodule Kazarma.ActivityPub.Adapter do
              device_id: "KAZARMA_APP_SERVICE",
              initial_device_display_name: "Kazarma"
            ) do
-      @matrix_client.modify_displayname(
+      @matrix_client.put_displayname(
         @matrix_client.client(user_id: matrix_id),
         matrix_id,
         name
