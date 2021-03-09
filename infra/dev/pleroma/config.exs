@@ -8,6 +8,9 @@ config :pleroma, :instance,
   federating: true,
   registrations_open: true
 
+config :cors_plug,
+  origin: ["http://pleroma.local", "https://pleroma.local"]
+
 config :pleroma, Pleroma.Captcha, enabled: false
 
 config :pleroma, Pleroma.Web.Plugs.RemoteIp, enabled: false

@@ -147,7 +147,7 @@ services:
     - DOMAIN=pleroma.local
     - DB_HOST=postgres_pleroma
     - DB_PASS=postgres
-    image: epenguincom/pleroma:2.2.1
+    image: epenguincom/pleroma:2.1.0
     # build: ./pleroma/
     init: true
     labels:
@@ -179,6 +179,8 @@ services:
     command:
       - --entrypoints.http.address=:80
       - --entrypoints.https.address=:443
+      - --entrypoints.http.forwardedHeaders.insecure
+      - --entrypoints.https.forwardedHeaders.insecure
       # - --entrypoints.http.http.redirections.entryPoint.to=https
       # - --entrypoints.http.http.redirections.entryPoint.scheme=https
       - --providers.docker=true
