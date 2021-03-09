@@ -17,7 +17,8 @@ config :kazarma, Kazarma.Repo,
 # with webpack to recompile .js and .css sources.
 config :kazarma, KazarmaWeb.Endpoint,
   http: [port: 4000],
-  url: [host: "kazarma.kazarma.local", scheme: "https", port: 443],
+  # url: [host: "kazarma.kazarma.local", scheme: "https", port: 443],
+  url: [host: "kazarma.kazarma.local", scheme: "http", port: 80],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
@@ -59,11 +60,11 @@ config :phoenix, :plug_init_mode, :runtime
 
 # MatrixAppService configuration
 config :matrix_app_service, :app_service,
-  base_url: "http://synapse:8008",
+  base_url: "http://matrix.kazarma.local",
   access_token:
     "MDAyMGxvY2F0aW9uIG1hdHJpeC5pbWFnby5sb2NhbAowMDEzaWRlbnRpZmllciBrZXkKMDAxMGNpZCBnZW4gPSAxCjAwMmNjaWQgdXNlcl9pZCA9IEBhbGljZTptYXRyaXguaW1hZ28ubG9jYWwKMDAxNmNpZCB0eXBlID0gYWNjZXNzCjAwMjFjaWQgbm9uY2UgPSAjRC5ieWJrMEUuMU0qT0xJCjAwMmZzaWduYXR1cmUg-jGyjY9CK07mRt1h4p_86D6SJr1ZqrGr8YlsIW_jLtMK",
   homeserver_token:
     "MDAyMGxvY2F0aW9uIG1hdHJpeC5pbWFnby5sb2NhbAowMDEzaWRlbnRpZmllciBrZXkKMDAxMGNpZCBnZW4gPSAxCjAwMmNjaWQgdXNlcl9pZCA9IEBhbGljZTptYXRyaXguaW1hZ28ubG9jYWwKMDAxNmNpZCB0eXBlID0gYWNjZXNzCjAwMjFjaWQgbm9uY2UgPSBjcX4jazVTUDNeUlk2WnRECjAwMmZzaWduYXR1cmUg_K2biF-xm5ue7985RkAomVadF7yfy3UiEpH-e15m0esK"
 
-config :activity_pub, :base_url, "http://kazarma.kazarma.local:4000"
+config :activity_pub, :base_url, "http://kazarma.kazarma.local"
 config :activity_pub, :domain, "kazarma.local"
