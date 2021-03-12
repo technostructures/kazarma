@@ -142,6 +142,37 @@ defmodule Kazarma.ActivityPub.AdapterTest do
     end
 
     test "when receiving a ChatMessage activity for an existing conversation gets the corresponding room and forwards the message" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn ->
+        :client_kazarma
+      end)
+      |> expect(:client, 2, fn
+        [user_id: "@bob:kazarma"] -> :client_bob
+        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
+      end)
+      |> expect(:register, fn [
+                                username: "ap_alice=pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma"
+                              ] ->
+        {:ok, %{"user_id" => "ap_alice=pleroma:kazarma"}}
+      end)
+      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:put_displayname, fn :client_alice, "ap_alice=pleroma:kazarma", "Alice" ->
+        :ok
+      end)
+      |> expect(:get_data, fn :client_bob, "@bob:kazarma", "m.direct" ->
+        {:ok, %{"@ap_alice=pleroma:kazarma" => ["!room:kazarma"]}}
+      end)
+      |> expect(:send_message, fn "!room:kazarma",
+                                  {"hello \uFEFF", "hello \uFEFF"},
+                                  [user_id: "@ap_alice=pleroma:kazarma"] ->
+        {:ok, :something}
+      end)
+
+      assert :ok = handle_activity(chat_message_fixture())
     end
   end
 end
