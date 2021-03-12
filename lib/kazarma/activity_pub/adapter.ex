@@ -3,6 +3,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   Implementation of `ActivityPub.Adapter`.
   """
   require Logger
+  use Kazarma.Config
   @behaviour ActivityPub.Adapter
 
   alias ActivityPub.Actor
@@ -12,8 +13,6 @@ defmodule Kazarma.ActivityPub.Adapter do
   alias KazarmaWeb.Router.Helpers, as: Routes
   alias MatrixAppService.Bridge
   alias MatrixAppService.Bridge.Room
-
-  @matrix_client Application.get_env(:kazarma, :matrix) |> Keyword.fetch!(:client)
 
   @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
@@ -173,17 +172,7 @@ defmodule Kazarma.ActivityPub.Adapter do
       }) do
     Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (Pleroma message)")
 
-    with {:ok, room_id} <-
-           get_or_create_direct_chat(from_id, to_id),
-         {:ok, _} <-
-           @matrix_client.send_message(room_id, {body <> " \ufeff", body <> " \ufeff"},
-             user_id: Address.ap_to_matrix(from_id)
-           ) do
-      :ok
-    else
-      {:error, _code, %{"error" => error}} -> Logger.error(error)
-      {:error, error} -> Logger.error(inspect(error))
-    end
+    Kazarma.ActivityPub.Activity.forward_chat_message(from_id, to_id, body)
   end
 
   def handle_activity(%Object{} = object) do
@@ -191,60 +180,6 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug(inspect(object))
 
     :ok
-  end
-
-  defp get_or_create_direct_chat(from_ap_id, to_ap_id) do
-    from_matrix_id = Address.ap_to_matrix(from_ap_id)
-    to_matrix_id = Address.ap_to_matrix(to_ap_id)
-    # Logger.debug("from " <> inspect(from_matrix_id) <> " to " <> inspect(to_matrix_id))
-
-    with {:error, :not_found} <-
-           get_direct_room(from_matrix_id, to_matrix_id),
-         {:ok, %{"room_id" => room_id}} <-
-           @matrix_client.create_room(
-             [
-               visibility: :private,
-               name: nil,
-               topic: nil,
-               is_direct: true,
-               invite: [to_matrix_id],
-               room_version: "5"
-             ],
-             user_id: from_matrix_id
-           )
-           |> IO.inspect(),
-         {:ok, _} <-
-           Kazarma.Matrix.Bridge.create_room(%{
-             local_id: room_id,
-             data: %{type: :chat_message, to_ap: from_ap_id}
-           })
-           |> IO.inspect() do
-      {:ok, room_id}
-    else
-      {:ok, room_id} -> {:ok, room_id}
-      {:error, error} -> {:error, error}
-    end
-  end
-
-  defp get_direct_room(from_matrix_id, to_matrix_id) do
-    with {:ok, data} <-
-           @matrix_client.get_data(
-             @matrix_client.client(user_id: to_matrix_id),
-             to_matrix_id,
-             "m.direct"
-           ),
-         # _ = Logger.debug("fetched m.direct account data, got: " <> inspect(data)),
-         %{^from_matrix_id => rooms} when is_list(rooms) <- data do
-      {:ok, List.last(rooms)}
-    else
-      {:error, 404, _error} ->
-        # receiver has no "m.direct" account data set
-        {:error, :not_found}
-
-      data when is_map(data) ->
-        # receiver has "m.direct" acount data set but not for sender
-        {:error, :not_found}
-    end
   end
 
   @impl true

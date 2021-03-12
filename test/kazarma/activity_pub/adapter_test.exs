@@ -174,5 +174,7 @@ defmodule Kazarma.ActivityPub.AdapterTest do
 
       assert :ok = handle_activity(chat_message_fixture())
     end
+
+    # @TODO: test errors that can happen
   end
 end
