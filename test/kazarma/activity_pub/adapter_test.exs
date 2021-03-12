@@ -186,10 +186,8 @@ defmodule Kazarma.ActivityPub.AdapterTest do
         object: %ActivityPub.Object{
           data: %{
             "type" => "Note",
-            "content" => "content",
             "source" => "hello",
             "actor" => "http://pleroma/pub/actors/alice",
-            "context" => "context",
             "conversation" => "http://pleroma/pub/contexts/context"
           }
         }

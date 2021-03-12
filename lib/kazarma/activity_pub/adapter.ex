@@ -86,69 +86,17 @@ defmodule Kazarma.ActivityPub.Adapter do
   # Mastodon style message
   def handle_activity(
         %{
-          data: %{"type" => "Create", "to" => to},
+          data: %{"type" => "Create"},
           object: %Object{
             data: %{
-              "type" => "Note",
-              "content" => _body,
-              "source" => source,
-              "actor" => from,
-              "context" => _context,
-              "conversation" => conversation
+              "type" => "Note"
             }
           }
         } = activity
       ) do
     Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (Mastodon message)")
-    # Logger.debug(inspect(activity))
 
-    from = Address.ap_to_matrix(from)
-    to = Enum.map(to, &Address.ap_to_matrix/1)
-
-    with {:ok, room_id} <-
-           get_or_create_conversation(conversation, from, to),
-         {:ok, _} <-
-           @matrix_client.send_message(room_id, {source <> " \ufeff", source <> " \ufeff"},
-             user_id: from
-           ) do
-      :ok
-    else
-      {:error, _code, %{"error" => error}} -> Logger.error(error)
-      {:error, error} -> Logger.error(inspect(error))
-    end
-  end
-
-  defp get_or_create_conversation(conversation, creator, invites) do
-    # from_matrix_id = Address.ap_to_matrix(from_ap_id)
-    # to_matrix_id = Address.ap_to_matrix(to_ap_id)
-    # Logger.debug("from " <> inspect(from_matrix_id) <> " to " <> inspect(to_matrix_id))
-
-    with nil <- Kazarma.Matrix.Bridge.get_room_by_remote_id(conversation),
-         {:ok, %{"room_id" => room_id}} <-
-           @matrix_client.create_room(
-             [
-               visibility: :private,
-               name: nil,
-               topic: nil,
-               is_direct: false,
-               invite: invites,
-               room_version: "5"
-             ],
-             user_id: creator
-           ),
-         {:ok, _} <-
-           Kazarma.Matrix.Bridge.create_room(%{
-             local_id: room_id,
-             remote_id: conversation,
-             data: %{type: :note, to: [creator | invites]}
-           }) do
-      {:ok, room_id}
-    else
-      %Room{local_id: local_id} -> {:ok, local_id}
-      # {:ok, room_id} -> {:ok, room_id}
-      {:error, error} -> {:error, error}
-      _ -> {:error, :unknown_error}
-    end
+    Kazarma.ActivityPub.Activity.forward_note(activity)
   end
 
   # Pleroma style message

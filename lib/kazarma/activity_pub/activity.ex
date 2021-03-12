@@ -3,13 +3,14 @@ defmodule Kazarma.ActivityPub.Activity do
   require Logger
   alias Kazarma.Address
   alias ActivityPub.Object
+  alias MatrixAppService.Bridge.Room
 
   defmodule Utils do
     use Kazarma.Config
 
     def send_message(room_id, from_id, body) do
       @matrix_client.send_message(room_id, {body <> " \ufeff", body <> " \ufeff"},
-        user_id: Address.ap_to_matrix(from_id)
+        user_id: from_id
       )
     end
 
@@ -17,6 +18,14 @@ defmodule Kazarma.ActivityPub.Activity do
       Kazarma.Matrix.Bridge.create_room(%{
         local_id: room_id,
         data: %{type: :chat_message, to_ap: from_ap_id}
+      })
+    end
+
+    def insert_note_bridge_room(room_id, conversation, participants) do
+      Kazarma.Matrix.Bridge.create_room(%{
+        local_id: room_id,
+        remote_id: conversation,
+        data: %{type: :note, to: participants}
       })
     end
 
@@ -53,6 +62,20 @@ defmodule Kazarma.ActivityPub.Activity do
       # |> IO.inspect()
     end
 
+    def create_conversation(creator, invites) do
+      @matrix_client.create_room(
+        [
+          visibility: :private,
+          name: nil,
+          topic: nil,
+          is_direct: false,
+          invite: invites,
+          room_version: "5"
+        ],
+        user_id: creator
+      )
+    end
+
     def get_direct_rooms(matrix_id) do
       @matrix_client.get_data(
         @matrix_client.client(user_id: matrix_id),
@@ -78,6 +101,21 @@ defmodule Kazarma.ActivityPub.Activity do
           {:error, :not_found}
       end
     end
+
+    def get_or_create_conversation(conversation, creator, invites) do
+      with nil <- Kazarma.Matrix.Bridge.get_room_by_remote_id(conversation),
+           {:ok, %{"room_id" => room_id}} <-
+             create_conversation(creator, invites),
+           {:ok, _} <-
+             insert_note_bridge_room(room_id, conversation, [creator | invites]) do
+        {:ok, room_id}
+      else
+        %Room{local_id: local_id} -> {:ok, local_id}
+        # {:ok, room_id} -> {:ok, room_id}
+        {:error, error} -> {:error, error}
+        _ -> {:error, :unknown_error}
+      end
+    end
   end
 
   def forward_chat_message(%{
@@ -94,7 +132,31 @@ defmodule Kazarma.ActivityPub.Activity do
     with {:ok, room_id} <-
            Utils.get_or_create_direct_room(from_id, to_id),
          {:ok, _} <-
-           Utils.send_message(room_id, from_id, body) do
+           Utils.send_message(room_id, Address.ap_to_matrix(from_id), body) do
+      :ok
+    else
+      {:error, _code, %{"error" => error}} -> Logger.error(error)
+      {:error, error} -> Logger.error(inspect(error))
+    end
+  end
+
+  def forward_note(%{
+        data: %{"to" => to},
+        object: %Object{
+          data: %{
+            "source" => source,
+            "actor" => from,
+            "conversation" => conversation
+          }
+        }
+      }) do
+    from = Address.ap_to_matrix(from)
+    to = Enum.map(to, &Address.ap_to_matrix/1)
+
+    with {:ok, room_id} <-
+           Utils.get_or_create_conversation(conversation, from, to),
+         {:ok, _} <-
+           Utils.send_message(room_id, from, source) do
       :ok
     else
       {:error, _code, %{"error" => error}} -> Logger.error(error)
