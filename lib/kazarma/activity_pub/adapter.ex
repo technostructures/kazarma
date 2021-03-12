@@ -152,27 +152,21 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   # Pleroma style message
-  def handle_activity(%{
-        data: %{
-          "type" => "Create",
-          "actor" => from_id,
-          "to" => [to_id]
-          # "object" => %{
-          #   "type" => "ChatMessage",
-          #   "content" => body,
-          #   "actor" => from_id,
-          #   "to" => [to_id]
-        },
-        object: %Object{
+  def handle_activity(
+        %{
           data: %{
-            "type" => "ChatMessage",
-            "content" => body
+            "type" => "Create"
+          },
+          object: %Object{
+            data: %{
+              "type" => "ChatMessage"
+            }
           }
-        }
-      }) do
+        } = activity
+      ) do
     Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (Pleroma message)")
 
-    Kazarma.ActivityPub.Activity.forward_chat_message(from_id, to_id, body)
+    Kazarma.ActivityPub.Activity.forward_chat_message(activity)
   end
 
   def handle_activity(%Object{} = object) do

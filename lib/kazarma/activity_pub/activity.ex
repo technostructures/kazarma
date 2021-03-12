@@ -2,6 +2,7 @@ defmodule Kazarma.ActivityPub.Activity do
   use Kazarma.Config
   require Logger
   alias Kazarma.Address
+  alias ActivityPub.Object
 
   defmodule Utils do
     use Kazarma.Config
@@ -79,7 +80,17 @@ defmodule Kazarma.ActivityPub.Activity do
     end
   end
 
-  def forward_chat_message(from_id, to_id, body) do
+  def forward_chat_message(%{
+        data: %{
+          "actor" => from_id,
+          "to" => [to_id]
+        },
+        object: %Object{
+          data: %{
+            "content" => body
+          }
+        }
+      }) do
     with {:ok, room_id} <-
            Utils.get_or_create_direct_room(from_id, to_id),
          {:ok, _} <-
