@@ -1,5 +1,5 @@
 defmodule Kazarma.ActivityPub.AdapterTest do
-  use KazarmaWeb.ConnCase
+  use Kazarma.DataCase
 
   import Mox
   import Kazarma.ActivityPub.Adapter

@@ -28,6 +28,9 @@ defmodule Kazarma.DataCase do
   end
 
   setup tags do
+    {:ok, _} = Cachex.clear(:ap_actor_cache)
+    {:ok, _} = Cachex.clear(:ap_object_cache)
+
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Kazarma.Repo)
 
     unless tags[:async] do
