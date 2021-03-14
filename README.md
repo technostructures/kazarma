@@ -31,6 +31,7 @@ docker run -d \
     --name docker-hoster \
     dvdarias/docker-hoster@sha256:2b0e0f8155446e55f965fa33691da828c1db50b24d5916d690b47439524291ba
 ```
+(after rebooting, you will need to start it again using `docker start docker-hoster`)
 
 This should run containers with those services:
 - [kazarma.kazarma.local](http://kazarma.kazarma.local) -> Kazarma itself
