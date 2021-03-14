@@ -8,11 +8,8 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   alias ActivityPub.Actor
   alias ActivityPub.Object
-  alias Kazarma.Address
   alias KazarmaWeb.Endpoint
   alias KazarmaWeb.Router.Helpers, as: Routes
-  alias MatrixAppService.Bridge
-  alias MatrixAppService.Bridge.Room
 
   @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
@@ -79,7 +76,8 @@ defmodule Kazarma.ActivityPub.Adapter do
     # :ok <- @matrix_client.set_displayname(...),
     # :ok <- @matrix_client.set_avatar_url(...),
 
-    :ok
+    # :ok
+    raise "not implemented"
   end
 
   @impl ActivityPub.Adapter
@@ -121,7 +119,8 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (other activity)")
     Logger.debug(inspect(object))
 
-    :ok
+    # :ok
+    raise "not implemented"
   end
 
   @impl true
@@ -132,8 +131,14 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl true
-  def get_follower_local_ids(_actor), do: []
+  def get_follower_local_ids(_actor) do
+    # []
+    raise "not implemented"
+  end
 
   @impl true
-  def get_following_local_ids(_actor), do: []
+  def get_following_local_ids(_actor) do
+    # []
+    raise "not implemented"
+  end
 end
