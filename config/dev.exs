@@ -1,5 +1,6 @@
 use Mix.Config
-
+# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
 # Configure your database
 config :kazarma, Kazarma.Repo,
   username: System.get_env("POSTGRES_USER") || "postgres",
