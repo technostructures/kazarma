@@ -43,7 +43,7 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   synapse:
-    image: docker.io/matrixdotorg/synapse:v1.12.4-py3
+    image: matrixdotorg/synapse:v1.31.0
     # domainname: matrix.local
     # Since synapse does not retry to connect to the database, restart upon
     # failure
