@@ -1,4 +1,4 @@
-FROM bitwalker/alpine-elixir-phoenix:1.10.2
+FROM bitwalker/alpine-elixir-phoenix:1.11.3
 
 ENV HEX_HTTP_CONCURRENCY=1
 ENV HEX_HTTP_TIMEOUT=240
