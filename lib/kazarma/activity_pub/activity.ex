@@ -1,11 +1,16 @@
 defmodule Kazarma.ActivityPub.Activity do
+  @moduledoc """
+  Functions in `ActivityPub.Adapter` dispatch handling of activities to more
+  granular functions in this module.
+  """
   use Kazarma.Config
   require Logger
-  alias Kazarma.Address
   alias ActivityPub.Object
+  alias Kazarma.Address
   alias MatrixAppService.Bridge.Room
 
   defmodule Utils do
+    @moduledoc false
     use Kazarma.Config
 
     def send_message(room_id, from_id, body) do
