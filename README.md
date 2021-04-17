@@ -8,9 +8,8 @@ A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://githu
 
 ## Resources
 
-- Installation
-- [Specs](https://gitlab.com/kazarma/kazarma/-/wikis/Specs)
 - [API documentation](https://kazarma.gitlab.io/matrix_app_service.ex)
+- [Matrix](https://matrix.to/#/#kazarma:matrix.org?via=matrix.asso-fare.fr&via=matrix.org&via=t2bot.io)
 
 ## Development environment
 
