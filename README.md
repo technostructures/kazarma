@@ -47,13 +47,20 @@ mix do deps.get, ecto.setup
 iex -S mix phx.server
 ```
 
-### Generate Doc
+## Generate documentation
 
-We use [ditaa](http://ditaa.sourceforge.net) to generate diagrams and integrate them into HexDoc.
-- Install [ditaa](http://ditaa.sourceforge.net).
-- Launch : `rm doc_diagrams/*.png && ditaa doc_diagrams/*.html && mix docs`
+We use [ditaa](http://ditaa.sourceforge.net) to generate diagrams and integrate them into HexDoc. To edit diagrams use [asciiflow](http://asciiflow.com/) and paste the result in HTML files in the `doc_diagrams` folder.
 
-To edit diagrams use [asciiflow](http://asciiflow.com/) and paste the result in HTML files in the `doc_diagrams` folder.
+```bash
+rm doc_diagrams/*.png && ditaa doc_diagrams/*.html
+mix docs
+```
+
+## Run tests
+
+```bash
+mix test
+```
 
 ## Sponsors
 
