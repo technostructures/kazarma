@@ -6,7 +6,7 @@ stages:
   - dialyzer
   - docs
 
-image: bitwalker/alpine-elixir:1.10.4
+image: bitwalker/alpine-elixir:1.11
 
 cache: &global_cache
   key: cache-test
