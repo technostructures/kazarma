@@ -52,7 +52,7 @@ test:
     paths:
       - cover
     reports:
-      junit: _build/test/lib/matrix_app_service/test-junit-report.xml
+      junit: _build/test/lib/kazarma/test-junit-report.xml
       cobertura: coverage.xml
 
 format:

@@ -15,9 +15,13 @@ defmodule Kazarma.MixProject do
       # Docs
       docs: [
         assets: "doc_diagrams"
-      ]
+      ],
+      test_coverage: test_coverage(System.get_env("CI"))
     ]
   end
+
+  defp test_coverage(nil), do: []
+  defp test_coverage(_), do: [tool: CoberturaCover, html_output: "cover"]
 
   # Configuration for the OTP application.
   #
