@@ -1,9 +1,9 @@
 [submodule "activity_pub"]
 	path = activity_pub
-	url = ../ActivityPub.git
+	url = ../../kazarma/ActivityPub.git
 [submodule "matrix_app_service"]
 	path = matrix_app_service
-	url = ../matrix_app_service.ex.git
+	url = ../../kazarma/matrix_app_service.ex.git
 [submodule "polyjuice_client"]
 	path = polyjuice_client
-	url = ../polyjuice_client.git
+	url = ../../kazarma/polyjuice_client.git
