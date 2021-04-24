@@ -34,32 +34,32 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_by_matrix_id(matrix_id) do
-    regex = ~r/@(?<localpart>[a-z0-9_\.-=]+):(?<domain>[a-z0-9\.-]+)/
-    sub_regex = ~r/ap_(?<localpart>[a-z0-9_\.-]+)=(?<domain>[a-z0-9\.-]+)/
-    # Logger.error(inspect(matrix_id))
+    case Kazarma.Address.parse_matrix_id(matrix_id) do
+      {:puppet, sub_localpart, sub_domain} ->
+        ActivityPub.Actor.get_or_fetch_by_username("#{sub_localpart}@#{sub_domain}")
 
-    domain = ActivityPub.domain()
+      {:local, localpart} ->
+        ActivityPub.Actor.get_cached_by_username(localpart)
 
-    case Regex.named_captures(regex, matrix_id) do
-      %{"localpart" => localpart, "domain" => ^domain} ->
-        # local Matrix user
-        case Regex.named_captures(sub_regex, localpart) do
-          %{"localpart" => sub_localpart, "domain" => sub_domain} ->
-            # bridged ActivityPub user
-            ActivityPub.Actor.get_or_fetch_by_username("#{sub_localpart}@#{sub_domain}")
-
-          nil ->
-            # real local user
-            ActivityPub.Actor.get_cached_by_username(localpart)
-        end
-
-      %{"localpart" => localpart, "domain" => remote_domain} ->
-        # remote Matrix user
-        # TODO
+      {:remote, _localpart, _remote_domain} ->
         {:error, :not_implemented_yet}
 
-      nil ->
+      {:error, :invalid_address} ->
         {:error, :invalid_address}
+    end
+  end
+
+  def get_from_matrix(username) do
+    matrix_id = Kazarma.Address.local_ap_username_to_matrix(username)
+    # Logger.debug(matrix_id)
+
+    with {:ok, profile} <- Kazarma.Matrix.Client.get_profile(matrix_id),
+         ap_id <- Kazarma.Address.ap_username_to_local_ap_id(username),
+         bridge_user <- Kazarma.Matrix.Bridge.get_user_by_remote_id(ap_id),
+         actor <- build_actor(username, ap_id, profile, bridge_user) do
+      {:ok, actor}
+    else
+      _ -> {:error, :not_found}
     end
   end
 end
