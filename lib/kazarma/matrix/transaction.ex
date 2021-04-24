@@ -28,12 +28,16 @@ defmodule Kazarma.Matrix.Transaction do
 
     if !is_tagged_message(event) do
       # room = Bridge.get_room_by_local_id(room_id) || Bridge.create_room(local_id: room_id, )
-      with %Room{} = room <- Bridge.get_room_by_local_id(room_id) do
-        forward_event(event, room)
+      case Bridge.get_room_by_local_id(room_id) do
+        %Room{data: %{"type" => "chat_message"}} = room ->
+          Kazarma.ActivityPub.Activity.ChatMessage.forward_to_activitypub(event, room)
+
+        %Room{data: %{"type" => "note"}} = room ->
+          Kazarma.ActivityPub.Activity.Note.forward_to_activitypub(event, room)
       end
     end
   rescue
-    # for development, we prefere acknoledging transactions even if processing them fails
+    # for development, we prefere acknowledging transactions even if processing them fails
     err ->
       Logger.error(Exception.format(:error, err, __STACKTRACE__))
       :ok
@@ -45,12 +49,10 @@ defmodule Kazarma.Matrix.Transaction do
         type: "m.room.member",
         content: %{"membership" => "invite", "is_direct" => true},
         room_id: room_id,
-        sender: sender,
+        sender: _sender,
         state_key: "@ap_" <> _rest = user_id
       }) do
-    {:ok, actor} = Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id)
-    Bridge.create_room(%{local_id: room_id, data: %{type: :chat_message, to_ap: actor.ap_id}})
-    Polyjuice.Client.Room.join(MatrixAppService.Client.client(user_id: user_id), room_id)
+    Kazarma.ActivityPub.Activity.ChatMessage.accept_puppet_invitation(user_id, room_id)
     :ok
   end
 
@@ -58,124 +60,18 @@ defmodule Kazarma.Matrix.Transaction do
         type: "m.room.member",
         content: %{"membership" => "invite"},
         room_id: room_id,
-        sender: sender,
+        sender: _sender,
         state_key: "@ap_" <> _rest = user_id
       }) do
     # {:ok, actor} = Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id)
 
-    room =
-      case Bridge.get_room_by_local_id(room_id) do
-        nil ->
-          {:ok, room} =
-            Bridge.create_room(%{
-              local_id: room_id,
-              remote_id: ActivityPub.Utils.generate_context_id(),
-              data: %{type: :note, to: []}
-            })
-
-          room
-
-        room ->
-          room
-      end
-
-    updated_room_data = update_in(room.data["to"], &[user_id | &1]).data
-    {:ok, b} = Bridge.update_room(room, %{"data" => updated_room_data})
-    Polyjuice.Client.Room.join(MatrixAppService.Client.client(user_id: user_id), room_id)
+    Kazarma.ActivityPub.Activity.Note.accept_puppet_invitation(user_id, room_id)
     :ok
   end
 
   def new_event(%Event{type: type} = event) do
     Logger.debug("Received #{type} from Synapse")
     Logger.debug(inspect(event))
-  end
-
-  defp forward_event(
-         %Event{
-           content: %{"body" => content, "msgtype" => "m.text"},
-           # room_id: "!TpRetYdVcCUBdZmZLZ:kazarma.local",
-           sender: sender,
-           type: "m.room.message"
-         },
-         %Room{
-           data: %{"type" => "note", "to" => to},
-           # local_id: "!TpRetYdVcCUBdZmZLZ:kazarma.local",
-           remote_id: remote_id
-         }
-       ) do
-    {:ok, actor} = Kazarma.ActivityPub.Actor.get_by_matrix_id(sender)
-
-    to =
-      List.delete(to, sender)
-      |> Enum.map(fn matrix_id ->
-        case Kazarma.ActivityPub.Actor.get_by_matrix_id(matrix_id) do
-          {:ok, actor} -> actor.ap_id
-          _ -> nil
-        end
-      end)
-
-    object = %{
-      "type" => "Note",
-      "content" => content,
-      "actor" => actor.ap_id,
-      "attributedTo" => actor.ap_id,
-      "to" => to,
-      "context" => remote_id,
-      "conversation" => remote_id
-      # "tag" => [
-      #   %{
-      #     "href" => "http://pleroma.local/users/mike",
-      #     "name" => "@mike@pleroma.local",
-      #     "type" => "Mention"
-      #   }
-      # ]
-    }
-
-    params = %{
-      actor: actor,
-      # ActivityPub.Utils.generate_context_id(),
-      context: remote_id,
-      object: object,
-      to: to
-    }
-
-    {:ok, _activity} = ActivityPub.create(params)
-  end
-
-  defp forward_event(
-         %Event{
-           sender: sender,
-           type: "m.room.message",
-           content: %{"msgtype" => "m.text", "body" => content}
-         },
-         %Room{data: %{"type" => "chat_message", "to_ap" => ap_id}}
-       ) do
-    {:ok, actor} = ActivityPub.Actor.get_cached_by_ap_id(Kazarma.Address.matrix_to_ap(sender))
-
-    object = %{
-      "type" => "ChatMessage",
-      "content" => content,
-      "actor" => actor.ap_id,
-      "attributedTo" => actor.ap_id,
-      "to" => [ap_id]
-      # "tag" => [
-      #   %{
-      #     "href" => "http://pleroma.local/users/mike",
-      #     "name" => "@mike@pleroma.local",
-      #     "type" => "Mention"
-      #   }
-      # ]
-    }
-
-    params = %{
-      actor: actor,
-      # ActivityPub.Utils.generate_context_id(),
-      context: nil,
-      object: object,
-      to: [ap_id]
-    }
-
-    {:ok, _activity} = ActivityPub.create(params)
   end
 
   defp is_tagged_message(%Event{content: %{"body" => body}}) do

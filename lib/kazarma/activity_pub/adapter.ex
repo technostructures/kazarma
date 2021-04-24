@@ -13,22 +13,9 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
-    Logger.info("asked for local Matrix user #{username}")
-    domain = Application.fetch_env!(:activity_pub, :domain)
-    # TODO usernames can be for remote matrix users
-    username = String.replace_suffix(username, "@" <> domain, "")
-    matrix_id = "@#{username}:#{domain}"
-    # Logger.debug(matrix_id)
+    Logger.debug("asked for local Matrix user #{username}")
 
-    with client <- @matrix_client.client(),
-         {:ok, profile} <- @matrix_client.get_profile(client, matrix_id),
-         ap_id = Routes.activity_pub_url(Endpoint, :actor, username),
-         bridge_user = Kazarma.Matrix.Bridge.get_user_by_remote_id(ap_id),
-         actor = Kazarma.ActivityPub.Actor.build_actor(username, ap_id, profile, bridge_user) do
-      {:ok, actor}
-    else
-      _ -> {:error, :not_found}
-    end
+    Kazarma.ActivityPub.Actor.get_from_matrix(username)
   end
 
   @impl ActivityPub.Adapter
@@ -47,21 +34,11 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
-    regex = ~r/(?<localpart>[a-z0-9_\.-]+)@(?<remote_domain>[a-z0-9\.-]+)/
-
-    with %{"localpart" => localpart, "remote_domain" => remote_domain} <-
-           Regex.named_captures(regex, username),
+    with {localpart, remote_domain} <-
+           Kazarma.Address.parse_activitypub_username(username),
          {:ok, %{"user_id" => matrix_id}} <-
-           @matrix_client.register(
-             username: "ap_#{localpart}=#{remote_domain}",
-             device_id: "KAZARMA_APP_SERVICE",
-             initial_device_display_name: "Kazarma"
-           ) do
-      @matrix_client.put_displayname(
-        @matrix_client.client(user_id: matrix_id),
-        matrix_id,
-        name
-      )
+           Kazarma.Matrix.Client.register_puppet(localpart, remote_domain) do
+      Kazarma.Matrix.Client.set_displayname(matrix_id, name)
 
       :ok
     end
@@ -92,9 +69,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (Mastodon message)")
-
-    Kazarma.ActivityPub.Activity.forward_note(activity)
+    Kazarma.ActivityPub.Activity.Note.forward_to_matrix(activity)
   end
 
   # Pleroma style message
@@ -110,9 +85,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (Pleroma message)")
-
-    Kazarma.ActivityPub.Activity.forward_chat_message(activity)
+    Kazarma.ActivityPub.Activity.ChatMessage.forward_to_matrix(activity)
   end
 
   def handle_activity(%Object{} = object) do
