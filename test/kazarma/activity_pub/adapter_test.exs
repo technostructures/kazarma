@@ -289,4 +289,31 @@ defmodule Kazarma.ActivityPub.AdapterTest do
       assert :ok = handle_activity(note_fixture())
     end
   end
+
+  describe "Maybe register Matrix puppet user (maybe_create_remote_actor/1)" do
+    setup :verify_on_exit!
+
+    test "it registers a puppet user" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn
+        [user_id: "@ap_bob=pleroma:kazarma"] -> :client_bob
+      end)
+      |> expect(:register, fn [
+                                username: "ap_bob=pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma"
+                              ] ->
+        {:ok, %{"user_id" => "@ap_bob=pleroma:kazarma"}}
+      end)
+      |> expect(:put_displayname, fn :client_bob, "@ap_bob=pleroma:kazarma", "Bob" ->
+        :ok
+      end)
+
+      assert :ok =
+               maybe_create_remote_actor(%ActivityPub.Actor{
+                 username: "bob@pleroma",
+                 data: %{"name" => "Bob"}
+               })
+    end
+  end
 end

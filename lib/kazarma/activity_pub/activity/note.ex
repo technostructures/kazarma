@@ -50,10 +50,15 @@ defmodule Kazarma.ActivityPub.Activity.Note do
       }) do
     Logger.debug("Received Note activity")
 
-    from = Address.ap_to_matrix(from)
-    to = Enum.map(to, &Address.ap_to_matrix/1)
-
-    with {:ok, room_id} <-
+    with {:ok, from} <- Address.ap_id_to_matrix(from),
+         to =
+           Enum.map(to, fn ap_id ->
+             case Address.ap_id_to_matrix(ap_id) do
+               {:ok, matrix_id} -> matrix_id
+               _ -> nil
+             end
+           end),
+         {:ok, room_id} <-
            get_or_create_conversation(conversation, from, to),
          {:ok, _} <-
            Kazarma.Matrix.Client.send_tagged_message(room_id, from, source) do
@@ -92,7 +97,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   end
 
   def accept_puppet_invitation(user_id, room_id) do
-    with {:ok, _actor} <- Kazarma.Address.puppet_matrix_id_to_actor(user_id),
+    with {:ok, _actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:puppet]),
          {:ok, _room} <-
            Kazarma.Matrix.Bridge.join_or_create_note_bridge_room(room_id, user_id),
          _ <- Kazarma.Matrix.Client.join(user_id, room_id) do

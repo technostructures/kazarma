@@ -8,8 +8,6 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   alias ActivityPub.Actor
   alias ActivityPub.Object
-  alias KazarmaWeb.Endpoint
-  alias KazarmaWeb.Router.Helpers, as: Routes
 
   @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
@@ -34,10 +32,9 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
-    with {localpart, remote_domain} <-
-           Kazarma.Address.parse_activitypub_username(username),
+    with {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:remote]),
          {:ok, %{"user_id" => matrix_id}} <-
-           Kazarma.Matrix.Client.register_puppet(localpart, remote_domain) do
+           Kazarma.Matrix.Client.register(matrix_id) do
       Kazarma.Matrix.Client.set_displayname(matrix_id, name)
 
       :ok
@@ -45,7 +42,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl ActivityPub.Adapter
-  def update_remote_actor(%Object{} = object) do
+  def update_remote_actor(%Object{} = _object) do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_remote_actor/1")
     # Logger.debug(inspect(object))
 

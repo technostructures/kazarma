@@ -4,12 +4,21 @@ defmodule Kazarma.Matrix.Client do
   """
   use Kazarma.Config
 
-  def register_puppet(localpart, remote_domain) do
+  def register(username) do
+    localpart =
+      username
+      |> String.replace_suffix(":#{Kazarma.Address.domain()}", "")
+      |> String.replace_leading("@", "")
+
     @matrix_client.register(
-      username: "ap_#{localpart}=#{remote_domain}",
+      username: localpart,
       device_id: "KAZARMA_APP_SERVICE",
       initial_device_display_name: "Kazarma"
     )
+  end
+
+  def register_puppet(localpart, remote_domain) do
+    register("ap_#{localpart}=#{remote_domain}")
   end
 
   def join(user_id, room_id) do

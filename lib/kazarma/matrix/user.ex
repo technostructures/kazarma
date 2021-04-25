@@ -9,17 +9,14 @@ defmodule Kazarma.Matrix.User do
   def query_user(user_id) do
     Logger.debug("Received ask for user #{user_id}")
 
-    with {localpart, remote_domain} <-
-           Kazarma.Address.parse_puppet_matrix_id(user_id),
-         {:ok, _actor} <-
-           ActivityPub.Actor.get_or_fetch_by_username("#{localpart}@#{remote_domain}"),
+    with {:ok, _actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:puppet]),
          {:ok, _matrix_id} <-
-           Kazarma.Matrix.Client.register_puppet(localpart, remote_domain) do
-      # :ok <- MatrixAppService.Client.set_displayname(...),
-      # :ok <- MatrixAppService.Client.set_avatar_url(...),
+           Kazarma.Matrix.Client.register(user_id) |> IO.inspect() do
       :ok
     else
-      _ -> :error
+      error ->
+        Logger.error("Error getting user #{user_id} asked by homeserver: #{inspect(error)}")
+        :error
     end
   end
 end
