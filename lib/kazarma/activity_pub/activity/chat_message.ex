@@ -33,20 +33,7 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
       to: [receiver_id]
     }
 
-    ActivityPub.create(params)
-  end
-
-  def forward_to_activitypub(
-        %Event{
-          sender: sender,
-          type: "m.room.message",
-          content: %{"msgtype" => "m.text", "body" => content}
-        },
-        %Room{data: %{"type" => "chat_message", "to_ap" => ap_id}}
-      ) do
-    {:ok, actor} = ActivityPub.Actor.get_cached_by_ap_id(Kazarma.Address.matrix_to_ap(sender))
-
-    create(actor, ap_id, content)
+    Kazarma.ActivityPub.create(params)
   end
 
   def forward_to_matrix(%{
@@ -73,10 +60,32 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
     end
   end
 
+  def forward_to_activitypub(
+        %Event{
+          sender: sender,
+          type: "m.room.message",
+          content: %{"msgtype" => "m.text", "body" => content}
+        },
+        %Room{data: %{"type" => "chat_message", "to_ap_id" => ap_id}}
+      ) do
+    with {:ok, username} <- Kazarma.Address.matrix_id_to_ap_username(sender),
+         {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_username(username) do
+      create(actor, ap_id, content)
+    end
+  end
+
   def accept_puppet_invitation(user_id, room_id) do
-    {:ok, actor} = Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id)
-    Bridge.create_room(%{local_id: room_id, data: %{type: :chat_message, to_ap: actor.ap_id}})
-    Polyjuice.Client.Room.join(MatrixAppService.Client.client(user_id: user_id), room_id)
+    with {:ok, actor} <- Kazarma.Address.puppet_matrix_id_to_actor(user_id),
+         {:ok, _room} <-
+           Bridge.create_room(%{
+             local_id: room_id,
+             data: %{"type" => "chat_message", "to_ap_id" => actor.ap_id}
+           }),
+         _ <- Kazarma.Matrix.Client.join(user_id, room_id) do
+      :ok
+    else
+      _ -> :error
+    end
   end
 
   defp get_or_create_direct_room(from_ap_id, to_ap_id) do

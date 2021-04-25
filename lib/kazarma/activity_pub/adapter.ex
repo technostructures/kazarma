@@ -54,7 +54,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     # :ok <- @matrix_client.set_avatar_url(...),
 
     # :ok
-    raise "not implemented"
+    raise "update_remote_actor/1: not implemented"
   end
 
   @impl ActivityPub.Adapter
@@ -93,7 +93,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug(inspect(object))
 
     # :ok
-    raise "not implemented"
+    raise "handle_activity/1: not implemented"
   end
 
   @impl true
@@ -106,12 +106,12 @@ defmodule Kazarma.ActivityPub.Adapter do
   @impl true
   def get_follower_local_ids(_actor) do
     # []
-    raise "not implemented"
+    raise "get_follower_local_ids/1: not implemented"
   end
 
   @impl true
   def get_following_local_ids(_actor) do
     # []
-    raise "not implemented"
+    raise "get_following_local_ids/1: not implemented"
   end
 end

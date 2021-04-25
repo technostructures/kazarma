@@ -73,6 +73,7 @@ config :kazarma, Oban,
   repo: Kazarma.Repo
 
 config :kazarma, :matrix, client: MatrixAppService.Client
+config :kazarma, :activity_pub, server: ActivityPub
 
 # MatrixAppService configuration
 config :matrix_app_service, :app_service,

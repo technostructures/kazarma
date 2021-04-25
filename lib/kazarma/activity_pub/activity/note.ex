@@ -35,7 +35,33 @@ defmodule Kazarma.ActivityPub.Activity.Note do
       to: receivers_id
     }
 
-    {:ok, _activity} = ActivityPub.create(params)
+    {:ok, _activity} = Kazarma.ActivityPub.create(params)
+  end
+
+  def forward_to_matrix(%{
+        data: %{"to" => to},
+        object: %Object{
+          data: %{
+            "source" => source,
+            "actor" => from,
+            "conversation" => conversation
+          }
+        }
+      }) do
+    Logger.debug("Received Note activity")
+
+    from = Address.ap_to_matrix(from)
+    to = Enum.map(to, &Address.ap_to_matrix/1)
+
+    with {:ok, room_id} <-
+           get_or_create_conversation(conversation, from, to),
+         {:ok, _} <-
+           Kazarma.Matrix.Client.send_tagged_message(room_id, from, source) do
+      :ok
+    else
+      {:error, _code, %{"error" => error}} -> Logger.error(error)
+      {:error, error} -> Logger.error(inspect(error))
+    end
   end
 
   def forward_to_activitypub(
@@ -65,52 +91,13 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     create(actor, to, remote_id, content)
   end
 
-  def forward_to_matrix(%{
-        data: %{"to" => to},
-        object: %Object{
-          data: %{
-            "source" => source,
-            "actor" => from,
-            "conversation" => conversation
-          }
-        }
-      }) do
-    Logger.debug("Received Note activity")
-
-    from = Address.ap_to_matrix(from)
-    to = Enum.map(to, &Address.ap_to_matrix/1)
-
-    with {:ok, room_id} <-
-           get_or_create_conversation(conversation, from, to),
-         {:ok, _} <-
-           Kazarma.Matrix.Client.send_tagged_message(room_id, from, source) do
-      :ok
-    else
-      {:error, _code, %{"error" => error}} -> Logger.error(error)
-      {:error, error} -> Logger.error(inspect(error))
-    end
-  end
-
   def accept_puppet_invitation(user_id, room_id) do
-    room =
-      case Bridge.get_room_by_local_id(room_id) do
-        nil ->
-          {:ok, room} =
-            Bridge.create_room(%{
-              local_id: room_id,
-              remote_id: ActivityPub.Utils.generate_context_id(),
-              data: %{type: :note, to: []}
-            })
-
-          room
-
-        room ->
-          room
-      end
-
-    updated_room_data = update_in(room.data["to"], &[user_id | &1]).data
-    {:ok, _b} = Bridge.update_room(room, %{"data" => updated_room_data})
-    Polyjuice.Client.Room.join(MatrixAppService.Client.client(user_id: user_id), room_id)
+    with {:ok, _actor} <- Kazarma.Address.puppet_matrix_id_to_actor(user_id),
+         {:ok, _room} <-
+           Kazarma.Matrix.Bridge.join_or_create_note_bridge_room(room_id, user_id),
+         _ <- Kazarma.Matrix.Client.join(user_id, room_id) do
+      :ok
+    end
   end
 
   defp get_or_create_conversation(conversation, creator, invites) do

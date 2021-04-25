@@ -36,6 +36,8 @@ defmodule Kazarma.Matrix.Transaction do
           Kazarma.ActivityPub.Activity.Note.forward_to_activitypub(event, room)
       end
     end
+
+    :ok
   rescue
     # for development, we prefere acknowledging transactions even if processing them fails
     err ->
