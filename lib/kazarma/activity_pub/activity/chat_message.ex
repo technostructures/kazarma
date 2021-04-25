@@ -49,10 +49,15 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
       }) do
     Logger.debug("Received ChatMessage activity")
 
-    with {:ok, room_id} <-
+    with {:ok, matrix_id} <- Address.ap_id_to_matrix(from_id),
+         {:ok, room_id} <-
            get_or_create_direct_room(from_id, to_id),
          {:ok, _} <-
-           Kazarma.Matrix.Client.send_tagged_message(room_id, Address.ap_to_matrix(from_id), body) do
+           Kazarma.Matrix.Client.send_tagged_message(
+             room_id,
+             matrix_id,
+             body
+           ) do
       :ok
     else
       {:error, _code, %{"error" => error}} -> Logger.error(error)
@@ -75,7 +80,7 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
   end
 
   def accept_puppet_invitation(user_id, room_id) do
-    with {:ok, actor} <- Kazarma.Address.puppet_matrix_id_to_actor(user_id),
+    with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:puppet]),
          {:ok, _room} <-
            Bridge.create_room(%{
              local_id: room_id,
@@ -89,11 +94,9 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
   end
 
   defp get_or_create_direct_room(from_ap_id, to_ap_id) do
-    from_matrix_id = Address.ap_to_matrix(from_ap_id)
-    to_matrix_id = Address.ap_to_matrix(to_ap_id)
-    # Logger.debug("from " <> inspect(from_matrix_id) <> " to " <> inspect(to_matrix_id))
-
-    with {:error, :not_found} <-
+    with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_ap_id),
+         {:ok, to_matrix_id} <- Address.ap_id_to_matrix(to_ap_id),
+         {:error, :not_found} <-
            Kazarma.Matrix.Client.get_direct_room(from_matrix_id, to_matrix_id),
          {:ok, %{"room_id" => room_id}} <-
            Kazarma.Matrix.Client.create_direct_room(from_matrix_id, to_matrix_id),

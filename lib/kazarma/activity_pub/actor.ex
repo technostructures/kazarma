@@ -50,7 +50,7 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_from_matrix(username) do
-    with {:ok, matrix_id} <- Kazarma.Address.matrix_ap_username_to_matrix_id(username),
+    with {:ok, matrix_id} <- Kazarma.Address.ap_username_to_matrix_id(username, [:remote_matrix, :local_matrix]),
          {:ok, profile} <- Kazarma.Matrix.Client.get_profile(matrix_id),
          localpart = String.replace_suffix(username, "@#{Kazarma.Address.domain()}", ""),
          ap_id <- Kazarma.Address.ap_localpart_to_local_ap_id(localpart),
