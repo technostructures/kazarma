@@ -111,7 +111,7 @@ defmodule Kazarma.Address do
         {:ok, "#{localpart}@#{domain()}"}
 
       {:remote, localpart, remote_domain} ->
-        {:ok, "#{localpart}@#{remote_domain}"}
+        {:ok, "#{localpart}=#{remote_domain}@#{domain()}"}
 
       _ ->
         {:error, :not_found}
