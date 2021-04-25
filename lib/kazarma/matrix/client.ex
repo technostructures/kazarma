@@ -12,6 +12,10 @@ defmodule Kazarma.Matrix.Client do
     )
   end
 
+  def join(user_id, room_id) do
+    @matrix_client.join(@matrix_client.client(user_id: user_id), room_id)
+  end
+
   def get_profile(matrix_id) do
     @matrix_client.get_profile(@matrix_client.client(), matrix_id)
   end

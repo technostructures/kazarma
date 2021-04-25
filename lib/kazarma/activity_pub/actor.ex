@@ -41,8 +41,8 @@ defmodule Kazarma.ActivityPub.Actor do
       {:local, localpart} ->
         ActivityPub.Actor.get_cached_by_username(localpart)
 
-      {:remote, _localpart, _remote_domain} ->
-        {:error, :not_implemented_yet}
+      {:remote, localpart, remote_domain} ->
+        ActivityPub.Actor.get_or_fetch_by_username("#{localpart}@#{remote_domain}")
 
       {:error, :invalid_address} ->
         {:error, :invalid_address}
@@ -50,13 +50,12 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_from_matrix(username) do
-    matrix_id = Kazarma.Address.local_ap_username_to_matrix(username)
-    # Logger.debug(matrix_id)
-
-    with {:ok, profile} <- Kazarma.Matrix.Client.get_profile(matrix_id),
-         ap_id <- Kazarma.Address.ap_username_to_local_ap_id(username),
+    with {:ok, matrix_id} <- Kazarma.Address.matrix_ap_username_to_matrix_id(username),
+         {:ok, profile} <- Kazarma.Matrix.Client.get_profile(matrix_id),
+         localpart = String.replace_suffix(username, "@#{Kazarma.Address.domain()}", ""),
+         ap_id <- Kazarma.Address.ap_localpart_to_local_ap_id(localpart),
          bridge_user <- Kazarma.Matrix.Bridge.get_user_by_remote_id(ap_id),
-         actor <- build_actor(username, ap_id, profile, bridge_user) do
+         actor <- build_actor(localpart, ap_id, profile, bridge_user) do
       {:ok, actor}
     else
       _ -> {:error, :not_found}

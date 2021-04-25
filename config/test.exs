@@ -20,6 +20,7 @@ config :kazarma, KazarmaWeb.Endpoint,
   server: false
 
 config :kazarma, :matrix, client: Kazarma.Matrix.TestClient
+config :kazarma, :activity_pub, server: Kazarma.ActivityPub.TestServer
 
 config :matrix_app_service, :app_service,
   base_url: "http://homeserver",
