@@ -135,30 +135,4 @@ defmodule Kazarma.Address do
   defp filter_types({type, _, _} = t, types) do
     if type in types, do: t, else: {:error, :not_found}
   end
-
-  # TODO: remove
-  def parse_activitypub_username(username) do
-    regex = ~r/(?<localpart>[a-z0-9_\.-]+)@(?<remote_domain>[a-z0-9\.-]+)/
-
-    case Regex.named_captures(regex, username) do
-      %{"localpart" => localpart, "remote_domain" => remote_domain} ->
-        {localpart, remote_domain}
-
-      _ ->
-        nil
-    end
-  end
-
-  # TODO: remove
-  def parse_puppet_matrix_id(user_id) do
-    regex = ~r/@ap_(?<localpart>[a-z0-9_\.-]+)=(?<remote_domain>[a-z0-9\.-]+):#{domain()}/
-
-    case Regex.named_captures(regex, user_id) do
-      %{"localpart" => localpart, "remote_domain" => remote_domain} ->
-        {localpart, remote_domain}
-
-      _ ->
-        nil
-    end
-  end
 end

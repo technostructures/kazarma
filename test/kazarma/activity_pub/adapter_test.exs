@@ -303,13 +303,17 @@ defmodule Kazarma.ActivityPub.AdapterTest do
                                 device_id: "KAZARMA_APP_SERVICE",
                                 initial_device_display_name: "Kazarma"
                               ] ->
-        {:ok, %{"user_id" =>  "@ap_bob=pleroma:kazarma"}}
+        {:ok, %{"user_id" => "@ap_bob=pleroma:kazarma"}}
       end)
       |> expect(:put_displayname, fn :client_bob, "@ap_bob=pleroma:kazarma", "Bob" ->
         :ok
       end)
 
-      assert :ok = maybe_create_remote_actor(%ActivityPub.Actor{username: "bob@pleroma", data: %{"name" => "Bob"}})
+      assert :ok =
+               maybe_create_remote_actor(%ActivityPub.Actor{
+                 username: "bob@pleroma",
+                 data: %{"name" => "Bob"}
+               })
     end
   end
 end
