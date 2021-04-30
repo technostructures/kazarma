@@ -30,14 +30,29 @@ docker run -d \
     --name docker-hoster \
     dvdarias/docker-hoster@sha256:2b0e0f8155446e55f965fa33691da828c1db50b24d5916d690b47439524291ba
 ```
+
 (after rebooting, you will need to start it again using `docker start docker-hoster`)
 
 This should run containers with those services:
+
 - [kazarma.kazarma.local](http://kazarma.kazarma.local) -> Kazarma itself
 - [matrix.kazarma.local](http://matrix.kazarma.local) -> Matrix server
-- [kazarma.local](http://kazarma.local) -> serves .well-known routes that allow Matrix and Kazarma.ActivityPub to use simple `kazarma.local` domain (for users, etc)
-- [pleroma.local](http://pleroma.local) -> Pleroma, should be able to address Matrix users using `kazarma.local` domain
-- [element.local](http://element.local) -> Element, will connect to Synapse, should then be able to address Pleroma users using `pleroma.local` domain
+- [kazarma.local](http://kazarma.local) -> serves .well-known routes that allow
+  Matrix and Kazarma.ActivityPub to use simple `kazarma.local` domain (for
+  users, etc)
+- [pleroma.local](http://pleroma.local) -> Pleroma, should be able to address
+  Matrix users using `kazarma.local` domain
+- [element.local](http://element.local) -> Element, will connect to Synapse,
+  should then be able to address Pleroma users using `pleroma.local` domain
+
+#### Reset databases
+
+```bash
+docker-compose rm -fs postgres_kazarma postgres_pleroma synapse
+docker volume rm kazarma_postgres_pleroma_files kazarma_postgres_kazarma_files kazarma_synapse_files
+docker-compose run synapse generate
+docker-compose run kazarma mix ecto.setup
+```
 
 ### Locally
 
@@ -49,7 +64,9 @@ iex -S mix phx.server
 
 ## Generate documentation
 
-We use [ditaa](http://ditaa.sourceforge.net) to generate diagrams and integrate them into HexDoc. To edit diagrams use [asciiflow](http://asciiflow.com/) and paste the result in HTML files in the `doc_diagrams` folder.
+We use [ditaa](http://ditaa.sourceforge.net) to generate diagrams and integrate
+them into HexDoc. To edit diagrams use [asciiflow](http://asciiflow.com/) and paste
+the result in HTML files in the `doc_diagrams` folder.
 
 ```bash
 rm doc_diagrams/*.png && ditaa doc_diagrams/*.html
