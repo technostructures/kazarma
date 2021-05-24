@@ -136,7 +136,10 @@ defmodule Kazarma.ActivityPub.AdapterTest do
       assert [
                %MatrixAppService.Bridge.Room{
                  local_id: "!room:kazarma",
-                 data: %{"type" => "chat_message", "to_ap" => "http://pleroma/pub/actors/alice"}
+                 data: %{
+                   "type" => "chat_message",
+                   "to_ap_id" => "http://pleroma/pub/actors/alice"
+                 }
                }
              ] = Kazarma.Matrix.Bridge.list_rooms()
     end

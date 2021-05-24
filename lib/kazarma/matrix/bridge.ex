@@ -7,7 +7,7 @@ defmodule Kazarma.Matrix.Bridge do
   def insert_chat_message_bridge_room(room_id, from_ap_id) do
     create_room(%{
       local_id: room_id,
-      data: %{type: :chat_message, to_ap: from_ap_id}
+      data: %{type: :chat_message, to_ap_id: from_ap_id}
     })
   end
 
