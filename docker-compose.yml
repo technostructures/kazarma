@@ -175,6 +175,11 @@ services:
 
   traefik:
     image: traefik:v2.2.0
+    # Expose these ports to directly access all containers on your public interface (e.g. useful on macOS)
+    # ports:
+    #   - 80:80
+    #   - 443:443
+
     # command: --web --docker --docker.domain=local --logLevel=DEBUG
     command:
       - --entrypoints.http.address=:80
