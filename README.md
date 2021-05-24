@@ -22,7 +22,7 @@ docker-compose run kazarma mix do deps.get, ecto.setup
 docker-compose up
 ```
 
-Use `docker-hoster` to make container domains accessible:
+On Linux, use `docker-hoster` to make container domains accessible:
 ```
 docker run -d \
     -v /var/run/docker.sock:/tmp/docker.sock \
@@ -44,6 +44,28 @@ This should run containers with those services:
   Matrix users using `kazarma.local` domain
 - [element.local](http://element.local) -> Element, will connect to Synapse,
   should then be able to address Pleroma users using `pleroma.local` domain
+
+#### On macOS
+
+On macOS, instead of `docker-hoster` you need to add the following domains to your `/etc/hosts` file:
+```
+# Kazarma development domains
+127.0.0.1 kazarma.local
+127.0.0.1 kazarma.kazarma.local
+127.0.0.1 matrix.kazarma.local
+127.0.0.1 pleroma.local
+127.0.0.1 element.local
+```
+
+Then the `docker-compose.yml` file should (at least) expose the `80` port in the `traefik` container:
+
+```yaml
+  traefik:
+    image: traefik:v2.2.0
+    ports:
+      - 80:80
+      - 443:443
+```
 
 #### Reset databases
 
