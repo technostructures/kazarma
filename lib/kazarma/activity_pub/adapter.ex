@@ -35,23 +35,34 @@ defmodule Kazarma.ActivityPub.Adapter do
     with {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:remote]),
          {:ok, %{"user_id" => matrix_id}} <-
            Kazarma.Matrix.Client.register(matrix_id) do
-      Kazarma.Matrix.Client.set_displayname(matrix_id, name)
+      Kazarma.Matrix.Client.put_displayname(matrix_id, name)
+      # Kazarma.Matrix.Client.put_avatar_url(matrix_id, name)
 
       :ok
     end
   end
 
   @impl ActivityPub.Adapter
-  def update_remote_actor(%Object{} = _object) do
+  def update_remote_actor(
+        %Ecto.Changeset{changes: %{data: changes}, data: %{data: previous}} = changeset
+      ) do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_remote_actor/1")
-    # Logger.debug(inspect(object))
+    Logger.debug(inspect(changeset))
 
-    # TODO: update Matrix bridged user
-    # :ok <- @matrix_client.set_displayname(...),
-    # :ok <- @matrix_client.set_avatar_url(...),
+    {:ok, matrix_id} = Kazarma.Address.ap_id_to_matrix(previous["id"])
+    access_for_name = ["name"]
+    access_for_avatar_url = ["icon", "url"]
 
-    # :ok
-    raise "update_remote_actor/1: not implemented"
+    if get_in(changes, access_for_name) != get_in(previous, access_for_name) do
+      new_name = get_in(changes, access_for_name)
+      new_name && Kazarma.Matrix.Client.put_displayname(matrix_id, new_name)
+    end
+
+    if get_in(changes, access_for_avatar_url) != get_in(previous, access_for_avatar_url) do
+      new_avatar_url = get_in(changes, access_for_avatar_url)
+      new_avatar_url && Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, new_avatar_url)
+    end
+    :ok
   end
 
   @impl ActivityPub.Adapter

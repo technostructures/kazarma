@@ -39,12 +39,36 @@ defmodule Kazarma.Matrix.Client do
     # |> IO.inspect()
   end
 
-  def set_displayname(matrix_id, name) do
+  def put_displayname(matrix_id, displayname) do
     @matrix_client.put_displayname(
       @matrix_client.client(user_id: matrix_id),
       matrix_id,
-      name
+      displayname
     )
+  end
+
+  def put_avatar_url(matrix_id, avatar_url) do
+    @matrix_client.put_avatar_url(
+      @matrix_client.client(user_id: matrix_id),
+      matrix_id,
+      avatar_url
+    )
+  end
+
+  def upload_and_set_avatar(matrix_id, avatar_url) do
+    with {:ok, %Tesla.Env{body: image_bin}} <- ActivityPub.HTTP.get(avatar_url),
+         filename = Path.basename(avatar_url),
+         mimetype = MIME.from_path(filename),
+         {:ok, matrix_url} <-
+           @matrix_client.upload(
+             @matrix_client.client(user_id: matrix_id),
+             image_bin,
+             filename: filename,
+             mimetype: mimetype
+           ),
+         :ok <- put_avatar_url(matrix_id, matrix_url) do
+      :ok
+    end
   end
 
   def get_direct_room(from_matrix_id, to_matrix_id) do
