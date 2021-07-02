@@ -96,4 +96,12 @@ defmodule Kazarma.Matrix.Client do
   def send_tagged_message(room_id, from_id, body) do
     @matrix_client.send_message(room_id, {body <> " \ufeff", body <> " \ufeff"}, user_id: from_id)
   end
+
+  def get_media_url("mxc://" <> matrix_url) do
+    [server_name, media_id] = String.split(matrix_url, "/", parts: 2)
+
+    @matrix_client.client().base_url
+    |> URI.merge("/_matrix/media/r0/download/" <> server_name <> "/" <> media_id)
+    |> URI.to_string()
+  end
 end
