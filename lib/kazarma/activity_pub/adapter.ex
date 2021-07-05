@@ -28,30 +28,39 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl ActivityPub.Adapter
-  def maybe_create_remote_actor(%Actor{username: username, data: %{"name" => name}}) do
+  def maybe_create_remote_actor(%Actor{username: username, data: %{"name" => name} = data}) do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
     with {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:remote]),
          {:ok, %{"user_id" => matrix_id}} <-
            Kazarma.Matrix.Client.register(matrix_id) do
-      Kazarma.Matrix.Client.set_displayname(matrix_id, name)
+      Kazarma.Matrix.Client.put_displayname(matrix_id, name)
+      avatar_url = get_in(data, ["icon", "url"])
+      if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
 
       :ok
     end
   end
 
   @impl ActivityPub.Adapter
-  def update_remote_actor(%Object{} = _object) do
+  def update_remote_actor(
+        %Ecto.Changeset{changes: %{data: changes}, data: %{data: previous}} = changeset
+      ) do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_remote_actor/1")
-    # Logger.debug(inspect(object))
+    Logger.debug(inspect(changeset))
 
-    # TODO: update Matrix bridged user
-    # :ok <- @matrix_client.set_displayname(...),
-    # :ok <- @matrix_client.set_avatar_url(...),
+    {:ok, matrix_id} = Kazarma.Address.ap_id_to_matrix(previous["id"])
 
-    # :ok
-    raise "update_remote_actor/1: not implemented"
+    set_if_changed(previous["name"], changes["name"], fn name ->
+      Kazarma.Matrix.Client.put_displayname(matrix_id, name)
+    end)
+
+    set_if_changed(previous["icon"]["url"], changes["icon"]["url"], fn avatar_url ->
+      Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
+    end)
+
+    :ok
   end
 
   @impl ActivityPub.Adapter
@@ -111,4 +120,10 @@ defmodule Kazarma.ActivityPub.Adapter do
     # []
     raise "get_following_local_ids/1: not implemented"
   end
+
+  defp set_if_changed(previous_value, new_value, _update_fun)
+       when previous_value == new_value or is_nil(new_value),
+       do: nil
+
+  defp set_if_changed(_previous_value, new_value, update_fun), do: update_fun.(new_value)
 end
