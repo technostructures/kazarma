@@ -7,6 +7,10 @@ defmodule Kazarma.ActivityPub.Actor do
   alias KazarmaWeb.Router.Helpers, as: Routes
 
   def build_actor(username, ap_id, matrix_profile, bridge_user) do
+    avatar_url =
+      matrix_profile["avatar_url"] &&
+        Kazarma.Matrix.Client.get_media_url(matrix_profile["avatar_url"])
+
     %Actor{
       local: true,
       deactivated: false,
@@ -18,6 +22,7 @@ defmodule Kazarma.ActivityPub.Actor do
         "id" => ap_id,
         "type" => "Person",
         "name" => matrix_profile["displayname"],
+        "icon" => avatar_url && %{"type" => "Image", "url" => avatar_url},
         "followers" => Routes.activity_pub_url(Endpoint, :followers, username),
         "followings" => Routes.activity_pub_url(Endpoint, :following, username),
         "inbox" => Routes.activity_pub_url(Endpoint, :inbox, username),

@@ -28,7 +28,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl ActivityPub.Adapter
-  def maybe_create_remote_actor(%Actor{username: username, data: %{"name" => name}}) do
+  def maybe_create_remote_actor(%Actor{username: username, data: %{"name" => name} = data}) do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
@@ -36,7 +36,8 @@ defmodule Kazarma.ActivityPub.Adapter do
          {:ok, %{"user_id" => matrix_id}} <-
            Kazarma.Matrix.Client.register(matrix_id) do
       Kazarma.Matrix.Client.put_displayname(matrix_id, name)
-      # Kazarma.Matrix.Client.put_avatar_url(matrix_id, name)
+      avatar_url = get_in(data, ["icon", "url"])
+      if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
 
       :ok
     end
@@ -62,6 +63,7 @@ defmodule Kazarma.ActivityPub.Adapter do
       new_avatar_url = get_in(changes, access_for_avatar_url)
       new_avatar_url && Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, new_avatar_url)
     end
+
     :ok
   end
 
