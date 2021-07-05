@@ -27,7 +27,6 @@ defmodule Kazarma.ActivityPub.NoteTest do
       {:ok, actor: actor}
     end
 
-
     # @TODO: test errors that can happen
 
     def note_fixture do
