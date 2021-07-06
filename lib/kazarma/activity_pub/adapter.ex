@@ -121,6 +121,17 @@ defmodule Kazarma.ActivityPub.Adapter do
     raise "get_following_local_ids/1: not implemented"
   end
 
+  @impl true
+  def base_url, do: Application.get_env(:activity_pub, :base_url)
+
+  @impl true
+  def domain, do: Application.get_env(:activity_pub, :domain)
+
+  @impl true
+  def get_redirect_url(_id_or_username) do
+    raise "get_redirect_url/1: not implemented"
+  end
+
   defp set_if_changed(previous_value, new_value, _update_fun)
        when previous_value == new_value or is_nil(new_value),
        do: nil
