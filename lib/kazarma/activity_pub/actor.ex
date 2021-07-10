@@ -24,8 +24,12 @@ defmodule Kazarma.ActivityPub.Actor do
   def build_actor_from_profile(username, profile) do
     localpart = Kazarma.Address.get_username_localpart(username)
     ap_id = Kazarma.Address.ap_localpart_to_local_ap_id(localpart)
+
+    avatar_url =
+      profile["avatar_url"] && Kazarma.Matrix.Client.get_media_url(profile["avatar_url"])
+
     {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
-    build_actor(localpart, ap_id, profile["displayname"], profile["avatar_url"], keys)
+    build_actor(localpart, ap_id, profile["displayname"], avatar_url, keys)
   end
 
   def build_actor(local_username, ap_id, displayname, avatar_url, keys) do
