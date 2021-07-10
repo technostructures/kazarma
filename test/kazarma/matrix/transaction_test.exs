@@ -206,7 +206,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             },
             deactivated: false,
             id: nil,
-            keys: nil,
+            keys: _,
             local: true,
             pointer_id: nil,
             username: "bob@kazarma"
@@ -292,7 +292,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             },
             deactivated: false,
             id: nil,
-            keys: nil,
+            keys: _,
             local: true,
             pointer_id: nil,
             username: "bob@kazarma"
