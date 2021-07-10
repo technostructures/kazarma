@@ -87,30 +87,33 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_from_matrix(username) do
-    {:ok, matrix_id} =
-      Kazarma.Address.ap_username_to_matrix_id(username, [:remote_matrix, :local_matrix])
+    case Kazarma.Address.ap_username_to_matrix_id(username, [:remote_matrix, :local_matrix]) do
+      {:ok, matrix_id} ->
+        case Kazarma.Matrix.Bridge.get_user_by_local_id(matrix_id) do
+          %{data: %{"ap_data" => ap_data, "keys" => keys}} ->
+            Logger.debug("user found in database")
+            {:ok, build_actor_from_data(ap_data, keys)}
 
-    case Kazarma.Matrix.Bridge.get_user_by_local_id(matrix_id) do
-      %{data: %{"ap_data" => ap_data, "keys" => keys}} ->
-        Logger.debug("user found in database")
-        {:ok, build_actor_from_data(ap_data, keys)}
+          _ ->
+            Logger.debug("user not found in database")
+
+            with {:ok, profile} <- Kazarma.Matrix.Client.get_profile(matrix_id),
+                 Logger.debug("user found in Matrix"),
+                 actor <- build_actor_from_profile(username, profile),
+                 {:ok, _} <-
+                   Kazarma.Matrix.Bridge.create_user(%{
+                     local_id: matrix_id,
+                     remote_id: actor.ap_id,
+                     data: %{"ap_data" => actor.data, "keys" => actor.keys}
+                   }) do
+              {:ok, actor}
+            else
+              _ -> {:error, :not_found}
+            end
+        end
 
       _ ->
-        Logger.debug("user not found in database")
-
-        with {:ok, profile} <- Kazarma.Matrix.Client.get_profile(matrix_id),
-             Logger.debug("user found in Matrix"),
-             actor <- build_actor_from_profile(username, profile),
-             {:ok, _} <-
-               Kazarma.Matrix.Bridge.create_user(%{
-                 local_id: matrix_id,
-                 remote_id: actor.ap_id,
-                 data: %{"ap_data" => actor.data, "keys" => actor.keys}
-               }) do
-          {:ok, actor}
-        else
-          _ -> {:error, :not_found}
-        end
+        {:error, :not_found}
     end
   end
 end
