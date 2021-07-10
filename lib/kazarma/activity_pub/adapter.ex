@@ -19,9 +19,9 @@ defmodule Kazarma.ActivityPub.Adapter do
   @impl ActivityPub.Adapter
   def update_local_actor(%Actor{ap_id: ap_id} = actor, data) do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_local_actor/2")
+    Logger.error("this should no longer happen")
     Logger.debug(inspect(actor))
     Logger.debug(inspect(data))
-    raise "this should no longer happen"
 
     {:ok, actor}
   end
