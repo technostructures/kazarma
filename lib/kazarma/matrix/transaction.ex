@@ -105,26 +105,41 @@ defmodule Kazarma.Matrix.Transaction do
   end
 
   defp bridge_profile_change(matrix_id, actor, content) do
+    IO.inspect("bridge profile change")
+
     with [_ | _] = changed_profile_parts <-
            Enum.filter(content, fn
-             {"displayname", displayname} -> displayname != actor.data["name"]
-             {"avatar_url", avatar_url} -> avatar_url != actor.data["icon"]["url"]
-             _ -> false
+             {"displayname", displayname} ->
+               displayname != actor.data["name"]
+
+             {"avatar_url", avatar_url} ->
+               Kazarma.Matrix.Client.get_media_url(avatar_url) != actor.data["icon"]["url"]
+
+             _ ->
+               false
            end),
          {:ok, profile} <- Kazarma.Matrix.Client.get_profile(matrix_id),
-         [_ | _] = changed_profile_parts <-
+         [_ | _] = changed_profile_parts2 <-
            Enum.filter(changed_profile_parts, fn
-             {"displayname", displayname} -> displayname == profile["displayname"]
-             {"avatar_url", avatar_url} -> avatar_url == profile["avatar_url"]
-             _ -> false
+             {"displayname", displayname} ->
+               displayname == profile["displayname"]
+
+             {"avatar_url", avatar_url} ->
+               avatar_url == profile["avatar_url"]
+
+             _ ->
+               false
            end),
          actor <-
-           Enum.reduce(changed_profile_parts, actor, fn
+           Enum.reduce(changed_profile_parts2, actor, fn
              {"displayname", displayname}, acc ->
                Kazarma.ActivityPub.Actor.set_displayname(acc, displayname)
 
              {"avatar_url", avatar_url}, acc ->
-               Kazarma.ActivityPub.Actor.set_avatar_url(acc, avatar_url)
+               Kazarma.ActivityPub.Actor.set_avatar_url(
+                 acc,
+                 Kazarma.Matrix.Client.get_media_url(avatar_url)
+               )
 
              _, acc ->
                acc

@@ -153,6 +153,146 @@ defmodule Kazarma.Matrix.TransactionTest do
     end
   end
 
+  describe "Profile update" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    def profile_update_fixture(displayname, avatar_url) do
+      %Event{
+        type: "m.room.member",
+        content: %{"displayname" => displayname, "avatar_url" => avatar_url},
+        room_id: "!room:kazarma",
+        # try with @alice:matrix
+        state_key: "@alice:kazarma"
+      }
+    end
+
+    setup do
+      {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+
+      {:ok, _user} =
+        Kazarma.Matrix.Bridge.create_user(%{
+          local_id: "@alice:kazarma",
+          remote_id: "http://kazarma/users/alice",
+          data: %{
+            "ap_data" => %{
+              "id" => "http://kazarma/users/alice",
+              "preferredUsername" => "alice",
+              "name" => "old_name",
+              "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/old_avatar"}
+            },
+            keys: keys
+          }
+        })
+
+      :ok
+    end
+
+    test "it does nothing if nothing has changed" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn ->
+        %{base_url: "http://matrix"}
+      end)
+
+      assert :ok == new_event(profile_update_fixture("old_name", "mxc://server/old_avatar"))
+    end
+
+    test "it does nothing if not confirmed by profile" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, 2, fn ->
+        %{base_url: "http://matrix"}
+      end)
+      |> expect(:get_profile, fn
+        _, "@alice:kazarma" ->
+          {:ok, %{"displayname" => "old_name", "avatar_url" => "mxc://server/old_avatar"}}
+      end)
+
+      assert :ok == new_event(profile_update_fixture("new_name", "mxc://server/new_avatar"))
+    end
+
+    test "it updates the avatar if it has changed" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, 3, fn ->
+        %{base_url: "http://matrix"}
+      end)
+      |> expect(:get_profile, fn
+        _, "@alice:kazarma" ->
+          {:ok, %{"displayname" => "old_name", "avatar_url" => "mxc://server/new_avatar"}}
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:update, fn
+        %{
+          actor: %ActivityPub.Actor{
+            ap_id: "http://kazarma/users/alice",
+            data: %{
+              "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/new_avatar"},
+              "id" => "http://kazarma/users/alice",
+              "name" => "old_name",
+              "preferredUsername" => "alice"
+            },
+            local: true,
+            username: "alice@kazarma"
+          },
+          cc: [],
+          object: %{
+            "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/new_avatar"},
+            "id" => "http://kazarma/users/alice",
+            "name" => "old_name",
+            "preferredUsername" => "alice",
+            "url" => "http://kazarma/users/alice"
+          },
+          to: [nil, "https://www.w3.org/ns/activitystreams#Public"]
+        } ->
+          :ok
+      end)
+
+      assert :ok == new_event(profile_update_fixture("old_name", "mxc://server/new_avatar"))
+    end
+
+    test "it updates the displayname if it has changed" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, 2, fn ->
+        %{base_url: "http://matrix"}
+      end)
+      |> expect(:get_profile, fn
+        _, "@alice:kazarma" ->
+          Kazarma.ActivityPub.TestServer
+          |> expect(:update, fn
+            %{
+              actor: %ActivityPub.Actor{
+                ap_id: "http://kazarma/users/alice",
+                data: %{
+                  "icon" => %{
+                    "url" => "http://matrix/_matrix/media/r0/download/server/old_avatar"
+                  },
+                  "id" => "http://kazarma/users/alice",
+                  "name" => "new_name",
+                  "preferredUsername" => "alice"
+                },
+                local: true,
+                username: "alice@kazarma"
+              },
+              cc: [],
+              object: %{
+                "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/old_avatar"},
+                "id" => "http://kazarma/users/alice",
+                "name" => "new_name",
+                "preferredUsername" => "alice",
+                "url" => "http://kazarma/users/alice"
+              },
+              to: [nil, "https://www.w3.org/ns/activitystreams#Public"]
+            } ->
+              :ok
+          end)
+
+          {:ok, %{"displayname" => "new_name", "avatar_url" => "mxc://server/old_avatar"}}
+      end)
+
+      assert :ok == new_event(profile_update_fixture("new_name", "mxc://server/old_avatar"))
+    end
+  end
+
   def message_fixture do
     %Event{
       sender: "@bob:kazarma",

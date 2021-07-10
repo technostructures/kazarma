@@ -79,7 +79,9 @@ defmodule Kazarma.ActivityPub.Actor do
         ActivityPub.Actor.get_by_username(localpart)
 
       {:remote, localpart, remote_domain} ->
-        ActivityPub.Actor.get_or_fetch_by_username("#{localpart}@#{remote_domain}")
+        ActivityPub.Actor.get_or_fetch_by_username(
+          "#{localpart}=#{remote_domain}@#{Kazarma.Address.domain()}"
+        )
 
       {:error, :invalid_address} ->
         {:error, :invalid_address}

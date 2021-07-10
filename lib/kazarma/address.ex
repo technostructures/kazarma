@@ -14,7 +14,7 @@ defmodule Kazarma.Address do
   end
 
   def parse_ap_username(username) do
-    regex = ~r/(?<localpart>[a-z0-9_\.-]+)@(?<domain>[a-z0-9\.-]+)/
+    regex = ~r/(?<localpart>[a-z0-9_\.-=]+)@(?<domain>[a-z0-9\.-]+)/
     sub_regex = ~r/(?<localpart>[a-z0-9_\.-]+)=(?<domain>[a-z0-9\.-]+)/
 
     username =
