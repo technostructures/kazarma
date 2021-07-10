@@ -7,14 +7,14 @@ defmodule Kazarma.ActivityPub.ActorTest do
   describe "ActivityPub request for a local user (get_actor_by_username/1)" do
     setup :verify_on_exit!
 
-    test "when asked for an existing matrix users returns the corresponding actor" do
+    test "when asked for an existing matrix users returns the corresponding actor and persists it in database" do
       Kazarma.Matrix.TestClient
       |> expect(:client, 2, fn -> %{base_url: "http://matrix"} end)
       |> expect(:get_profile, fn _, "@alice:kazarma" ->
         {:ok, %{"displayname" => "Alice", "avatar_url" => "mxc://server/image_id"}}
       end)
 
-      assert {:ok, actor} = get_actor_by_username("alice")
+      assert {:ok, %{keys: keys} = actor} = get_actor_by_username("alice")
 
       assert %ActivityPub.Actor{
                local: true,
@@ -40,6 +40,37 @@ defmodule Kazarma.ActivityPub.ActorTest do
                  }
                }
              } = actor
+
+      assert %{
+               data: %{
+                 "ap_data" => %{
+                   "preferredUsername" => "alice",
+                   "id" => "http://kazarma/pub/actors/alice",
+                   "type" => "Person",
+                   "name" => "Alice",
+                   "icon" => %{
+                     "type" => "Image",
+                     "url" => "http://matrix/_matrix/media/r0/download/server/image_id"
+                   }
+                 },
+                 "keys" => ^keys
+               }
+             } = Kazarma.Matrix.Bridge.get_user_by_local_id("@alice:kazarma")
+
+      assert {:ok,
+              %{
+                data: %{
+                  "preferredUsername" => "alice",
+                  "id" => "http://kazarma/pub/actors/alice",
+                  "type" => "Person",
+                  "name" => "Alice",
+                  "icon" => %{
+                    "type" => "Image",
+                    "url" => "http://matrix/_matrix/media/r0/download/server/image_id"
+                  }
+                },
+                keys: ^keys
+              }} = get_actor_by_username("alice")
     end
 
     test "when asked for a nonexisting matrix users returns an error tuple" do

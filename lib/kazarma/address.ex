@@ -5,12 +5,17 @@ defmodule Kazarma.Address do
   require Logger
 
   def domain, do: Application.fetch_env!(:activity_pub, :domain)
+  def url_domain, do: URI.parse(Application.fetch_env!(:activity_pub, :base_url)).host
+
+  def get_username_localpart(username) do
+    username
+    |> String.replace_suffix("@#{Kazarma.Address.domain()}", "")
+    |> String.replace_leading("@", "")
+  end
 
   def parse_ap_username(username) do
-    regex = ~r/(?<localpart>[a-z0-9_\.-]+)@(?<domain>[a-z0-9\.-]+)/
+    regex = ~r/(?<localpart>[a-z0-9_\.-=]+)@(?<domain>[a-z0-9\.-]+)/
     sub_regex = ~r/(?<localpart>[a-z0-9_\.-]+)=(?<domain>[a-z0-9\.-]+)/
-
-    domain = domain()
 
     username =
       if String.contains?(username, "@") do
@@ -19,25 +24,22 @@ defmodule Kazarma.Address do
         "#{username}@#{domain()}"
       end
 
-    case Regex.named_captures(regex, username) do
-      %{"localpart" => localpart, "domain" => ^domain} ->
-        # local Matrix user
-        case Regex.named_captures(sub_regex, localpart) do
-          %{"localpart" => sub_localpart, "domain" => sub_domain} ->
-            # remote Matrix user
-            {:remote_matrix, sub_localpart, sub_domain}
+    %{"localpart" => localpart, "domain" => domain} = Regex.named_captures(regex, username)
 
-          nil ->
-            # local Matrix user
-            {:local_matrix, localpart}
-        end
+    if domain in [domain(), url_domain()] do
+      # local ActivityPub user (puppet)
+      case Regex.named_captures(sub_regex, localpart) do
+        %{"localpart" => sub_localpart, "domain" => sub_domain} ->
+          # remote Matrix user
+          {:remote_matrix, sub_localpart, sub_domain}
 
-      %{"localpart" => localpart, "domain" => remote_domain} ->
-        # remote ActivityPub user
-        {:remote, localpart, remote_domain}
-
-      nil ->
-        {:error, :invalid_address}
+        nil ->
+          # local Matrix user
+          {:local_matrix, localpart}
+      end
+    else
+      # remote ActivityPub user
+      {:remote, localpart, domain}
     end
   end
 
@@ -74,8 +76,8 @@ defmodule Kazarma.Address do
   end
 
   def parse_matrix_id(user_id) do
-    regex = ~r/@(?<localpart>[a-z0-9_\.-=]+):(?<domain>[a-z0-9\.-]+)/
-    sub_regex = ~r/ap_(?<localpart>[a-z0-9_\.-]+)=(?<domain>[a-z0-9\.-]+)/
+    regex = ~r/@(?<localpart>[a-z0-9_.\-=]+):(?<domain>[a-z0-9\.-]+)/
+    sub_regex = ~r/ap_(?<localpart>[a-z0-9_.\-]+)=(?<domain>[a-z0-9\.-]+)/
     domain = domain()
 
     case Regex.named_captures(regex, user_id) do

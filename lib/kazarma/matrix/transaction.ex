@@ -71,9 +71,99 @@ defmodule Kazarma.Matrix.Transaction do
     :ok
   end
 
+  def new_event(%Event{
+        type: "m.room.member",
+        content: %{"membership" => "join"},
+        room_id: room_id,
+        sender: _sender,
+        state_key: "@ap_" <> _rest = user_id
+      }) do
+    :ok
+  end
+
+  def new_event(%Event{
+        type: "m.room.member",
+        # %{"avatar_url" => avatar_url, "displayname" => displayname},
+        content: content,
+        room_id: room_id,
+        sender: _sender,
+        state_key: user_id
+      }) do
+    Logger.debug("Maybe it's a profile change")
+
+    with {:ok, %ActivityPub.Actor{local: true} = actor} <-
+           Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id) do
+      bridge_profile_change(user_id, actor, content)
+    end
+
+    :ok
+  end
+
   def new_event(%Event{type: type} = event) do
     Logger.debug("Received #{type} from Synapse")
     Logger.debug(inspect(event))
+  end
+
+  defp bridge_profile_change(matrix_id, actor, content) do
+    IO.inspect("bridge profile change")
+
+    with [_ | _] = changed_profile_parts <-
+           Enum.filter(content, fn
+             {"displayname", displayname} ->
+               displayname != actor.data["name"]
+
+             {"avatar_url", avatar_url} ->
+               Kazarma.Matrix.Client.get_media_url(avatar_url) != actor.data["icon"]["url"]
+
+             _ ->
+               false
+           end),
+         {:ok, profile} <- Kazarma.Matrix.Client.get_profile(matrix_id),
+         [_ | _] = changed_profile_parts2 <-
+           Enum.filter(changed_profile_parts, fn
+             {"displayname", displayname} ->
+               displayname == profile["displayname"]
+
+             {"avatar_url", avatar_url} ->
+               avatar_url == profile["avatar_url"]
+
+             _ ->
+               false
+           end),
+         actor <-
+           Enum.reduce(changed_profile_parts2, actor, fn
+             {"displayname", displayname}, acc ->
+               Kazarma.ActivityPub.Actor.set_displayname(acc, displayname)
+
+             {"avatar_url", avatar_url}, acc ->
+               Kazarma.ActivityPub.Actor.set_avatar_url(
+                 acc,
+                 Kazarma.Matrix.Client.get_media_url(avatar_url)
+               )
+
+             _, acc ->
+               acc
+           end) do
+      %{
+        to: [actor.data["followers"], "https://www.w3.org/ns/activitystreams#Public"],
+        cc: [],
+        actor: actor,
+        object: ActivityPubWeb.ActorView.render("actor.json", %{actor: actor})
+      }
+      |> Kazarma.ActivityPub.update()
+
+      ActivityPub.Actor.set_cache(actor)
+
+      Kazarma.Matrix.Bridge.get_user_by_remote_id(actor.ap_id)
+      |> Kazarma.Matrix.Bridge.update_user(%{
+        "data" => %{"ap_data" => actor.data, "keys" => actor.keys}
+      })
+
+      :ok
+    else
+      _ ->
+        :ok
+    end
   end
 
   defp is_tagged_message(%Event{content: %{"body" => body}}) do

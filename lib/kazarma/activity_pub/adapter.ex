@@ -19,12 +19,11 @@ defmodule Kazarma.ActivityPub.Adapter do
   @impl ActivityPub.Adapter
   def update_local_actor(%Actor{ap_id: ap_id} = actor, data) do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_local_actor/2")
-    # Logger.debug(inspect(actor))
-    # Logger.debug(inspect(data))
+    Logger.error("this should no longer happen")
+    Logger.debug(inspect(actor))
+    Logger.debug(inspect(data))
 
-    {:ok, _updated} = Kazarma.Matrix.Bridge.upsert_user(%{"data" => data}, remote_id: ap_id)
-
-    {:ok, Map.merge(actor, data)}
+    {:ok, actor}
   end
 
   @impl ActivityPub.Adapter
@@ -98,27 +97,27 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (other activity)")
     Logger.debug(inspect(object))
 
-    # :ok
-    raise "handle_activity/1: not implemented"
+    :ok
+    # raise "handle_activity/1: not implemented"
   end
 
   @impl true
-  def get_actor_by_id(_id) do
-    Logger.error("get_actor_by_id called")
+  def get_actor_by_id(id) do
+    Logger.error("get_actor_by_id called (#{id})")
 
     {:error, :not_found}
   end
 
   @impl true
   def get_follower_local_ids(_actor) do
-    # []
-    raise "get_follower_local_ids/1: not implemented"
+    []
+    # raise "get_follower_local_ids/1: not implemented"
   end
 
   @impl true
   def get_following_local_ids(_actor) do
-    # []
-    raise "get_following_local_ids/1: not implemented"
+    []
+    # raise "get_following_local_ids/1: not implemented"
   end
 
   @impl true
