@@ -41,14 +41,16 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   def forward_to_matrix(%{
         data: %{"to" => to},
         object: %Object{
-          data: %{
-            "source" => source,
-            "actor" => from,
-            "conversation" => conversation
-          }
+          data:
+            %{
+              "actor" => from,
+              "conversation" => conversation
+            } = object_data
         }
       }) do
     Logger.debug("Received Note activity")
+
+    source = object_data["source"] || object_data["content"]
 
     with {:ok, from} <- Address.ap_id_to_matrix(from),
          to =
