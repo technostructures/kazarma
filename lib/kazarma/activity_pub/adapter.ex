@@ -27,7 +27,9 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl ActivityPub.Adapter
-  def maybe_create_remote_actor(%Actor{username: username, data: %{"name" => name} = data}) do
+  def maybe_create_remote_actor(
+        %Actor{username: username, ap_id: ap_id, data: %{"name" => name} = data} = actor
+      ) do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
@@ -37,6 +39,12 @@ defmodule Kazarma.ActivityPub.Adapter do
       Kazarma.Matrix.Client.put_displayname(matrix_id, name)
       avatar_url = get_in(data, ["icon", "url"])
       if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
+
+      Kazarma.Matrix.Bridge.create_user(%{
+        local_id: matrix_id,
+        remote_id: ap_id,
+        data: %{}
+      })
 
       :ok
     end
@@ -49,18 +57,20 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_remote_actor/1")
     Logger.debug(inspect(changeset))
 
-    {:ok, matrix_id} = Kazarma.Address.ap_id_to_matrix(previous["id"])
+    with %{local_id: matrix_id} <- Kazarma.Matrix.Bridge.get_user_by_remote_id(previous["id"]) do
+      set_if_changed(previous["name"], changes["name"], fn name ->
+        Kazarma.Matrix.Client.put_displayname(matrix_id, name)
+      end)
 
-    set_if_changed(previous["name"], changes["name"], fn name ->
-      Kazarma.Matrix.Client.put_displayname(matrix_id, name)
-    end)
-
-    set_if_changed(previous["icon"]["url"], changes["icon"]["url"], fn avatar_url ->
-      Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
-    end)
+      set_if_changed(previous["icon"]["url"], changes["icon"]["url"], fn avatar_url ->
+        Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
+      end)
+    end
 
     :ok
   end
+
+  def update_remote_actor(_), do: :ok
 
   @impl ActivityPub.Adapter
   # Mastodon style message
