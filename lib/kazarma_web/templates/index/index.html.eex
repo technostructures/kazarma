@@ -1,6 +1,6 @@
 <div class="card shadow-lg side bg-base-100">
   <div class="card-body">
-    <%= gettext("presentation") %>
+    <%= gettext("This a public Kazarma instance.") %>
   </div>
 </div>
 

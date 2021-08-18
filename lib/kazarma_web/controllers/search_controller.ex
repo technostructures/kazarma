@@ -9,7 +9,7 @@ defmodule KazarmaWeb.SearchController do
 
       _ ->
         conn
-        |> put_flash(:error, "Not found")
+        |> put_flash(:error, gettext("User not found"))
         |> redirect(to: Routes.index_path(conn, :index))
     end
   end

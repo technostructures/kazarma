@@ -19,7 +19,7 @@
             <div class="flex flex-row items-center justify-between space-x-2">
               <div class="flex-1 space-x-2">
                 <div class="form-control">
-                  <%= text_input f, :address, class: "w-full input input-bordered" %>
+                  <%= text_input f, :address, placeholder: gettext("@alice:matrix.org / bob@mastodon.social / https://mastodon.social/users/bob"), class: "w-full input input-bordered" %>
                 </div>
               </div>
               <div class="flex-none">

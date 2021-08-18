@@ -29,7 +29,7 @@
 
       <div class="form-control">
         <label class="label">
-          <span class="label-text">Username</span>
+          <span class="label-text"><%= gettext("Username") %></span>
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
           <input type="text" class="flex-grow input input-bordered" value="<%= matrix_username(@actor) %>" readonly="readonly">
@@ -51,7 +51,7 @@
     <div class="flex flex-col space-y-2">
       <div class="form-control">
         <label class="label">
-          <span class="label-text">ID</span>
+          <span class="label-text"><%= gettext("ID") %></span>
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
           <input type="text" class="flex-grow input input-bordered" value="<%= ap_id(@actor) %>" readonly="readonly">
@@ -64,7 +64,7 @@
 
       <div class="form-control">
         <label class="label">
-          <span class="label-text">Username</span>
+          <span class="label-text"><%= gettext("Username") %></span>
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
           <input type="text" class="flex-grow input input-bordered" value="<%= ap_username(@actor) %>" readonly="readonly">
