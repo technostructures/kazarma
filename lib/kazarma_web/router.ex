@@ -36,7 +36,15 @@ defmodule KazarmaWeb.Router do
     end
   end
 
-  MatrixAppServiceWeb.Routes.routes(Application.get_env(:matrix_app_service, :app_service))
+  MatrixAppServiceWeb.Routes.routes(
+    base_url: :config,
+    access_token: :config,
+    homeserver_token: :config,
+    transaction_adapter: Kazarma.Matrix.Transaction,
+    room_adapter: Kazarma.Matrix.Room,
+    user_adapter: Kazarma.Matrix.User,
+    path: "/matrix"
+  )
 
   # Enables LiveDashboard only for development
   #
