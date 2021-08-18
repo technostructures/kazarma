@@ -82,6 +82,8 @@ config :matrix_app_service, :app_service,
   user_adapter: Kazarma.Matrix.User,
   path: "/matrix"
 
+config :kazarma, KazarmaWeb.Gettext, default_locale: "en", locales: ~w(en fr)
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

@@ -15,6 +15,12 @@ defmodule KazarmaWeb.Router do
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
+
+    plug Cldr.Plug.SetLocale,
+      apps: [cldr: KazarmaWeb.Cldr, gettext: KazarmaWeb.Gettext],
+      from: [:query, :path, :body, :cookie, :accept_language],
+      param: "locale"
+
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
