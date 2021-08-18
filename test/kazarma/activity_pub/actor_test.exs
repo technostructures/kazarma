@@ -126,12 +126,8 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
     test "it update the puppet profile" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn -> :client end)
       |> expect(:client, 3, fn
         [user_id: "@alice:kazarma"] -> :client_alice
-      end)
-      |> expect(:get_profile, fn :client, "@alice:kazarma" ->
-        {:ok, %{"displayname" => "Alice"}}
       end)
       |> expect(:put_displayname, fn
         :client_alice, "@alice:kazarma", "new_name" -> :ok
@@ -140,6 +136,12 @@ defmodule Kazarma.ActivityPub.ActorTest do
       |> expect(:put_avatar_url, fn :client_alice, "@alice:kazarma", "mxc://server/media_id" ->
         :ok
       end)
+
+      {:ok, _user} =
+        Kazarma.Matrix.Bridge.create_user(%{
+          local_id: "@alice:kazarma",
+          remote_id: "http://kazarma/pub/actors/alice"
+        })
 
       assert :ok =
                update_remote_actor(%Ecto.Changeset{
