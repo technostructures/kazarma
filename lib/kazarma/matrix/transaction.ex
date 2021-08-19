@@ -74,9 +74,8 @@ defmodule Kazarma.Matrix.Transaction do
   def new_event(%Event{
         type: "m.room.member",
         content: %{"membership" => "join"},
-        room_id: room_id,
         sender: _sender,
-        state_key: "@ap_" <> _rest = user_id
+        state_key: "@ap_" <> _rest
       }) do
     :ok
   end
@@ -85,7 +84,6 @@ defmodule Kazarma.Matrix.Transaction do
         type: "m.room.member",
         # %{"avatar_url" => avatar_url, "displayname" => displayname},
         content: content,
-        room_id: room_id,
         sender: _sender,
         state_key: user_id
       }) do

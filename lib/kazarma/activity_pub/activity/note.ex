@@ -5,7 +5,6 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   require Logger
   alias ActivityPub.Object
   alias Kazarma.Address
-  alias Kazarma.Matrix.Bridge
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
 
