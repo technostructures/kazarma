@@ -27,9 +27,11 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl ActivityPub.Adapter
-  def maybe_create_remote_actor(
-        %Actor{username: username, ap_id: ap_id, data: %{"name" => name} = data}
-      ) do
+  def maybe_create_remote_actor(%Actor{
+        username: username,
+        ap_id: ap_id,
+        data: %{"name" => name} = data
+      }) do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
