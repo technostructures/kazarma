@@ -13,3 +13,17 @@ import "../css/app.css"
 //     import socket from "./socket"
 //
 import "phoenix_html"
+
+
+// copy buttons in actor view
+
+const copyButtons = document.getElementsByClassName("btn-copy")
+
+Array.from(copyButtons).forEach(function (button) {
+  const textField = document.getElementById(button.dataset.copyId)
+
+  button.addEventListener("click", function () {
+    textField.select()
+    document.execCommand("copy")
+  })
+})

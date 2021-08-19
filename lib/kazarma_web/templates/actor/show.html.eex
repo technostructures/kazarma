@@ -33,7 +33,7 @@
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
           <input type="text" id="matrix-username" aria-label="<%= gettext("Matrix username") %>" class="flex-grow input input-bordered" value="<%= matrix_username(@actor) %>" readonly="readonly">
-          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" class="btn btn-accent btn-outline">
+          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" data-copy-id="matrix-username" class="btn btn-copy btn-accent btn-outline">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
           <%= link [to: matrix_to(@actor), target: "_blank", class: "btn btn-accent"] do %>
@@ -55,7 +55,7 @@
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
           <input type="text" id="activitypub-id" aria-label="<%= gettext("ActivityPub ID") %>" class="flex-grow input input-bordered" value="<%= ap_id(@actor) %>" readonly="readonly">
-          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" class="btn btn-accent btn-outline">
+          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" data-copy-id="activitypub-id" class="btn btn-copy btn-accent btn-outline">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
           <%= link [to: ap_id(@actor), target: "_blank", aria_label: gettext("Open"), title: gettext("Open"), class: "btn btn-accent"], do: KazarmaWeb.IconView.external_link_icon() %>
@@ -68,7 +68,7 @@
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
           <input type="text" id="activitypub-username" aria-label="<%= gettext("ActivityPub username") %>" class="flex-grow input input-bordered" value="<%= ap_username(@actor) %>" readonly="readonly">
-          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" class="btn btn-accent btn-outline">
+          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" data-copy-id="activitypub-username" class="btn btn-copy btn-accent btn-outline">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
         </div>
