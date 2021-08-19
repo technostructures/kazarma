@@ -36,3 +36,34 @@ msgstr "Utilisateur non trouvé"
 #: lib/kazarma_web/templates/actor/show.html.eex:67
 msgid "Username"
 msgstr "Nom d'utilisateur"
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:36
+#: lib/kazarma_web/templates/actor/show.html.eex:36 lib/kazarma_web/templates/actor/show.html.eex:58
+#: lib/kazarma_web/templates/actor/show.html.eex:58 lib/kazarma_web/templates/actor/show.html.eex:71
+#: lib/kazarma_web/templates/actor/show.html.eex:71
+msgid "Copy"
+msgstr "Copier"
+
+#, elixir-format
+#: lib/kazarma_web/templates/layout/app.html.eex:32
+#: lib/kazarma_web/templates/layout/app.html.eex:32
+msgid "GitLab repository"
+msgstr "Dépôt GitLab"
+
+#, elixir-format
+#: lib/kazarma_web/templates/layout/app.html.eex:22
+msgid "Matrix or ActivityPub username, or ActivityPub ID"
+msgstr "Nom d'utilisateur Matrix ou ActivityPub, ou ID ActivityPub"
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:61
+#: lib/kazarma_web/templates/actor/show.html.eex:61
+msgid "Open"
+msgstr "Ouvrir"
+
+#, elixir-format
+#: lib/kazarma_web/templates/layout/app.html.eex:26
+#: lib/kazarma_web/templates/layout/app.html.eex:26
+msgid "Search"
+msgstr "Rechercher"

@@ -33,7 +33,7 @@
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
           <input type="text" class="flex-grow input input-bordered" value="<%= matrix_username(@actor) %>" readonly="readonly">
-          <button class="btn btn-accent btn-outline">
+          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" class="btn btn-accent btn-outline">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
           <%= link [to: matrix_to(@actor), target: "_blank", class: "btn btn-accent"] do %>
@@ -55,10 +55,10 @@
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
           <input type="text" class="flex-grow input input-bordered" value="<%= ap_id(@actor) %>" readonly="readonly">
-          <button class="btn btn-accent btn-outline">
+          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" class="btn btn-accent btn-outline">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
-          <%= link [to: ap_id(@actor), target: "_blank", class: "btn btn-accent"], do: KazarmaWeb.IconView.external_link_icon() %>
+          <%= link [to: ap_id(@actor), target: "_blank", aria_label: gettext("Open"), title: gettext("Open"), class: "btn btn-accent"], do: KazarmaWeb.IconView.external_link_icon() %>
         </div>
       </div>
 
@@ -68,7 +68,7 @@
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
           <input type="text" class="flex-grow input input-bordered" value="<%= ap_username(@actor) %>" readonly="readonly">
-          <button class="btn btn-accent btn-outline">
+          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" class="btn btn-accent btn-outline">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
         </div>
