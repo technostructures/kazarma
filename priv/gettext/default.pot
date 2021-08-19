@@ -1,0 +1,83 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new translations manually only if they're dynamic
+## translations that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here as no
+## effect: edit them in PO (.po) files instead.
+msgid ""
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/layout/app.html.eex:22
+msgid "@alice:matrix.org / bob@mastodon.social / https://mastodon.social/users/bob"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:54
+msgid "ID"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/index/index.html.eex:3
+msgid "This a public Kazarma instance."
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/controllers/search_controller.ex:12
+msgid "User not found"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:32
+#: lib/kazarma_web/templates/actor/show.html.eex:67
+msgid "Username"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:36
+#: lib/kazarma_web/templates/actor/show.html.eex:36 lib/kazarma_web/templates/actor/show.html.eex:58
+#: lib/kazarma_web/templates/actor/show.html.eex:58 lib/kazarma_web/templates/actor/show.html.eex:71
+#: lib/kazarma_web/templates/actor/show.html.eex:71
+msgid "Copy"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/layout/app.html.eex:32
+#: lib/kazarma_web/templates/layout/app.html.eex:32
+msgid "GitLab repository"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/layout/app.html.eex:22
+msgid "Matrix or ActivityPub username, or ActivityPub ID"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:61
+#: lib/kazarma_web/templates/actor/show.html.eex:61
+msgid "Open"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/layout/app.html.eex:26
+#: lib/kazarma_web/templates/layout/app.html.eex:26
+msgid "Search"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:57
+msgid "ActivityPub ID"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:70
+msgid "ActivityPub username"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:35
+msgid "Matrix username"
+msgstr ""

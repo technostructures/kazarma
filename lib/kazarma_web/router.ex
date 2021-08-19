@@ -12,6 +12,30 @@ defmodule KazarmaWeb.Router do
   #   pipe_through :api
   # end
 
+  pipeline :browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+
+    plug Cldr.Plug.SetLocale,
+      apps: [cldr: KazarmaWeb.Cldr, gettext: KazarmaWeb.Gettext],
+      from: [:query, :path, :body, :cookie, :accept_language],
+      param: "locale"
+
+    plug :fetch_flash
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+  end
+
+  scope "/", KazarmaWeb do
+    pipe_through :browser
+
+    get "/", IndexController, :index
+
+    if Application.compile_env(:kazarma, :html_search, false) do
+      post "/search", SearchController, :search
+    end
+  end
+
   MatrixAppServiceWeb.Routes.routes(Application.get_env(:matrix_app_service, :app_service))
 
   # Enables LiveDashboard only for development

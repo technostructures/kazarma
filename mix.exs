@@ -53,6 +53,7 @@ defmodule Kazarma.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.5"},
+      {:ex_cldr, "~> 2.23"},
       {:activity_pub, "~> 0.1.0", path: "./activity_pub"},
       {:polyjuice_client, path: "./polyjuice_client", override: true},
       {:matrix_app_service, "~> 0.2.0", path: "./matrix_app_service"},

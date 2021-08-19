@@ -141,6 +141,11 @@ defmodule Kazarma.ActivityPub.Adapter do
     raise "get_redirect_url/1: not implemented"
   end
 
+  @impl ActivityPub.Adapter
+  def actor_html(conn, username) do
+    KazarmaWeb.ActorController.show(conn, %{"username" => username})
+  end
+
   defp set_if_changed(previous_value, new_value, _update_fun)
        when previous_value == new_value or is_nil(new_value),
        do: nil

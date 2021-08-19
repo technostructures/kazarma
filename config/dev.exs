@@ -22,7 +22,15 @@ config :kazarma, KazarmaWeb.Endpoint,
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: []
+  watchers: [
+    node: [
+      "node_modules/webpack/bin/webpack.js",
+      "--mode=development",
+      "--watch",
+      "--watch-options-stdin",
+      cd: Path.expand("../assets", __DIR__)
+    ]
+  ]
 
 # ## SSL Support
 #
@@ -48,6 +56,17 @@ config :kazarma, KazarmaWeb.Endpoint,
 # configured to run both http and https servers on
 # different ports.
 
+# Watch static and templates for browser reloading.
+config :kazarma, KazarmaWeb.Endpoint,
+  live_reload: [
+    patterns: [
+      ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"priv/gettext/.*(po)$",
+      ~r"lib/phoenix_new_web/(live|views)/.*(ex)$",
+      ~r"lib/phoenix_new_web/templates/.*(eex)$"
+    ]
+  ]
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
@@ -68,3 +87,7 @@ config :matrix_app_service, :app_service,
 
 config :activity_pub, :base_url, "http://kazarma.kazarma.local"
 config :activity_pub, :domain, "kazarma.local"
+
+config :kazarma, bridge_remote_matrix_users: true
+config :kazarma, html_search: true
+config :kazarma, html_actor_view_include_remote: true
