@@ -28,11 +28,11 @@
       <h3 class="text-2xl text-center">Matrix</h3>
 
       <div class="form-control">
-        <label class="label">
+        <label for="matrix-username" class="label">
           <span class="label-text"><%= gettext("Username") %></span>
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
-          <input type="text" class="flex-grow input input-bordered" value="<%= matrix_username(@actor) %>" readonly="readonly">
+          <input type="text" id="matrix-username" aria-label="<%= gettext("Matrix username") %>" class="flex-grow input input-bordered" value="<%= matrix_username(@actor) %>" readonly="readonly">
           <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" class="btn btn-accent btn-outline">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
@@ -50,11 +50,11 @@
 
     <div class="flex flex-col space-y-2">
       <div class="form-control">
-        <label class="label">
+        <label for="activitypub-id" class="label">
           <span class="label-text"><%= gettext("ID") %></span>
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
-          <input type="text" class="flex-grow input input-bordered" value="<%= ap_id(@actor) %>" readonly="readonly">
+          <input type="text" id="activitypub-id" aria-label="<%= gettext("ActivityPub ID") %>" class="flex-grow input input-bordered" value="<%= ap_id(@actor) %>" readonly="readonly">
           <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" class="btn btn-accent btn-outline">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
@@ -63,11 +63,11 @@
       </div>
 
       <div class="form-control">
-        <label class="label">
+        <label for="activitypub-username" class="label">
           <span class="label-text"><%= gettext("Username") %></span>
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
-          <input type="text" class="flex-grow input input-bordered" value="<%= ap_username(@actor) %>" readonly="readonly">
+          <input type="text" id="activitypub-username" aria-label="<%= gettext("ActivityPub username") %>" class="flex-grow input input-bordered" value="<%= ap_username(@actor) %>" readonly="readonly">
           <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" class="btn btn-accent btn-outline">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>

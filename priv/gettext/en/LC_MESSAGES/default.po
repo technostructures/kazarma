@@ -67,3 +67,18 @@ msgstr ""
 #: lib/kazarma_web/templates/layout/app.html.eex:26
 msgid "Search"
 msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:57
+msgid "ActivityPub ID"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:70
+msgid "ActivityPub username"
+msgstr ""
+
+#, elixir-format
+#: lib/kazarma_web/templates/actor/show.html.eex:35
+msgid "Matrix username"
+msgstr ""
