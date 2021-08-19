@@ -87,3 +87,7 @@ config :matrix_app_service, :app_service,
 
 config :activity_pub, :base_url, "http://kazarma.kazarma.local"
 config :activity_pub, :domain, "kazarma.local"
+
+config :kazarma, bridge_remote_matrix_users: true
+config :kazarma, html_search: true
+config :kazarma, html_actor_view_include_remote: true

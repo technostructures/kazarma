@@ -84,6 +84,11 @@ config :matrix_app_service, :app_service,
 
 config :kazarma, KazarmaWeb.Gettext, default_locale: "en", locales: ~w(en fr)
 
+# @TODO not implemented
+config :kazarma, bridge_remote_matrix_users: false
+config :kazarma, html_search: false
+config :kazarma, html_actor_view_include_remote: false
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

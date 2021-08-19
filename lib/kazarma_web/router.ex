@@ -30,7 +30,10 @@ defmodule KazarmaWeb.Router do
     pipe_through :browser
 
     get "/", IndexController, :index
-    post "/search", SearchController, :search
+
+    if Application.compile_env(:kazarma, :html_search, false) do
+      post "/search", SearchController, :search
+    end
   end
 
   MatrixAppServiceWeb.Routes.routes(Application.get_env(:matrix_app_service, :app_service))

@@ -3,7 +3,11 @@ defmodule Kazarma do
   ![overview](assets/overview.png)
   """
 
-  def search_user("http" <> _ = address) do
+  def search_user("http://" <> _ = address) do
+    ActivityPub.Actor.get_or_fetch_by_ap_id(address)
+  end
+
+  def search_user("https://" <> _ = address) do
     ActivityPub.Actor.get_or_fetch_by_ap_id(address)
   end
 
