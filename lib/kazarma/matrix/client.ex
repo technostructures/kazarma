@@ -18,7 +18,7 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def register_puppet(localpart, remote_domain) do
-    register("ap_#{localpart}=#{remote_domain}")
+    register("#{Kazarma.Address.puppet_prefix()}#{localpart}=#{remote_domain}")
   end
 
   def join(user_id, room_id) do

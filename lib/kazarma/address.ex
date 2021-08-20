@@ -7,6 +7,8 @@ defmodule Kazarma.Address do
   def domain, do: Application.fetch_env!(:activity_pub, :domain)
   def url_domain, do: URI.parse(Application.fetch_env!(:activity_pub, :base_url)).host
 
+  def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "_ap")
+
   def get_username_localpart(username) do
     username
     |> String.replace_suffix("@#{Kazarma.Address.domain()}", "")
@@ -54,7 +56,7 @@ defmodule Kazarma.Address do
         {:ok, "@#{localpart}:#{domain()}"}
 
       {:remote, localpart, remote_domain} ->
-        {:ok, "@ap_#{localpart}=#{remote_domain}:#{domain()}"}
+        {:ok, "@#{puppet_prefix()}#{localpart}=#{remote_domain}:#{domain()}"}
 
       _ ->
         {:error, :not_found}
@@ -77,18 +79,19 @@ defmodule Kazarma.Address do
 
   def parse_matrix_id(user_id) do
     regex = ~r/@(?<localpart>[a-z0-9_.\-=]+):(?<domain>[a-z0-9\.-]+)/
-    sub_regex = ~r/ap_(?<localpart>[a-z0-9_.\-]+)=(?<domain>[a-z0-9\.-]+)/
+    sub_regex = ~r/(?<localpart>[a-z0-9_.\-]+)=(?<domain>[a-z0-9\.-]+)/
     domain = domain()
 
     case Regex.named_captures(regex, user_id) do
       %{"localpart" => localpart, "domain" => ^domain} ->
         # local Matrix user
-        case Regex.named_captures(sub_regex, localpart) do
+        case String.starts_with?(localpart, puppet_prefix()) &&
+               Regex.named_captures(sub_regex, localpart) do
           %{"localpart" => sub_localpart, "domain" => sub_domain} ->
             # bridged ActivityPub user
-            {:puppet, sub_localpart, sub_domain}
+            {:puppet, String.replace_prefix(sub_localpart, puppet_prefix(), ""), sub_domain}
 
-          nil ->
+          _ ->
             # real local user
             {:local, localpart}
         end
