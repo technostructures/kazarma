@@ -7,7 +7,7 @@ defmodule Kazarma.Address do
   def domain, do: Application.fetch_env!(:activity_pub, :domain)
   def url_domain, do: URI.parse(Application.fetch_env!(:activity_pub, :base_url)).host
 
-  def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "_ap")
+  def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "ap_")
 
   def get_username_localpart(username) do
     username

@@ -73,8 +73,8 @@ defmodule Kazarma.Matrix.Client do
 
   def get_direct_room(from_matrix_id, to_matrix_id) do
     with {:ok, data} <-
-           get_direct_rooms(to_matrix_id),
-         %{^from_matrix_id => rooms} when is_list(rooms) <- data do
+      get_direct_rooms(from_matrix_id),
+         %{^to_matrix_id => rooms} when is_list(rooms) <- data do
       {:ok, List.last(rooms)}
     else
       {:error, 404, _error} ->

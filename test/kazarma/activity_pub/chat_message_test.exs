@@ -49,23 +49,25 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
         :client_kazarma
       end)
       |> expect(:client, 2, fn
-        [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
+        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
       end)
       |> expect(:register, fn [
                                 username: "ap_alice=pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
                                 initial_device_display_name: "Kazarma"
                               ] ->
-        {:ok, %{"user_id" => "ap_alice=pleroma:kazarma"}}
+        {:ok, %{"user_id" => "@ap_alice=pleroma:kazarma"}}
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
+        #         :client_alice, "@ap_alice=pleroma:kazarma" ->
+        #         {:ok, %{"displayname" => "Alice"}}
       end)
-      |> expect(:put_displayname, fn :client_alice, "ap_alice=pleroma:kazarma", "Alice" ->
+      |> expect(:put_displayname, fn :client_alice, "@ap_alice=pleroma:kazarma", "Alice" ->
         :ok
       end)
-      |> expect(:get_data, fn :client_bob, "@bob:kazarma", "m.direct" ->
+      |> expect(:get_data, fn
+        :client_alice,  "@ap_alice=pleroma:kazarma", "m.direct" ->
         {:ok, %{}}
       end)
       |> expect(:create_room, fn
@@ -105,24 +107,23 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
         :client_kazarma
       end)
       |> expect(:client, 2, fn
-        [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
+        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
       end)
       |> expect(:register, fn [
                                 username: "ap_alice=pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
                                 initial_device_display_name: "Kazarma"
                               ] ->
-        {:ok, %{"user_id" => "ap_alice=pleroma:kazarma"}}
+        {:ok, %{"user_id" => "@ap_alice=pleroma:kazarma"}}
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
-      |> expect(:put_displayname, fn :client_alice, "ap_alice=pleroma:kazarma", "Alice" ->
+      |> expect(:put_displayname, fn :client_alice, "@ap_alice=pleroma:kazarma", "Alice" ->
         :ok
       end)
-      |> expect(:get_data, fn :client_bob, "@bob:kazarma", "m.direct" ->
-        {:ok, %{"@ap_alice=pleroma:kazarma" => ["!room:kazarma"]}}
+      |> expect(:get_data, fn :client_alice, "@ap_alice=pleroma:kazarma", "m.direct" ->
+        {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
       end)
       |> expect(:send_message, fn "!room:kazarma",
                                   {"hello \uFEFF", "hello \uFEFF"},
