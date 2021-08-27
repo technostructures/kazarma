@@ -5,7 +5,6 @@ defmodule Kazarma.Address do
   require Logger
 
   def domain, do: Application.fetch_env!(:activity_pub, :domain)
-  def url_domain, do: URI.parse(Application.fetch_env!(:activity_pub, :base_url)).host
 
   def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "ap_")
 
@@ -28,7 +27,7 @@ defmodule Kazarma.Address do
 
     %{"localpart" => localpart, "domain" => domain} = Regex.named_captures(regex, username)
 
-    if domain in [domain(), url_domain()] do
+    if domain in [domain(), KazarmaWeb.Endpoint.host()] do
       # local ActivityPub user (puppet)
       case Regex.named_captures(sub_regex, localpart) do
         %{"localpart" => sub_localpart, "domain" => sub_domain} ->

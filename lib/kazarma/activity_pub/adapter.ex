@@ -133,7 +133,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl true
-  def base_url, do: Application.get_env(:activity_pub, :base_url)
+  def base_url, do: KazarmaWeb.Endpoint.url()
 
   @impl true
   def domain, do: Application.get_env(:activity_pub, :domain)
