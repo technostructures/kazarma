@@ -49,7 +49,7 @@ defmodule Kazarma.Matrix.Transaction do
         type: "m.room.member",
         content: content,
         room_id: room_id,
-        sender: _sender,
+        sender: sender_id,
         state_key: user_id
       }) do
     case Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id) do
@@ -57,7 +57,7 @@ defmodule Kazarma.Matrix.Transaction do
         bridge_profile_change(user_id, actor, content)
 
       {:ok, %ActivityPub.Actor{local: false}} ->
-        accept_puppet_invitation(user_id, room_id, content)
+        accept_puppet_invitation(user_id, sender_id, room_id, content)
 
       _ ->
         :ok
@@ -71,15 +71,16 @@ defmodule Kazarma.Matrix.Transaction do
     Logger.debug(inspect(event))
   end
 
-  defp accept_puppet_invitation(user_id, room_id, %{"membership" => "invite", "is_direct" => true}) do
+  defp accept_puppet_invitation(user_id, sender_id, room_id, %{"membership" => "invite", "is_direct" => true}) do
     Kazarma.ActivityPub.Activity.ChatMessage.accept_puppet_invitation(user_id, room_id)
+    Kazarma.Matrix.Client.put_new_direct_room_data(user_id, sender_id, room_id)
   end
 
-  defp accept_puppet_invitation(user_id, room_id, %{"membership" => "invite"}) do
+  defp accept_puppet_invitation(user_id, _sender_id, room_id, %{"membership" => "invite"}) do
     Kazarma.ActivityPub.Activity.Note.accept_puppet_invitation(user_id, room_id)
   end
 
-  defp accept_puppet_invitation(_user_id, _room_id, _event_content), do: :ok
+  defp accept_puppet_invitation(_user_id, _sender_id, _room_id, _event_content), do: :ok
 
   defp bridge_profile_change(matrix_id, actor, content) do
     Logger.debug("bridge profile change")

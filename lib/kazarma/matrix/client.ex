@@ -88,19 +88,48 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def create_direct_room(from_matrix_id, to_matrix_id) do
-    @matrix_client.create_room(
-      [
-        visibility: :private,
-        name: nil,
-        topic: nil,
-        is_direct: true,
-        invite: [to_matrix_id],
-        room_version: "5"
-      ],
-      user_id: from_matrix_id
-    )
+    with {:ok, %{"room_id" => room_id}} <-
+           @matrix_client.create_room(
+             [
+               visibility: :private,
+               name: nil,
+               topic: nil,
+               is_direct: true,
+               invite: [to_matrix_id],
+               room_version: "5"
+             ],
+             user_id: from_matrix_id
+           ) do
+          put_new_direct_room_data(from_matrix_id, to_matrix_id, room_id)
 
-    # |> IO.inspect()
+      {:ok, %{"room_id" => room_id}}
+    else
+      error -> error
+    end
+  end
+
+  def put_new_direct_room_data(from_matrix_id, to_matrix_id, room_id) do
+    data =
+      case @matrix_client.get_data(
+             @matrix_client.client(user_id: from_matrix_id),
+             from_matrix_id,
+             "m.direct"
+           ) do
+        {:ok, data} -> data
+        _ -> %{}
+      end
+
+    new_data =
+      Map.update(data, to_matrix_id, [room_id], fn room_list ->
+        [room_id | room_list]
+      end)
+
+    @matrix_client.put_data(
+      @matrix_client.client(user_id: from_matrix_id),
+      from_matrix_id,
+      "m.direct",
+      new_data
+    )
   end
 
   def create_multiuser_room(creator, invites) do
