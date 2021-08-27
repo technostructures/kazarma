@@ -150,6 +150,7 @@ defmodule Kazarma.Matrix.Client do
     @matrix_client.send_message(room_id, {body <> " \ufeff", body <> " \ufeff"}, user_id: from_id)
   end
 
+  def get_media_url(nil), do: nil
   def get_media_url("mxc://" <> matrix_url) do
     [server_name, media_id] = String.split(matrix_url, "/", parts: 2)
 
