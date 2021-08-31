@@ -8,8 +8,55 @@ A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://githu
 
 ## Resources
 
+- [User guide](https://gitlab.com/kazarma/kazarma/-/wikis/User%20guide)
 - [API documentation](https://kazarma.gitlab.io/matrix_app_service.ex)
-- [Matrix](https://matrix.to/#/#kazarma:matrix.org?via=matrix.asso-fare.fr&via=matrix.org&via=t2bot.io)
+- [Matrix room](https://matrix.to/#/#kazarma:matrix.org?via=matrix.asso-fare.fr&via=matrix.org&via=t2bot.io)
+
+## Installation
+
+### With Docker Compose
+
+Use [this docker-compose file](./docker-compose.production.yml) (download it or clone the repository) and (download/copy) [.env.example](./.env.example) as `.env.production`, then modify it as explained below.
+
+Create an application service configuration file for your Matrix server. It should look like this (`url` points to your Kazarma instance, with the `/matrix` route):
+
+```yaml
+id: "Kazarma"
+url: "https://kazarma.domain/matrix/"
+as_token: "change_this"
+hs_token: "change_this"
+sender_localpart: "_kazarma"
+namespaces:
+  aliases:
+    - exclusive: true
+      regex: "#_ap_.+=.+:matrix_domain"
+  users:
+    - exclusive: true
+      regex: "@_ap_.+=.+:matrix_domain"
+    - exclusive: false
+      regex: "@.+:matrix_domain"
+```
+
+Run those commands:
+
+```bash
+docker-compose -f docker-compose.production.yml run kazarma eval "Kazarma.Release.migrate()"
+docker-compose -f docker-compose.production.yml up -d
+```
+
+### Configuration
+
+- `DATABASE_URL`: URL with `ecto://` scheme (`ecto://user:password@host:database`), as explained [here](https://hexdocs.pm/ecto/Ecto.Repo.html#module-urls)
+- `SECRET_KEY_BASE`: Phoenix's secret key base, used to sign session cookies. With Mix and Phoenix, it can be easily generated with `mix phx.gen.secret`.
+- `HOMESERVER_TOKEN`: Token defined in the application service configuration file, will be used to authenticate the Matrix server against Kazarma.
+- `ACCESS_TOKEN`: Token defined in the application service configuration file, will be used to authenticate Kazarma against the Matrix server.
+- `MATRIX_URL`: URL to the Matrix server.
+- `HOST`: Host for the Kazarma application, used to generate URLs.
+- `ACTIVITY_PUB_DOMAIN`: ActivityPub domain for actors. If different than the host, you need to serve a file at `domain/.well-known/host-meta`, containing a link to the real host, like [this](./infra/dev/delegation/host-meta)
+- `PUPPET_PREFIX`: Username prefix for Matrix puppet users that correspond to ActivityPub real actors.
+- `BRIDGE_REMOTE`: True or false, wether Kazarma should bridge Matrix users from different homeservers (than the one beside Kazarma), to the ActivityPub network.
+- `HTML_SEARCH`: True or false, wether to show the search field on Kazarma HTML pages.
+- `HTML_AP`: True or false, wether to display profiles for ActivityPub actors. It can help Matrix users to get the (puppet) Matrix ID to reach an ActivityPub actor.
 
 ## Development environment
 

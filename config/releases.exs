@@ -64,13 +64,13 @@ activity_pub_domain =
 
 config :activity_pub, :domain, activity_pub_domain
 
-puppet_prefix = System.get_env("PUPPET_PREFIX") || "ap_"
+puppet_prefix = System.get_env("PUPPET_PREFIX") || "_ap_"
 
 config :kazarma, prefix_puppet_username: puppet_prefix
 
-bridge_remote_matrix_users = !is_nil(System.get_env("BRIDGE_REMOTE"))
-html_search = !is_nil(System.get_env("HTML_SEARCH"))
-html_activity_pub = !is_nil(System.get_env("HTML_AP"))
+bridge_remote_matrix_users = System.get_env("BRIDGE_REMOTE") == "true"
+html_search = System.get_env("HTML_SEARCH") == "true"
+html_activity_pub = System.get_env("HTML_AP") == "true"
 
 config :kazarma, bridge_remote_matrix_users: bridge_remote_matrix_users
 config :kazarma, html_search: html_search
