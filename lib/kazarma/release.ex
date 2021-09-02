@@ -1,4 +1,8 @@
 defmodule Kazarma.Release do
+  @moduledoc """
+  Functions needed when deploying with releases.
+  Can be used like this: `kazarma eval "Kazarma.Release.migrate()"`
+  """
   @app :kazarma
 
   def migrate do
