@@ -71,8 +71,11 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
           {:ok, %{}}
       end)
       |> expect(:put_data, fn
-          :client_alice, "@ap_alice=pleroma:kazarma", "m.direct", %{"@bob:kazarma" => ["!room:kazarma"]} ->
-            :ok
+        :client_alice,
+        "@ap_alice=pleroma:kazarma",
+        "m.direct",
+        %{"@bob:kazarma" => ["!room:kazarma"]} ->
+          :ok
       end)
       |> expect(:create_room, fn
         [

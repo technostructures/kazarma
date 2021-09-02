@@ -73,7 +73,7 @@ defmodule Kazarma.Matrix.Client do
 
   def get_direct_room(from_matrix_id, to_matrix_id) do
     with {:ok, data} <-
-      get_direct_rooms(from_matrix_id),
+           get_direct_rooms(from_matrix_id),
          %{^to_matrix_id => rooms} when is_list(rooms) <- data do
       {:ok, List.last(rooms)}
     else
@@ -100,7 +100,7 @@ defmodule Kazarma.Matrix.Client do
              ],
              user_id: from_matrix_id
            ) do
-          put_new_direct_room_data(from_matrix_id, to_matrix_id, room_id)
+      put_new_direct_room_data(from_matrix_id, to_matrix_id, room_id)
 
       {:ok, %{"room_id" => room_id}}
     else
@@ -151,6 +151,7 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def get_media_url(nil), do: nil
+
   def get_media_url("mxc://" <> matrix_url) do
     [server_name, media_id] = String.split(matrix_url, "/", parts: 2)
 

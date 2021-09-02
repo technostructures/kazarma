@@ -95,7 +95,7 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
 
   defp get_or_create_direct_room(from_ap_id, to_ap_id) do
     with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_ap_id),
-      {:ok, to_matrix_id} <- Address.ap_id_to_matrix(to_ap_id),
+         {:ok, to_matrix_id} <- Address.ap_id_to_matrix(to_ap_id),
          {:error, :not_found} <-
            Kazarma.Matrix.Client.get_direct_room(from_matrix_id, to_matrix_id),
          {:ok, %{"room_id" => room_id}} <-

@@ -85,9 +85,12 @@ defmodule Kazarma.Matrix.TransactionTest do
           {:ok, %{}}
       end)
       |> expect(:put_data, fn
-          :client_puppet, "@ap_test_user_bob1=blob.cat:kazarma", "m.direct", %{"@alice:kazarma" => ["!direct_room:kazarma"]} ->
-            :ok
-        end)
+        :client_puppet,
+        "@ap_test_user_bob1=blob.cat:kazarma",
+        "m.direct",
+        %{"@alice:kazarma" => ["!direct_room:kazarma"]} ->
+          :ok
+      end)
 
       assert :ok == new_event(invitation_event_direct_fixture())
 

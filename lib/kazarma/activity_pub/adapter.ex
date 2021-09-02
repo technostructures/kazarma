@@ -37,7 +37,7 @@ defmodule Kazarma.ActivityPub.Adapter do
 
     with {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:remote]),
          {:ok, %{"user_id" => ^matrix_id}} <-
-        Kazarma.Matrix.Client.register(matrix_id) do
+           Kazarma.Matrix.Client.register(matrix_id) do
       Kazarma.Matrix.Client.put_displayname(matrix_id, name)
       avatar_url = get_in(data, ["icon", "url"])
       if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)

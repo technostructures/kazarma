@@ -71,7 +71,10 @@ defmodule Kazarma.Matrix.Transaction do
     Logger.debug(inspect(event))
   end
 
-  defp accept_puppet_invitation(user_id, sender_id, room_id, %{"membership" => "invite", "is_direct" => true}) do
+  defp accept_puppet_invitation(user_id, sender_id, room_id, %{
+         "membership" => "invite",
+         "is_direct" => true
+       }) do
     Kazarma.ActivityPub.Activity.ChatMessage.accept_puppet_invitation(user_id, room_id)
     Kazarma.Matrix.Client.put_new_direct_room_data(user_id, sender_id, room_id)
   end
