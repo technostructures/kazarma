@@ -51,10 +51,6 @@ defmodule Kazarma.ActivityPub.NoteTest do
       |> expect(:client, fn ->
         :client_kazarma
       end)
-      |> expect(:client, 1, fn
-        [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
-      end)
       |> expect(:register, fn [
                                 username: "ap_alice=pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
@@ -64,9 +60,6 @@ defmodule Kazarma.ActivityPub.NoteTest do
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:put_displayname, fn :client_alice, "ap_alice=pleroma:kazarma", "Alice" ->
-        :ok
       end)
       |> expect(:create_room, fn
         [
@@ -105,10 +98,6 @@ defmodule Kazarma.ActivityPub.NoteTest do
       |> expect(:client, fn ->
         :client_kazarma
       end)
-      |> expect(:client, 1, fn
-        [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
-      end)
       |> expect(:register, fn [
                                 username: "ap_alice=pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
@@ -118,9 +107,6 @@ defmodule Kazarma.ActivityPub.NoteTest do
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:put_displayname, fn :client_alice, "ap_alice=pleroma:kazarma", "Alice" ->
-        :ok
       end)
       |> expect(:send_message, fn "!room:kazarma",
                                   {"hello \uFEFF", "hello \uFEFF"},

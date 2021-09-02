@@ -48,7 +48,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       |> expect(:client, fn ->
         :client_kazarma
       end)
-      |> expect(:client, 2, fn
+      |> expect(:client, 4, fn
         [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
       end)
       |> expect(:register, fn [
@@ -66,9 +66,13 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       |> expect(:put_displayname, fn :client_alice, "@ap_alice=pleroma:kazarma", "Alice" ->
         :ok
       end)
-      |> expect(:get_data, fn
-        :client_alice,  "@ap_alice=pleroma:kazarma", "m.direct" ->
-        {:ok, %{}}
+      |> expect(:get_data, 2, fn
+        :client_alice, "@ap_alice=pleroma:kazarma", "m.direct" ->
+          {:ok, %{}}
+      end)
+      |> expect(:put_data, fn
+          :client_alice, "@ap_alice=pleroma:kazarma", "m.direct", %{"@bob:kazarma" => ["!room:kazarma"]} ->
+            :ok
       end)
       |> expect(:create_room, fn
         [

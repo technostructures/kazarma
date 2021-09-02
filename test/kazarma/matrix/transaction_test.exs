@@ -18,6 +18,7 @@ defmodule Kazarma.Matrix.TransactionTest do
       %Event{
         type: "m.room.member",
         content: %{"membership" => "invite", "is_direct" => true},
+        sender: "@alice:kazarma",
         room_id: "!direct_room:kazarma",
         state_key: "@ap_test_user_bob1=blob.cat:kazarma"
       }
@@ -61,7 +62,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when a puppet user is invited to a direct room a Bridge record is created and the room is joined" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 2, fn [user_id: "@ap_test_user_bob1=blob.cat:kazarma"] ->
+      |> expect(:client, 4, fn [user_id: "@ap_test_user_bob1=blob.cat:kazarma"] ->
         :client_puppet
       end)
       |> expect(:join, fn :client_puppet, "!direct_room:kazarma" ->
@@ -79,6 +80,14 @@ defmodule Kazarma.Matrix.TransactionTest do
         :client_puppet, "@ap_test_user_bob1=blob.cat:kazarma", "Bob" ->
           :ok
       end)
+      |> expect(:get_data, fn
+        :client_puppet, "@ap_test_user_bob1=blob.cat:kazarma", "m.direct" ->
+          {:ok, %{}}
+      end)
+      |> expect(:put_data, fn
+          :client_puppet, "@ap_test_user_bob1=blob.cat:kazarma", "m.direct", %{"@alice:kazarma" => ["!direct_room:kazarma"]} ->
+            :ok
+        end)
 
       assert :ok == new_event(invitation_event_direct_fixture())
 
