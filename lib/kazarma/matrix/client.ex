@@ -18,7 +18,7 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def register_puppet(localpart, remote_domain) do
-    register("ap_#{localpart}=#{remote_domain}")
+    register("#{Kazarma.Address.puppet_prefix()}#{localpart}=#{remote_domain}")
   end
 
   def join(user_id, room_id) do
@@ -73,8 +73,8 @@ defmodule Kazarma.Matrix.Client do
 
   def get_direct_room(from_matrix_id, to_matrix_id) do
     with {:ok, data} <-
-           get_direct_rooms(to_matrix_id),
-         %{^from_matrix_id => rooms} when is_list(rooms) <- data do
+           get_direct_rooms(from_matrix_id),
+         %{^to_matrix_id => rooms} when is_list(rooms) <- data do
       {:ok, List.last(rooms)}
     else
       {:error, 404, _error} ->
@@ -88,19 +88,48 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def create_direct_room(from_matrix_id, to_matrix_id) do
-    @matrix_client.create_room(
-      [
-        visibility: :private,
-        name: nil,
-        topic: nil,
-        is_direct: true,
-        invite: [to_matrix_id],
-        room_version: "5"
-      ],
-      user_id: from_matrix_id
-    )
+    with {:ok, %{"room_id" => room_id}} <-
+           @matrix_client.create_room(
+             [
+               visibility: :private,
+               name: nil,
+               topic: nil,
+               is_direct: true,
+               invite: [to_matrix_id],
+               room_version: "5"
+             ],
+             user_id: from_matrix_id
+           ) do
+      put_new_direct_room_data(from_matrix_id, to_matrix_id, room_id)
 
-    # |> IO.inspect()
+      {:ok, %{"room_id" => room_id}}
+    else
+      error -> error
+    end
+  end
+
+  def put_new_direct_room_data(from_matrix_id, to_matrix_id, room_id) do
+    data =
+      case @matrix_client.get_data(
+             @matrix_client.client(user_id: from_matrix_id),
+             from_matrix_id,
+             "m.direct"
+           ) do
+        {:ok, data} -> data
+        _ -> %{}
+      end
+
+    new_data =
+      Map.update(data, to_matrix_id, [room_id], fn room_list ->
+        [room_id | room_list]
+      end)
+
+    @matrix_client.put_data(
+      @matrix_client.client(user_id: from_matrix_id),
+      from_matrix_id,
+      "m.direct",
+      new_data
+    )
   end
 
   def create_multiuser_room(creator, invites) do
@@ -120,6 +149,8 @@ defmodule Kazarma.Matrix.Client do
   def send_tagged_message(room_id, from_id, body) do
     @matrix_client.send_message(room_id, {body <> " \ufeff", body <> " \ufeff"}, user_id: from_id)
   end
+
+  def get_media_url(nil), do: nil
 
   def get_media_url("mxc://" <> matrix_url) do
     [server_name, media_id] = String.split(matrix_url, "/", parts: 2)

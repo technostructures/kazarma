@@ -75,19 +75,12 @@ config :kazarma, Oban,
 config :kazarma, :matrix, client: MatrixAppService.Client
 config :kazarma, :activity_pub, server: ActivityPub
 
-# MatrixAppService configuration
-config :matrix_app_service, :app_service,
-  transaction_adapter: Kazarma.Matrix.Transaction,
-  room_adapter: Kazarma.Matrix.Room,
-  user_adapter: Kazarma.Matrix.User,
-  path: "/matrix"
-
 config :kazarma, KazarmaWeb.Gettext, default_locale: "en", locales: ~w(en fr)
 
 # @TODO not implemented
 config :kazarma, bridge_remote_matrix_users: false
-config :kazarma, html_search: false
-config :kazarma, html_actor_view_include_remote: false
+
+config :kazarma, prefix_puppet_username: "ap_"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

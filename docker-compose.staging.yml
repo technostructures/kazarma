@@ -1,0 +1,144 @@
+version: '3.7'
+
+volumes:
+  postgres_kazarma_files:
+  synapse_files:
+
+services:
+  
+  kazarma:
+    # build: .
+    # hostname: kazarma.kazarma.local
+    # ports:
+    #   - "4000:4000"
+    image: kazarma_staging
+    # restart: unless-stopped
+    depends_on:
+      - postgres_kazarma
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.kazarma.loadbalancer.server.port=4000
+      - traefik.http.routers.kazarma.entryPoints=http
+      - traefik.http.routers.kazarma.rule=Host(`staging.kazar.ma`)
+      - traefik.http.routers.kazarma.middlewares=https_redirect
+      - traefik.http.routers.kazarmas.entryPoints=https
+      - traefik.http.routers.kazarmas.rule=Host(`staging.kazar.ma`)
+      - traefik.http.routers.kazarmas.tls=true
+      - traefik.http.routers.kazarmas.tls.certresolver=myresolver
+    env_file: .env.staging
+
+  synapse:
+    image: matrixdotorg/synapse:v1.31.0
+    # domainname: matrix.local
+    # Since synapse does not retry to connect to the database, restart upon
+    # failure
+    restart: unless-stopped
+    # Need to do it via YAML
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.matrix.loadbalancer.server.port=8008
+      - traefik.http.routers.matrix.entryPoints=http
+      - traefik.http.routers.matrix.rule=Host(`matrix.staging.kazar.ma`)
+      - traefik.http.routers.matrix.middlewares=https_redirect
+      - traefik.http.routers.matrixs.entryPoints=https
+      - traefik.http.routers.matrixs.rule=Host(`matrix.staging.kazar.ma`)
+      - traefik.http.routers.matrixs.tls=true
+      - traefik.http.routers.matrixs.tls.certresolver=myresolver
+      - traefik.http.routers.matrix_federation.entryPoints=matrix_federation
+      - traefik.http.routers.matrix_federation.rule=Host(`matrix.staging.kazar.ma`)
+      - traefik.http.routers.matrix_federation.tls=true
+      - traefik.http.routers.matrix_federation.tls.certresolver=myresolver
+    environment:
+      - SYNAPSE_SERVER_NAME=staging.kazar.ma
+      - SYNAPSE_REPORT_STATS=no
+      - SYNAPSE_ENABLE_REGISTRATION=no
+      - SYNAPSE_LOG_LEVEL=INFO
+      # - SYNAPSE_LOG_LEVEL=DEBUG
+      # - POSTGRES_HOST=postgres_synapse
+      # - POSTGRES_USER=synapse
+      # - POSTGRES_PASSWORD=postgres
+    volumes:
+      - synapse_files:/data
+      - /opt/kazarma/homeserver.yaml:/data/homeserver.yaml
+      - /opt/kazarma/kazarma.yaml:/data/appservices/kazarma.yaml
+      - /opt/kazarma/log.config:/data/log.config
+    # depends_on:
+    #   - postgres_synapse
+    # ports:
+    #   - 8008:8008/tcp
+
+  delegation:
+    image: nginx:1.19
+    hostname: kazarma.local
+    volumes:
+      - /opt/kazarma/matrix:/usr/share/nginx/html/.well-known/matrix:ro
+      # - /home/kazarma/infra/delegation/host-meta:/usr/share/nginx/html/.well-known/host-meta:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.delegation.loadbalancer.server.port=80
+      - traefik.http.routers.delegation.entryPoints=http
+      - traefik.http.routers.delegation.rule=Host(`staging.kazar.ma`) && PathPrefix(`/.well-known/matrix`)
+      - traefik.http.middlewares.https_redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.https_redirect.redirectscheme.permanent=true
+      - traefik.http.routers.delegation.middlewares=https_redirect
+      - traefik.http.routers.delegations.entryPoints=https
+      - traefik.http.routers.delegations.rule=Host(`staging.kazar.ma`) && PathPrefix(`/.well-known/matrix`)
+      - traefik.http.routers.delegations.tls=true
+      - traefik.http.routers.delegations.tls.certresolver=myresolver
+
+  traefik:
+    image: traefik:v2.2.0
+    ports:
+      - 80:80
+      - 443:443
+      - 8448:8448
+    command:
+      - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
+      - --entrypoints.matrix_federation.address=:8448
+      - --entrypoints.http.forwardedHeaders.insecure
+      - --entrypoints.https.forwardedHeaders.insecure
+      - --entrypoints.matrix_federation.forwardedHeaders.insecure
+      # - --entrypoints.http.http.redirections.entryPoint.to=https
+      # - --entrypoints.http.http.redirections.entryPoint.scheme=https
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      # - --api.insecure
+      # - --providers.file.filename=/config/traefik.yaml
+      - --certificatesresolvers.myresolver.acme.email=pierre@pdelacroix.com
+      - --certificatesresolvers.myresolver.acme.storage=acme.json
+      - --certificatesresolvers.myresolver.acme.tlschallenge=true
+    # hostname: pleroma.local
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # - /dev/null:/traefik.toml
+    networks:
+      default:
+        aliases:
+          - staging.kazar.ma
+          - matrix.staging.kazar.ma
+
+
+  postgres_kazarma:
+    image: postgres:12-alpine
+    domainname: postgres_kazarma
+    labels:
+      - traefik.enable=false
+    environment:
+      - POSTGRES_USER=kazarma
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_kazarma_files:/var/lib/postgresql/data
+
+  # postgres_synapse:
+  #   # image: docker.io/postgres:10-alpine
+  #   image: postgres:12-alpine
+  #   domainname: postgres_synapse
+  #   labels:
+  #     - traefik.enable=false
+  #   environment:
+  #     - POSTGRES_USER=synapse
+  #     - POSTGRES_PASSWORD=postgres
+  #     - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+  #   volumes:
+  #     - postgres_synapse_files:/var/lib/postgresql/data

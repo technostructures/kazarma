@@ -45,53 +45,22 @@ defmodule Kazarma.Matrix.Transaction do
       :ok
   end
 
-  # %{"access_token" => "MDAyMGxvY2F0aW9uIG1hdHJpeC5pbWFnby5sb2NhbAowMDEzaWRlbnRpZmllciBrZXkKMDAxMGNpZCBnZW4gPSAxCjAwMmNjaWQgdXNlcl9pZCA9IEBhbGljZTptYXRyaXguaW1hZ28ubG9jYWwKMDAxNmNpZCB0eXBlID0gYWNjZXNzCjAwMjFjaWQgbm9uY2UgPSBjcX4jazVTUDNeUlk2WnRECjAwMmZzaWduYXR1cmUg_K2biF-xm5ue7985RkAomVadF7yfy3UiEpH-e15m0esK", "events" => [%{"age" => 802, "content" => %{"is_direct" => true, "membership" => "invite"}, "event_id" => "$Z4mzNi1CtkGqKAvHc_VEkxeqJ1Nr-Yzr6_77hB0hBXw", "origin_server_ts" => 1610182036132, "room_id" => "!gvcurdLVxqoQvwaRom:kazarma.local", "sender" => "@muser90:kazarma.local", "state_key" => "@ap_pluser91=pleroma.local:kazarma.local", "type" => "m.room.member", "unsigned" => %{"age" => 802}, "user_id" => "@muser90:kazarma.local"}], "txn_id" => "93"}
-
   def new_event(%Event{
         type: "m.room.member",
-        content: %{"membership" => "invite", "is_direct" => true},
-        room_id: room_id,
-        sender: _sender,
-        state_key: "@ap_" <> _rest = user_id
-      }) do
-    Kazarma.ActivityPub.Activity.ChatMessage.accept_puppet_invitation(user_id, room_id)
-    :ok
-  end
-
-  def new_event(%Event{
-        type: "m.room.member",
-        content: %{"membership" => "invite"},
-        room_id: room_id,
-        sender: _sender,
-        state_key: "@ap_" <> _rest = user_id
-      }) do
-    # {:ok, actor} = Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id)
-
-    Kazarma.ActivityPub.Activity.Note.accept_puppet_invitation(user_id, room_id)
-    :ok
-  end
-
-  def new_event(%Event{
-        type: "m.room.member",
-        content: %{"membership" => "join"},
-        sender: _sender,
-        state_key: "@ap_" <> _rest
-      }) do
-    :ok
-  end
-
-  def new_event(%Event{
-        type: "m.room.member",
-        # %{"avatar_url" => avatar_url, "displayname" => displayname},
         content: content,
-        sender: _sender,
+        room_id: room_id,
+        sender: sender_id,
         state_key: user_id
       }) do
-    Logger.debug("Maybe it's a profile change")
+    case Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id) do
+      {:ok, %ActivityPub.Actor{local: true} = actor} ->
+        bridge_profile_change(user_id, actor, content)
 
-    with {:ok, %ActivityPub.Actor{local: true} = actor} <-
-           Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id) do
-      bridge_profile_change(user_id, actor, content)
+      {:ok, %ActivityPub.Actor{local: false}} ->
+        accept_puppet_invitation(user_id, sender_id, room_id, content)
+
+      _ ->
+        :ok
     end
 
     :ok
@@ -102,8 +71,22 @@ defmodule Kazarma.Matrix.Transaction do
     Logger.debug(inspect(event))
   end
 
+  defp accept_puppet_invitation(user_id, sender_id, room_id, %{
+         "membership" => "invite",
+         "is_direct" => true
+       }) do
+    Kazarma.ActivityPub.Activity.ChatMessage.accept_puppet_invitation(user_id, room_id)
+    Kazarma.Matrix.Client.put_new_direct_room_data(user_id, sender_id, room_id)
+  end
+
+  defp accept_puppet_invitation(user_id, _sender_id, room_id, %{"membership" => "invite"}) do
+    Kazarma.ActivityPub.Activity.Note.accept_puppet_invitation(user_id, room_id)
+  end
+
+  defp accept_puppet_invitation(_user_id, _sender_id, _room_id, _event_content), do: :ok
+
   defp bridge_profile_change(matrix_id, actor, content) do
-    IO.inspect("bridge profile change")
+    Logger.debug("bridge profile change")
 
     with [_ | _] = changed_profile_parts <-
            Enum.filter(content, fn

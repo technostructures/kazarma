@@ -36,7 +36,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     # Logger.debug(inspect(actor))
 
     with {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:remote]),
-         {:ok, %{"user_id" => matrix_id}} <-
+         {:ok, %{"user_id" => ^matrix_id}} <-
            Kazarma.Matrix.Client.register(matrix_id) do
       Kazarma.Matrix.Client.put_displayname(matrix_id, name)
       avatar_url = get_in(data, ["icon", "url"])
@@ -133,7 +133,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl true
-  def base_url, do: Application.get_env(:activity_pub, :base_url)
+  def base_url, do: KazarmaWeb.Endpoint.url()
 
   @impl true
   def domain, do: Application.get_env(:activity_pub, :domain)

@@ -11,7 +11,7 @@ defmodule Kazarma.Matrix.User do
 
     with {:ok, _actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:puppet]),
          {:ok, _matrix_id} <-
-           Kazarma.Matrix.Client.register(user_id) |> IO.inspect() do
+           Kazarma.Matrix.Client.register(user_id) do
       :ok
     else
       error ->
