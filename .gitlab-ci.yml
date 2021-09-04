@@ -108,6 +108,42 @@ Tag tagged prod image:
     - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
     - docker push $IMAGE_NEW_TAG
 
+### deploy_staging
+
+.staging:
+  image: tmaier/docker-compose:latest
+  variables:
+    DOCKER_HOST: "ssh://ci@staging.kazar.ma"
+  environment:
+    name: staging
+    url: https://staging.kazar.ma
+  before_script:
+    - apk add git gnupg
+    - apk add git-secret --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
+    - gpg --import $STAGING_GPG_PRIVATE_KEY
+    - git secret reveal
+    - eval `ssh-agent -s` > /dev/null
+    - chmod 600 $STAGING_SSH_PRIVATE_KEY
+    - ssh-add $STAGING_SSH_PRIVATE_KEY
+    - mkdir -p /root/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > /root/.ssh/config
+    - alias docker-compose='docker-compose -f docker-compose.staging.yml'
+
+deploy_staging:
+  extends: .staging
+  stage: deploy_staging
+  needs:
+    - build_docker_image
+  when: manual
+  variables:
+    KAZARMA_VERSION: $CI_COMMIT_SHA
+  script:
+    - docker-compose pull kazarma
+    - docker-compose up -d kazarma
+    - docker-compose run kazarma eval "Kazarma.Release.migrate()"
+
+### analysis
+
 test:
   stage: analysis
   needs:
