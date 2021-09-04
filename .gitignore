@@ -30,3 +30,4 @@ kazarma-*.tar
 /.elixir_ls/
 .gitsecret/keys/random_seed
 !*.secret
+.env.staging
