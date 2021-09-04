@@ -28,3 +28,5 @@ kazarma-*.tar
 /priv/static/
 
 /.elixir_ls/
+.gitsecret/keys/random_seed
+!*.secret
