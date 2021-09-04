@@ -1,9 +1,8 @@
 stages:
   - setup
-  - test
-  - format
-  - credo
-  - dialyzer
+  - deploy_staging
+  - analysis
+  - deploy_production
   - docs
 
 image: bitwalker/alpine-elixir:1.11
@@ -20,6 +19,8 @@ variables:
   MIX_ENV: test
   GIT_SUBMODULE_STRATEGY: recursive
 
+### setup
+
 prepare_test:
   stage: setup
   script:
@@ -28,6 +29,20 @@ prepare_test:
   cache:
     <<: *global_cache
     policy: pull-push
+
+prepare_dev:
+  stage: setup
+  only:
+    - master
+  variables:
+    MIX_ENV: dev
+  script:
+    - mix deps.get
+    - mix compile
+  cache:
+    <<: *global_cache
+    policy: pull-push
+    key: cache-dev
 
 build_docker_image:
   stage: setup
@@ -93,8 +108,44 @@ Tag tagged prod image:
     - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
     - docker push $IMAGE_NEW_TAG
 
+### deploy_staging
+
+.staging:
+  image: tmaier/docker-compose:latest
+  variables:
+    DOCKER_HOST: "ssh://ci@staging.kazar.ma"
+  environment:
+    name: staging
+    url: https://staging.kazar.ma
+  before_script:
+    - apk add git gnupg
+    - apk add git-secret --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
+    - gpg --import $STAGING_GPG_PRIVATE_KEY
+    - git secret reveal
+    - eval `ssh-agent -s` > /dev/null
+    - chmod 600 $STAGING_SSH_PRIVATE_KEY
+    - ssh-add $STAGING_SSH_PRIVATE_KEY
+    - mkdir -p /root/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > /root/.ssh/config
+    - alias docker-compose='docker-compose -f docker-compose.staging.yml'
+
+deploy_staging:
+  extends: .staging
+  stage: deploy_staging
+  needs:
+    - build_docker_image
+  when: manual
+  variables:
+    KAZARMA_VERSION: $CI_COMMIT_SHA
+  script:
+    - docker-compose pull kazarma
+    - docker-compose up -d kazarma
+    - docker-compose run kazarma eval "Kazarma.Release.migrate()"
+
+### analysis
+
 test:
-  stage: test
+  stage: analysis
   needs:
     - prepare_test
   services:
@@ -120,14 +171,14 @@ test:
       cobertura: coverage.xml
 
 format:
-  stage: format
+  stage: analysis
   needs:
     - prepare_test
   script:
     - mix format --check-formatted
 
 credo:
-  stage: credo
+  stage: analysis
   needs:
     - prepare_test
   script:
@@ -138,7 +189,7 @@ credo:
       - "credo.log"
 
 dialyzer:
-  stage: dialyzer
+  stage: analysis
   needs:
     - prepare_test
   script:
@@ -151,22 +202,7 @@ dialyzer:
       - deps
       - priv/plts
 
-
-# Doc generation
-
-prepare_dev:
-  stage: setup
-  only:
-    - master
-  variables:
-    MIX_ENV: dev
-  script:
-    - mix deps.get
-    - mix compile
-  cache:
-    <<: *global_cache
-    policy: pull-push
-    key: cache-dev
+### docs
 
 pages:
   stage: docs

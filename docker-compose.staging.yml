@@ -11,7 +11,7 @@ services:
     # hostname: kazarma.kazarma.local
     # ports:
     #   - "4000:4000"
-    image: kazarma_staging
+    image: registry.gitlab.com/kazarma/kazarma/production:${KAZARMA_VERSION:-default}
     # restart: unless-stopped
     depends_on:
       - postgres_kazarma

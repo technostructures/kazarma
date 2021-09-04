@@ -1,0 +1,23 @@
+version: '3.7'
+
+volumes:
+  postgres_kazarma_files:
+
+services:
+  
+  kazarma:
+    image: registry.gitlab.com/kazarma/kazarma/production:${KAZARMA_VERSION:-default}
+    restart: unless-stopped
+    # ports:
+    #   - "4000:4000"
+    depends_on:
+      - postgres_kazarma
+    env_file: .env.staging
+
+  postgres:
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_USER=kazarma
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_kazarma_files:/var/lib/postgresql/data
