@@ -6,7 +6,7 @@ volumes:
 services:
   
   kazarma:
-    image: registry.gitlab.com/kazarma/kazarma/production:${KAZARMA_VERSION:-default}
+    image: registry.gitlab.com/kazarma/kazarma/production:${KAZARMA_VERSION:-latest}
     restart: unless-stopped
     # ports:
     #   - "4000:4000"
