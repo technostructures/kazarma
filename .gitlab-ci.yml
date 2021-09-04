@@ -1,9 +1,8 @@
 stages:
   - setup
-  - test
-  - format
-  - credo
-  - dialyzer
+  - deploy_staging
+  - analysis
+  - deploy_production
   - docs
 
 image: bitwalker/alpine-elixir:1.11
@@ -20,6 +19,8 @@ variables:
   MIX_ENV: test
   GIT_SUBMODULE_STRATEGY: recursive
 
+### setup
+
 prepare_test:
   stage: setup
   script:
@@ -28,6 +29,20 @@ prepare_test:
   cache:
     <<: *global_cache
     policy: pull-push
+
+prepare_dev:
+  stage: setup
+  only:
+    - master
+  variables:
+    MIX_ENV: dev
+  script:
+    - mix deps.get
+    - mix compile
+  cache:
+    <<: *global_cache
+    policy: pull-push
+    key: cache-dev
 
 build_docker_image:
   stage: setup
@@ -94,7 +109,7 @@ Tag tagged prod image:
     - docker push $IMAGE_NEW_TAG
 
 test:
-  stage: test
+  stage: analysis
   needs:
     - prepare_test
   services:
@@ -120,14 +135,14 @@ test:
       cobertura: coverage.xml
 
 format:
-  stage: format
+  stage: analysis
   needs:
     - prepare_test
   script:
     - mix format --check-formatted
 
 credo:
-  stage: credo
+  stage: analysis
   needs:
     - prepare_test
   script:
@@ -138,7 +153,7 @@ credo:
       - "credo.log"
 
 dialyzer:
-  stage: dialyzer
+  stage: analysis
   needs:
     - prepare_test
   script:
@@ -151,22 +166,7 @@ dialyzer:
       - deps
       - priv/plts
 
-
-# Doc generation
-
-prepare_dev:
-  stage: setup
-  only:
-    - master
-  variables:
-    MIX_ENV: dev
-  script:
-    - mix deps.get
-    - mix compile
-  cache:
-    <<: *global_cache
-    policy: pull-push
-    key: cache-dev
+### docs
 
 pages:
   stage: docs
