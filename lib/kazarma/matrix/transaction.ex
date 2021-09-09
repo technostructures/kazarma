@@ -53,6 +53,35 @@ defmodule Kazarma.Matrix.Transaction do
       :ok
   end
 
+  # Delete / redact event
+  # https://matrix.org/docs/spec/client_server/r0.6.1#m-room-redaction
+  def new_event(
+        %Event{
+          type: "m.room.redaction",
+          room_id: room_id,
+          redacts: _redacts
+        } = event
+      ) do
+    if !is_tagged_redact(event) do
+      Logger.debug("Processing m.room.redaction event")
+
+      case Bridge.get_room_by_local_id(room_id) do
+        %Room{data: %{"type" => "chat_message"}} = room ->
+          Kazarma.ActivityPub.Activity.ChatMessage.forward_to_activitypub(event, room)
+
+        %Room{data: %{"type" => "note"}} = room ->
+          Kazarma.ActivityPub.Activity.Note.forward_to_activitypub(event, room)
+      end
+    end
+
+    :ok
+  rescue
+    # for development, we prefere acknoledging transactions even if processing them fails
+    err ->
+      Logger.error(Exception.format(:error, err, __STACKTRACE__))
+      :ok
+  end
+
   def new_event(%Event{
         type: "m.room.member",
         content: content,
@@ -174,4 +203,10 @@ defmodule Kazarma.Matrix.Transaction do
   end
 
   defp is_tagged_message(_), do: false
+
+  defp is_tagged_redact(%Event{content: %{"reason" => reason}}) do
+    String.ends_with?(reason, " \ufeff")
+  end
+
+  defp is_tagged_redact(_), do: false
 end

@@ -41,6 +41,15 @@ defmodule Kazarma.Matrix.Client do
     )
   end
 
+  def redact_message(from_matrix_id, room_id, event, reason \\ nil) do
+    @matrix_client.redact_message(
+      @matrix_client.client(user_id: from_matrix_id),
+      room_id,
+      event,
+      reason
+    )
+  end
+
   def put_displayname(matrix_id, displayname) do
     @matrix_client.put_displayname(
       @matrix_client.client(user_id: matrix_id),

@@ -8,6 +8,8 @@ defmodule Kazarma.ActivityPub.Adapter do
   use Kazarma.Config
   @behaviour ActivityPub.Adapter
 
+  alias Kazarma.Address
+  alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias ActivityPub.Actor
   alias ActivityPub.Object
   alias KazarmaWeb.Endpoint
@@ -109,6 +111,36 @@ defmodule Kazarma.ActivityPub.Adapter do
         } = activity
       ) do
     Kazarma.ActivityPub.Activity.ChatMessage.forward_create_to_matrix(activity)
+  end
+
+  # Delete object
+  def handle_activity(
+        %Object{
+          data: %{
+            "actor" => from_id,
+            "type" => "Delete",
+            "to" => [to_id],
+            "object" => object_ap_id
+          }
+        } = activity
+      ) do
+    Logger.debug("Forwarding to Matrix delete activity")
+
+    with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
+         {:ok, to_matrix_id} <- Address.ap_id_to_matrix(to_id),
+         {:ok, room_id} <- Kazarma.Matrix.Client.get_direct_room(from_matrix_id, to_matrix_id),
+         %BridgeEvent{local_id: event_id} <-
+           Kazarma.Matrix.Bridge.get_event_by_remote_id(object_ap_id) do
+      Kazarma.Matrix.Client.redact_message(
+        from_matrix_id,
+        room_id,
+        event_id
+      )
+    else
+      # nil ->
+      {:error, _code, %{"error" => error}} -> Logger.error(error)
+      {:error, error} -> Logger.error(inspect(error))
+    end
   end
 
   def handle_activity(%Object{} = object) do

@@ -481,6 +481,68 @@ defmodule Kazarma.Matrix.TransactionTest do
     end
   end
 
+  # FIXME:
+  # describe "Message deletion in direct room" do
+  #   setup :set_mox_from_context
+  #   setup :verify_on_exit!
+
+  #   setup do
+  #     {:ok, _room} =
+  #       Kazarma.Matrix.Bridge.create_room(%{
+  #         local_id: "!foo:kazarma",
+  #         remote_id: "choco",
+  #         data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
+  #       })
+
+  #     :ok
+
+  #     {:ok, _event} =
+  #       Kazarma.Matrix.Bridge.create_event(%{
+  #         local_id: "!local_event_foo:kazarma",
+  #         remote_id: "!remote_event_foo:kazarma",
+  #         data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
+  #       })
+
+  #     :ok
+  #   end
+
+  #   def redaction_fixture do
+  #     %Event{
+  #       sender: "@bob:kazarma",
+  #       room_id: "!foo:kazarma",
+  #       event_id: "!local_event_foo:kazarma",
+  #       type: "m.room.redaction",
+  #       redacts: "!local_event_foo:kazarma",
+  #       content: %{"reason" => "Just want to"}
+  #       # content: %{"body" => "reason: Just want to"}
+  #     }
+  #   end
+
+  #   # Need to test case when message created by ap or matrix initially
+  #   #     si c'était pas exemple quelque chose qui était renvoyé par le serveur matrix tu mettrais dans le mock un appel à une fonction y'a-t-il-un-event qui retournerait ce que tu veux (comme si y'avait bien un event)
+  #   # exemple hypothétique hein
+
+  #   # ou alors je flib/kazarma/activity_pub/activity/chat_message.ex:123:ais dans la même batterie de tests après le test qui crée le message le test qui suppr le même
+  #   # clairement c'est mieux d'avoir des tests séparés, et comme t'as rajouté le fait de créer le record quand un message est envoyé t'aurais juste à rajouter un assert après l'envoi du message pour vérifier que le record a été créé, et dans le test du delete tu commences en créant le record donc au final tu t'assures qu'un message créé peut-être supprimé
+  #   # d'accord
+  #   # en fait y'a le même fonctionnement au moment de si les activités créent des rooms ou pas
+  #   # y'a des tests qui testent si ça crée bien le record
+  #   # et des test qui commencent par (si y'a record existant / si y'en a pas) (faire des tests sur les cas d'erreurs c'est bien au
+
+  #   test "when receiving a redaction event it forwards it as Delete activity" do
+  #     Kazarma.Matrix.TestClient
+  #     |> expect(:client, fn ->
+  #       :client_kazarma
+  #     end)
+  #     # ** (Mox.UnexpectedCallError) no expectation defined for Kazarma.Matrix.TestClient.get_data/3 in process #PID<0.716.0> with args [:client_bob, "@bob:kazarma", "m.direct"]
+  #     |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+  #       {:ok, %{"displayname" => "Bob"}}
+  #     end)
+
+  #     assert :ok = new_event(redaction_fixture())
+  #   end
+  # end
+
   describe "Message reception in multiuser room" do
     setup :set_mox_from_context
     setup :verify_on_exit!
