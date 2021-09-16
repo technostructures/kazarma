@@ -3,7 +3,6 @@ defmodule Kazarma.Matrix.UserTest do
 
   import Mox
   import Kazarma.Matrix.User
-  alias MatrixAppService.Event
 
   describe "User search" do
     setup :set_mox_from_context

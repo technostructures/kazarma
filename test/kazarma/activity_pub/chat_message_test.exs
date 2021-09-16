@@ -43,6 +43,34 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       }
     end
 
+    def chat_message_with_attachment_fixture do
+      %{
+        data: %{
+          "type" => "Create",
+          "actor" => "http://pleroma/pub/actors/alice",
+          "to" => ["http://kazarma/pub/actors/bob"]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "ChatMessage",
+            "content" => "hello",
+            "attachment" => %{
+              "mediaType" => "image/jpeg",
+              "name" => nil,
+              "type" => "Document",
+              "url" => [
+                %{
+                  "href" => "http://example.com/example.jpg",
+                  "mediaType" => "image/jpeg",
+                  "type" => "Link"
+                }
+              ]
+            }
+          }
+        }
+      }
+    end
+
     test "when receiving a ChatMessage activity for a first conversation creates a new room and sends forward the message" do
       Kazarma.Matrix.TestClient
       |> expect(:client, fn ->
@@ -139,6 +167,118 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       end)
 
       assert :ok = handle_activity(chat_message_fixture())
+    end
+
+    test "when receiving a ChatMessage activity with an attachement and some text forwards both the attachment and the text" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn ->
+        :client_kazarma
+      end)
+      |> expect(:client, 2, fn
+        [user_id: "@bob:kazarma"] -> :client_bob
+        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
+        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
+      end)
+      |> expect(:register, fn [
+                                username: "ap_alice=pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma"
+                              ] ->
+        {:ok, %{"user_id" => "ap_alice=pleroma:kazarma"}}
+      end)
+      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:get_data, fn :client_alice, "@ap_alice=pleroma:kazarma", "m.direct" ->
+        {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
+      end)
+      |> expect(:create_attachment_message, fn :client_alice,
+                                               {:data, _, "example.jpg"},
+                                               [
+                                                 body: "example.jpg",
+                                                 filename: "example.jpg",
+                                                 mimetype: "image/jpeg",
+                                                 msgtype: "m.image"
+                                               ] ->
+        {:ok,
+         %{msgtype: "m.image", info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}}}
+      end)
+      |> expect(:send_message, 2, fn
+        "!room:kazarma",
+        {"hello \uFEFF", "hello \uFEFF"},
+        [user_id: "@ap_alice=pleroma:kazarma"] ->
+          {:ok, :something}
+
+        "!room:kazarma",
+        %{
+          msgtype: "m.image",
+          info: %{
+            "filename" => "example.jpeg",
+            "mimetype" => "image/jpeg"
+          }
+        },
+        [user_id: "@ap_alice=pleroma:kazarma"] ->
+          {:ok, :something}
+      end)
+
+      assert :ok = handle_activity(chat_message_with_attachment_fixture())
+    end
+
+    test "when receiving a ChatMessage activity with an attachement and no text forwards only the attachment" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn ->
+        :client_kazarma
+      end)
+      |> expect(:client, 2, fn
+        [user_id: "@bob:kazarma"] -> :client_bob
+        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
+        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
+      end)
+      |> expect(:register, fn [
+                                username: "ap_alice=pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma"
+                              ] ->
+        {:ok, %{"user_id" => "ap_alice=pleroma:kazarma"}}
+      end)
+      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:get_data, fn :client_alice, "@ap_alice=pleroma:kazarma", "m.direct" ->
+        {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
+      end)
+      |> expect(:create_attachment_message, fn :client_alice,
+                                               {:data, _, "example.jpg"},
+                                               [
+                                                 body: "example.jpg",
+                                                 filename: "example.jpg",
+                                                 mimetype: "image/jpeg",
+                                                 msgtype: "m.image"
+                                               ] ->
+        {:ok,
+         %{msgtype: "m.image", info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}}}
+      end)
+      |> expect(:send_message, fn
+        "!room:kazarma",
+        %{
+          msgtype: "m.image",
+          info: %{
+            "filename" => "example.jpeg",
+            "mimetype" => "image/jpeg"
+          }
+        },
+        [user_id: "@ap_alice=pleroma:kazarma"] ->
+          {:ok, :something}
+      end)
+
+      chat_message =
+        update_in(
+          chat_message_with_attachment_fixture(),
+          [Access.key!(:object), Access.key!(:data), "content"],
+          fn _ -> "" end
+        )
+
+      assert :ok = handle_activity(chat_message)
     end
   end
 end

@@ -1,5 +1,6 @@
 defmodule Kazarma.ActivityPub.NoteTest do
   use Kazarma.DataCase
+  require Logger
 
   import Mox
   import Kazarma.ActivityPub.Adapter
@@ -40,10 +41,80 @@ defmodule Kazarma.ActivityPub.NoteTest do
             "type" => "Note",
             "source" => "hello",
             "actor" => "http://pleroma/pub/actors/alice",
-            "conversation" => "http://pleroma/pub/contexts/context"
+            "conversation" => "http://pleroma/pub/contexts/context",
+            "attachment" => nil
           }
         }
       }
+    end
+
+    def note_with_attachments_fixture do
+      %{
+        data: %{
+          "type" => "Create",
+          "actor" => "http://pleroma/pub/actors/alice",
+          "to" => ["http://kazarma/pub/actors/bob"]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Note",
+            "actor" => "http://pleroma/pub/actors/alice",
+            "content" => "hello",
+            "context" => "http://pleroma.local/contexts/aabbccddeeff",
+            "conversation" => "http://pleroma.local/contexts/aabbccddeeff",
+            "attachment" => [
+              %{
+                "mediaType" => "image/jpeg",
+                "name" => nil,
+                "type" => "Document",
+                "url" => "http://example.com/example.jpg"
+              },
+              %{
+                "mediaType" => "image/jpeg",
+                "name" => nil,
+                "type" => "Document",
+                "url" => "http://example.com/example2.jpg"
+              }
+            ],
+            "source" => "hello",
+            "summary" => "something"
+          }
+        }
+      }
+    end
+
+    test "when receiving a Note activity for an existing conversation gets the corresponding room and forwards the message" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn ->
+        :client_kazarma
+      end)
+      |> expect(:register, fn [
+                                username: "ap_alice=pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma"
+                              ] ->
+        {:ok, %{"user_id" => "ap_alice=pleroma:kazarma"}}
+      end)
+      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:send_message, fn "!room:kazarma",
+                                  {"hello \uFEFF", "hello \uFEFF"},
+                                  [user_id: "@ap_alice=pleroma:kazarma"] ->
+        {:ok, :something}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma/pub/contexts/context",
+        data: %{
+          "type" => "note",
+          "to" => ["@ap_alice=pleroma:kazarma", "@bob:kazarma"]
+        }
+      }
+      |> Kazarma.Matrix.Bridge.create_room()
+
+      assert :ok = handle_activity(note_fixture())
     end
 
     test "when receiving a Note activity for a first conversation creates a new room and sends forward the message" do
@@ -93,10 +164,15 @@ defmodule Kazarma.ActivityPub.NoteTest do
              ] = Kazarma.Matrix.Bridge.list_rooms()
     end
 
-    test "when receiving a Note activity for an existing conversation gets the corresponding room and forwards the message" do
+    test "when receiving a Note activity with attachments and some text forwards the attachments and the text" do
       Kazarma.Matrix.TestClient
       |> expect(:client, fn ->
         :client_kazarma
+      end)
+      |> expect(:client, 2, fn
+        [user_id: "@bob:kazarma"] -> :client_bob
+        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
+        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
       end)
       |> expect(:register, fn [
                                 username: "ap_alice=pleroma",
@@ -108,15 +184,67 @@ defmodule Kazarma.ActivityPub.NoteTest do
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  {"hello \uFEFF", "hello \uFEFF"},
-                                  [user_id: "@ap_alice=pleroma:kazarma"] ->
-        {:ok, :something}
+      |> expect(:create_attachment_message, 2, fn
+        :client_alice,
+        {:data, _, "example.jpg"},
+        [
+          body: "example.jpg",
+          filename: "example.jpg",
+          mimetype: "image/jpeg",
+          msgtype: "m.image"
+        ] ->
+          {:ok,
+           %{
+             msgtype: "m.image",
+             info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}
+           }}
+
+        :client_alice,
+        {:data, _, "example2.jpg"},
+        [
+          body: "example2.jpg",
+          filename: "example2.jpg",
+          mimetype: "image/jpeg",
+          msgtype: "m.image"
+        ] ->
+          {:ok,
+           %{
+             msgtype: "m.image",
+             info: %{"filename" => "example2.jpeg", "mimetype" => "image/jpeg"}
+           }}
+      end)
+      |> expect(:send_message, 3, fn
+        "!room:kazarma",
+        {"hello \uFEFF", "hello \uFEFF"},
+        [user_id: "@ap_alice=pleroma:kazarma"] ->
+          {:ok, :something}
+
+        "!room:kazarma",
+        %{
+          msgtype: "m.image",
+          info: %{
+            "filename" => "example.jpeg",
+            "mimetype" => "image/jpeg"
+          }
+        },
+        [user_id: "@ap_alice=pleroma:kazarma"] ->
+          {:ok, :something}
+
+        "!room:kazarma",
+        %{
+          msgtype: "m.image",
+          info: %{
+            "filename" => "example2.jpeg",
+            "mimetype" => "image/jpeg"
+          }
+        },
+        [user_id: "@ap_alice=pleroma:kazarma"] ->
+          {:ok, :something}
       end)
 
       %{
         local_id: "!room:kazarma",
-        remote_id: "http://pleroma/pub/contexts/context",
+        remote_id: "http://pleroma.local/contexts/aabbccddeeff",
         data: %{
           "type" => "note",
           "to" => ["@ap_alice=pleroma:kazarma", "@bob:kazarma"]
@@ -124,7 +252,98 @@ defmodule Kazarma.ActivityPub.NoteTest do
       }
       |> Kazarma.Matrix.Bridge.create_room()
 
-      assert :ok = handle_activity(note_fixture())
+      assert :ok = handle_activity(note_with_attachments_fixture())
+    end
+
+    test "when receiving a Note activity with attachments and no text forwards only the attachments" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn ->
+        :client_kazarma
+      end)
+      |> expect(:client, 2, fn
+        [user_id: "@bob:kazarma"] -> :client_bob
+        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
+        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
+      end)
+      |> expect(:register, fn [
+                                username: "ap_alice=pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma"
+                              ] ->
+        {:ok, %{"user_id" => "ap_alice=pleroma:kazarma"}}
+      end)
+      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:create_attachment_message, 2, fn
+        :client_alice,
+        {:data, _, "example.jpg"},
+        [
+          body: "example.jpg",
+          filename: "example.jpg",
+          mimetype: "image/jpeg",
+          msgtype: "m.image"
+        ] ->
+          {:ok,
+           %{
+             msgtype: "m.image",
+             info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}
+           }}
+
+        :client_alice,
+        {:data, _, "example2.jpg"},
+        [
+          body: "example2.jpg",
+          filename: "example2.jpg",
+          mimetype: "image/jpeg",
+          msgtype: "m.image"
+        ] ->
+          {:ok,
+           %{
+             msgtype: "m.image",
+             info: %{"filename" => "example2.jpeg", "mimetype" => "image/jpeg"}
+           }}
+      end)
+      |> expect(:send_message, 2, fn
+        "!room:kazarma",
+        %{
+          msgtype: "m.image",
+          info: %{
+            "filename" => "example.jpeg",
+            "mimetype" => "image/jpeg"
+          }
+        },
+        [user_id: "@ap_alice=pleroma:kazarma"] ->
+          {:ok, :something}
+
+        "!room:kazarma",
+        %{
+          msgtype: "m.image",
+          info: %{
+            "filename" => "example2.jpeg",
+            "mimetype" => "image/jpeg"
+          }
+        },
+        [user_id: "@ap_alice=pleroma:kazarma"] ->
+          {:ok, :something}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma.local/contexts/aabbccddeeff",
+        data: %{
+          "type" => "note",
+          "to" => ["@ap_alice=pleroma:kazarma", "@bob:kazarma"]
+        }
+      }
+      |> Kazarma.Matrix.Bridge.create_room()
+
+      note =
+        note_with_attachments_fixture()
+        |> update_in([Access.key!(:object), Access.key!(:data), "content"], fn _ -> "" end)
+        |> update_in([Access.key!(:object), Access.key!(:data), "source"], fn _ -> "" end)
+
+      assert :ok = handle_activity(note)
     end
   end
 end

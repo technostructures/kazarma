@@ -9,25 +9,18 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
   alias MatrixAppService.Event
   require Logger
 
-  def create(sender, receiver_id, content) do
+  def create(sender, receiver_id, content, attachment \\ nil) do
     object = %{
       "type" => "ChatMessage",
       "content" => content,
+      "attachment" => attachment,
       "actor" => sender.ap_id,
       "attributedTo" => sender.ap_id,
       "to" => [receiver_id]
-      # "tag" => [
-      #   %{
-      #     "href" => "http://pleroma.local/users/mike",
-      #     "name" => "@mike@pleroma.local",
-      #     "type" => "Mention"
-      #   }
-      # ]
     }
 
     params = %{
       actor: sender,
-      # ActivityPub.Utils.generate_context_id(),
       context: nil,
       object: object,
       to: [receiver_id]
@@ -42,9 +35,10 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
           "to" => [to_id]
         },
         object: %Object{
-          data: %{
-            "content" => body
-          }
+          data:
+            %{
+              "content" => body
+            } = object_data
         }
       }) do
     Logger.debug("Received ChatMessage activity")
@@ -58,6 +52,8 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
              matrix_id,
              body
            ) do
+      send_attachment(matrix_id, room_id, Map.get(object_data, "attachment"))
+
       :ok
     else
       {:error, _code, %{"error" => error}} -> Logger.error(error)
@@ -69,13 +65,18 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
         %Event{
           sender: sender,
           type: "m.room.message",
-          content: %{"msgtype" => "m.text", "body" => content}
+          content:
+            %{
+              "body" => body
+            } = content
         },
-        %Room{data: %{"type" => "chat_message", "to_ap_id" => ap_id}}
+        %Room{data: %{"type" => "chat_message", "to_ap_id" => remote_id}}
       ) do
     with {:ok, username} <- Kazarma.Address.matrix_id_to_ap_username(sender),
          {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_username(username) do
-      create(actor, ap_id, content)
+      attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(content)
+
+      create(actor, remote_id, body, attachment)
     end
   end
 
@@ -106,5 +107,16 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
       {:ok, room_id} -> {:ok, room_id}
       {:error, error} -> {:error, error}
     end
+  end
+
+  defp send_attachment(_from, _room_id, nil), do: nil
+
+  defp send_attachment(from, room_id, attachment) do
+    normalize_attachment(attachment)
+    |> Kazarma.Matrix.Client.send_attachment_message_for_ap_data(from, room_id)
+  end
+
+  defp normalize_attachment(%{"mediaType" => mimetype, "url" => [%{"href" => url} | _]}) do
+    %{mimetype: mimetype, url: url}
   end
 end
