@@ -314,6 +314,25 @@ defmodule Kazarma.Matrix.TransactionTest do
     }
   end
 
+  def message_with_attachment_fixture do
+    %Event{
+      sender: "@bob:kazarma",
+      room_id: "!foo:kazarma",
+      type: "m.room.message",
+      content: %{
+        "body" => "hello.jpg",
+        "info" => %{
+          "h" => 200,
+          "mimetype" => "image/jpeg",
+          "size" => 30_000,
+          "w" => 200
+        },
+        "msgtype" => "m.image",
+        "url" => "mxc://kazarma/aabbccddeeffgg"
+      }
+    }
+  end
+
   describe "Message reception in direct room" do
     setup :set_mox_from_context
     setup :verify_on_exit!
@@ -378,6 +397,69 @@ defmodule Kazarma.Matrix.TransactionTest do
       end)
 
       assert :ok == new_event(message_fixture())
+    end
+
+    test "when receiving a message with an attachment it forwards it in a ChatMessage activity" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn -> :client_kazarma end)
+      |> expect(:client, fn -> %{base_url: "http://example.org"} end)
+      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:create, fn
+        %{
+          actor: %ActivityPub.Actor{
+            ap_id: "http://kazarma/pub/actors/bob",
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/pub/actors/bob/followers",
+              "followings" => "http://kazarma/pub/actors/bob/following",
+              "icon" => nil,
+              "id" => "http://kazarma/pub/actors/bob",
+              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Bob",
+              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            deactivated: false,
+            id: nil,
+            keys: _,
+            local: true,
+            pointer_id: nil,
+            username: "bob@kazarma"
+          },
+          context: nil,
+          object: %{
+            "actor" => "http://kazarma/pub/actors/bob",
+            "attachment" => %{
+              "mediaType" => "image/jpeg",
+              "name" => nil,
+              "type" => "Document",
+              "url" => [
+                %{
+                  "href" => "http://example.org/_matrix/media/r0/download/kazarma/aabbccddeeffgg",
+                  "mediaType" => "image/jpeg",
+                  "type" => "Link"
+                }
+              ]
+            },
+            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "content" => "hello.jpg",
+            "to" => ["alice@pleroma"],
+            "type" => "ChatMessage"
+          },
+          to: ["alice@pleroma"]
+        },
+        nil ->
+          {:ok, :activity}
+      end)
+
+      assert :ok == new_event(message_with_attachment_fixture())
     end
   end
 
@@ -466,6 +548,87 @@ defmodule Kazarma.Matrix.TransactionTest do
       end)
 
       assert :ok == new_event(message_fixture())
+    end
+
+    test "when receiving a message with an attachment it forwards it in a Note activity" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn -> :client_kazarma end)
+      |> expect(:client, fn -> %{base_url: "http://example.org"} end)
+      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:client, fn
+        [user_id: "@ap_test_user_bob1=blob.cat:kazarma"] ->
+          :client_bob
+      end)
+      |> expect(:register, fn
+        [
+          username: "ap_test_user_bob1=blob.cat",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma"
+        ] ->
+          {:ok, %{"user_id" => "@ap_test_user_bob1=blob.cat:kazarma"}}
+      end)
+      |> expect(:put_displayname, fn
+        :client_bob, "@ap_test_user_bob1=blob.cat:kazarma", "Bob" ->
+          :ok
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:create, fn
+        %{
+          actor: %ActivityPub.Actor{
+            ap_id: "http://kazarma/pub/actors/bob",
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/pub/actors/bob/followers",
+              "followings" => "http://kazarma/pub/actors/bob/following",
+              "icon" => nil,
+              "id" => "http://kazarma/pub/actors/bob",
+              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Bob",
+              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            deactivated: false,
+            id: nil,
+            keys: _,
+            local: true,
+            pointer_id: nil,
+            username: "bob@kazarma"
+          },
+          context: "http://pleroma/contexts/context",
+          object: %{
+            "actor" => "http://kazarma/pub/actors/bob",
+            "attachment" => %{
+              "mediaType" => "image/jpeg",
+              "name" => nil,
+              "type" => "Document",
+              "url" => [
+                %{
+                  "href" => "http://example.org/_matrix/media/r0/download/kazarma/aabbccddeeffgg",
+                  "mediaType" => "image/jpeg",
+                  "type" => "Link"
+                }
+              ]
+            },
+            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "content" => "hello.jpg",
+            "context" => "http://pleroma/contexts/context",
+            "conversation" => "http://pleroma/contexts/context",
+            "to" => ["https://blob.cat/users/test_user_bob1"],
+            "type" => "Note"
+          },
+          to: ["https://blob.cat/users/test_user_bob1"]
+        },
+        nil ->
+          {:ok, :activity}
+      end)
+
+      assert :ok == new_event(message_with_attachment_fixture())
     end
   end
 end
