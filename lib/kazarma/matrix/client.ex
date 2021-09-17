@@ -180,7 +180,7 @@ defmodule Kazarma.Matrix.Client do
     )
   end
 
-  def send_tagged_message(_room_id, _from_id, ""), do: {:ok, :empty_message_not_sent}
+  def send_tagged_message(_room_id, _from_id, nil), do: {:ok, :empty_message_not_sent}
 
   def send_tagged_message(room_id, from_id, body) do
     @matrix_client.send_message(room_id, {body <> " \ufeff", body <> " \ufeff"}, user_id: from_id)

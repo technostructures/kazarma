@@ -275,7 +275,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
         update_in(
           chat_message_with_attachment_fixture(),
           [Access.key!(:object), Access.key!(:data), "content"],
-          fn _ -> "" end
+          fn _ -> nil end
         )
 
       assert :ok = handle_activity(chat_message)

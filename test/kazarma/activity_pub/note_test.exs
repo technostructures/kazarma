@@ -340,8 +340,8 @@ defmodule Kazarma.ActivityPub.NoteTest do
 
       note =
         note_with_attachments_fixture()
-        |> update_in([Access.key!(:object), Access.key!(:data), "content"], fn _ -> "" end)
-        |> update_in([Access.key!(:object), Access.key!(:data), "source"], fn _ -> "" end)
+        |> update_in([Access.key!(:object), Access.key!(:data), "content"], fn _ -> nil end)
+        |> update_in([Access.key!(:object), Access.key!(:data), "source"], fn _ -> nil end)
 
       assert :ok = handle_activity(note)
     end
