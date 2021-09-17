@@ -12,7 +12,7 @@ services:
     # ports:
     #   - "4000:4000"
     image: registry.gitlab.com/kazarma/kazarma/production:${KAZARMA_VERSION:-latest}
-    # restart: unless-stopped
+    restart: unless-stopped
     depends_on:
       - postgres_kazarma
     labels:
@@ -69,6 +69,7 @@ services:
 
   delegation:
     image: nginx:1.19
+    restart: unless-stopped
     hostname: kazarma.local
     volumes:
       - /opt/kazarma/matrix:/usr/share/nginx/html/.well-known/matrix:ro
@@ -88,6 +89,7 @@ services:
 
   traefik:
     image: traefik:v2.2.0
+    restart: unless-stopped
     ports:
       - 80:80
       - 443:443
@@ -121,6 +123,7 @@ services:
 
   postgres_kazarma:
     image: postgres:12-alpine
+    restart: unless-stopped
     domainname: postgres_kazarma
     labels:
       - traefik.enable=false
