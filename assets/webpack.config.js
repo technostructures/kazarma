@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+// SPDX-License-Identifier: AGPL-3.0-only
+
 const path = require('path');
 const glob = require('glob');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');

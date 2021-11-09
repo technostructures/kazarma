@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // We need to import the CSS so that webpack will load it.
 // The MiniCssExtractPlugin is used to separate it out into
 // its own CSS file.

@@ -1,5 +1,6 @@
 use Mix.Config
-
+# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
 # For production, don't forget to configure the url host
 # to something meaningful, Phoenix uses this information
 # when generating URLs.

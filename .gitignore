@@ -31,3 +31,6 @@ kazarma-*.tar
 .gitsecret/keys/random_seed
 !*.secret
 .env.staging
+/assets/node_modules/
+/.npm/
+/.cache/

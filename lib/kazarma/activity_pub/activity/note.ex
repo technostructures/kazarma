@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
 defmodule Kazarma.ActivityPub.Activity.Note do
   @moduledoc """
   Functions for Note activities, used by Mastodon and Pleroma for toots.

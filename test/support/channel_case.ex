@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
+
 defmodule KazarmaWeb.ChannelCase do
   @moduledoc """
   This module defines the test case to be used by

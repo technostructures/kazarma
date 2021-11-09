@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
 # This file is responsible for configuring your application
 # and its dependencies with the aid of the Mix.Config module.
 #

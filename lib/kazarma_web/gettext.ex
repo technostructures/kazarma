@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
+
 defmodule KazarmaWeb.Gettext do
   @moduledoc """
   A module providing Internationalization with a gettext-based API.
