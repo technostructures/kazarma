@@ -205,6 +205,14 @@ dialyzer:
       - deps
       - priv/plts
 
+reuse:
+  stage: analysis
+  image:
+    name: fsfe/reuse:latest
+    entrypoint: [""]
+  script:
+    - reuse lint
+
 ### docs
 
 pages:
