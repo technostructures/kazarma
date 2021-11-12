@@ -24,38 +24,54 @@ variables:
 
 ### setup
 
-prepare_test:
+.prepare:
   stage: setup
+  interruptible: true
   script:
     - mix deps.get
     - mix compile
+
+prepare_test:
+  extends: .prepare
   cache:
     <<: *global_cache
     policy: pull-push
 
 prepare_dev:
-  stage: setup
+  extends: .prepare
   only:
     - master
   variables:
     MIX_ENV: dev
-  script:
-    - mix deps.get
-    - mix compile
   cache:
     <<: *global_cache
     policy: pull-push
     key: cache-dev
 
-build_docker_image:
+.docker:
   stage: setup
   image: docker:19.03.1
-  variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/production:$CI_COMMIT_SHA
   services:
     - docker:19.03.1-dind
+  interruptible: true
   before_script:
     - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/production:$CI_COMMIT_SHA
+
+.docker_tag:
+  extends: .docker
+  needs:
+    - build_docker_image
+  script:
+    - docker pull $IMAGE_TAG
+    - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
+    - docker push $IMAGE_NEW_TAG
+  variables:
+    GIT_STRATEGY: none
+
+build_docker_image:
+  extends: .docker
   script:
     - docker pull $CI_REGISTRY_IMAGE/production:latest || true
     - >
@@ -70,46 +86,21 @@ build_docker_image:
     - docker push $IMAGE_TAG
 
 tag_latest_docker_image:
-  stage: setup
-  needs:
-    - build_docker_image
+  extends: .docker_tag
   only:
     refs:
       - master
   variables:
-    GIT_STRATEGY: none
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/production:$CI_COMMIT_SHA
     IMAGE_NEW_TAG: $CI_REGISTRY_IMAGE/production:latest
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  before_script:
-    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-  script:
-    - docker pull $IMAGE_TAG
-    - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
-    - docker push $IMAGE_NEW_TAG
 
 Tag tagged prod image:
-  stage: setup
-  needs:
-    - build_docker_image
+  extends: .docker_tag
   only:
     refs:
       - tags
+      - branches
   variables:
-    GIT_STRATEGY: none
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/production:$CI_COMMIT_SHA
     IMAGE_NEW_TAG: $CI_REGISTRY_IMAGE/production:CI_COMMIT_REF_NAME
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  before_script:
-    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-  script:
-    - docker pull $IMAGE_TAG
-    - docker tag $IMAGE_TAG $IMAGE_NEW_TAG
-    - docker push $IMAGE_NEW_TAG
 
 ### deploy_staging
 
@@ -147,8 +138,12 @@ deploy_staging:
 
 ### analysis
 
-test:
+.analysis:
   stage: analysis
+  interruptible: true
+
+test:
+  extends: .analysis
   needs:
     - prepare_test
   services:
@@ -174,14 +169,14 @@ test:
       cobertura: coverage.xml
 
 format:
-  stage: analysis
+  extends: .analysis
   needs:
     - prepare_test
   script:
     - mix format --check-formatted
 
 credo:
-  stage: analysis
+  extends: .analysis
   needs:
     - prepare_test
   script:
@@ -192,7 +187,7 @@ credo:
       - "credo.log"
 
 dialyzer:
-  stage: analysis
+  extends: .analysis
   needs:
     - prepare_test
   script:
@@ -206,7 +201,8 @@ dialyzer:
       - priv/plts
 
 reuse:
-  stage: analysis
+  extends: .analysis
+  needs: []
   image:
     name: fsfe/reuse:latest
     entrypoint: [""]
@@ -223,6 +219,7 @@ pages:
     - prepare_dev
   variables:
     MIX_ENV: dev
+  interruptible: true
   script:
     - mix docs -o public
   cache:
