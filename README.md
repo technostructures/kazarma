@@ -1,6 +1,6 @@
 # Kazarma
 
-## A Matrix-ActivityPub bridge
+[![REUSE status](https://api.reuse.software/badge/gitlab.com/kazarma/kazarma)](https://api.reuse.software/info/gitlab.com/kazarma/kazarma)
 
 A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://github.com/commonspub/ActivityPub) and [those](https://gitlab.com/kazarma/matrix_app_service.ex) Matrix [libraries](https://gitlab.com/uhoreg/polyjuice_client).
 
