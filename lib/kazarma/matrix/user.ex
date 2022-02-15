@@ -11,7 +11,7 @@ defmodule Kazarma.Matrix.User do
   def query_user(user_id) do
     Logger.debug("Received ask for user #{user_id}")
 
-    with {:ok, _actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:puppet]),
+    with {:ok, _actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),
          {:ok, _matrix_id} <-
            Kazarma.Matrix.Client.register(user_id) do
       :ok

@@ -16,37 +16,56 @@ defmodule Kazarma.Address do
     |> String.replace_leading("@", "")
   end
 
+  @alphanum "A-z0-9"
+  @alphanum_lowercased "a-z0-9"
+  @ap_chars @alphanum <> "_"
+  @matrix_chars @alphanum_lowercased <> "_\\.\\-\\/"
+  @valid_domain "[#{@alphanum}][#{@alphanum}\\.\\-]*[#{@alphanum}]"
+
+  @doc """
+  Parse an ActivityPub username
+
+  If the ActivityPub domain is controlled by the Kazarma instance, it can be:
+    - :local_matrix when both the Matrix instance and ActivityPub instance are controlled by us
+    ex: my_user@my_instance
+    - :remote_matrix when the Matrix server isn't controlled by us
+    ex: my_user=my_remote_instance@my_instance
+  If the ActivityPub domain isn't controlled by us:
+    - :activity_pub
+    ex: my_user@my_remote_instance
+  """
   def parse_ap_username(username) do
-    regex = ~r/(?<localpart>[a-z0-9_\.-=]+)@(?<domain>[a-z0-9\.-]+)/
-    sub_regex = ~r/(?<localpart>[a-z0-9_\.-]+)=(?<domain>[a-z0-9\.-]+)/
+    regex = ~r/^@?(?<localpart>[#{@ap_chars}\-\.=]+)@(?<domain>#{@valid_domain})/
+    sub_regex = ~r/(?<localpart>[#{@ap_chars}]+)=(?<domain>#{@valid_domain})/
+    username = if String.contains?(username, "@"), do: username, else: "#{username}@#{domain()}"
 
-    username =
-      if String.contains?(username, "@") do
-        username
-      else
-        "#{username}@#{domain()}"
-      end
+    case Regex.named_captures(regex, username) do
+      %{"localpart" => localpart, "domain" => domain} ->
+        if domain in [domain(), KazarmaWeb.Endpoint.host()] do
+          # local ActivityPub user (puppet)
+          case Regex.named_captures(sub_regex, localpart) do
+            %{"localpart" => sub_localpart, "domain" => sub_domain} ->
+              # remote Matrix user
+              {:remote_matrix, sub_localpart, sub_domain}
 
-    %{"localpart" => localpart, "domain" => domain} = Regex.named_captures(regex, username)
+            nil ->
+              # local Matrix user
+              {:local_matrix, localpart}
+          end
+        else
+          # remote ActivityPub user
+          {:activity_pub, localpart, domain}
+        end
 
-    if domain in [domain(), KazarmaWeb.Endpoint.host()] do
-      # local ActivityPub user (puppet)
-      case Regex.named_captures(sub_regex, localpart) do
-        %{"localpart" => sub_localpart, "domain" => sub_domain} ->
-          # remote Matrix user
-          {:remote_matrix, sub_localpart, sub_domain}
-
-        nil ->
-          # local Matrix user
-          {:local_matrix, localpart}
-      end
-    else
-      # remote ActivityPub user
-      {:remote, localpart, domain}
+      nil ->
+        {:error, :invalid_address}
     end
   end
 
-  def ap_username_to_matrix_id(username, types \\ [:remote_matrix, :local_matrix, :remote]) do
+  @doc """
+  Transform a ActivityPub username to his associated Matrix id
+  """
+  def ap_username_to_matrix_id(username, types \\ [:remote_matrix, :local_matrix, :activity_pub]) do
     parse_ap_username(username)
     |> filter_types(types)
     |> case do
@@ -56,7 +75,7 @@ defmodule Kazarma.Address do
       {:local_matrix, localpart} ->
         {:ok, "@#{localpart}:#{domain()}"}
 
-      {:remote, localpart, remote_domain} ->
+      {:activity_pub, localpart, remote_domain} ->
         {:ok, "@#{puppet_prefix()}#{localpart}=#{remote_domain}:#{domain()}"}
 
       _ ->
@@ -78,10 +97,24 @@ defmodule Kazarma.Address do
     end
   end
 
+  @doc """
+  Parse a Matrix username
+
+  If the Matrix domain is controlled by the Kazarma instance, it can be:
+    - :activity_pub when the user belongs to a remote Matrix instance (bridging)
+    The username starts with the puppet prefix and is suffixed by =remote_ap_instance
+    ex: ap_user=remote_ap_instance@my_domain
+    - :local_matrix when when we control the Matrix instance
+    ex: my_user@my_domain
+  If the Matrix domain isn't controlled by us
+    - :remote_matrix ex: my_user@my_remote_instance
+  """
   def parse_matrix_id(user_id) do
-    regex = ~r/@(?<localpart>[a-z0-9_.\-=]+):(?<domain>[a-z0-9\.-]+)/
-    sub_regex = ~r/(?<localpart>[a-z0-9_.\-]+)=(?<domain>[a-z0-9\.-]+)/
     domain = domain()
+    regex = ~r/^@?(?<localpart>[#{@matrix_chars}=]+):(?<domain>#{@valid_domain})$/
+
+    sub_regex =
+      ~r/#{puppet_prefix()}(?<localpart>[#{@matrix_chars}]+)=(?<domain>#{@valid_domain})/
 
     case Regex.named_captures(regex, user_id) do
       %{"localpart" => localpart, "domain" => ^domain} ->
@@ -90,33 +123,36 @@ defmodule Kazarma.Address do
                Regex.named_captures(sub_regex, localpart) do
           %{"localpart" => sub_localpart, "domain" => sub_domain} ->
             # bridged ActivityPub user
-            {:puppet, String.replace_prefix(sub_localpart, puppet_prefix(), ""), sub_domain}
+            {:activity_pub, String.replace_prefix(sub_localpart, puppet_prefix(), ""), sub_domain}
 
           _ ->
             # real local user
-            {:local, localpart}
+            {:local_matrix, localpart}
         end
 
       %{"localpart" => localpart, "domain" => remote_domain} ->
         # remote Matrix user
-        {:remote, localpart, remote_domain}
+        {:remote_matrix, localpart, remote_domain}
 
       nil ->
         {:error, :invalid_address}
     end
   end
 
-  def matrix_id_to_ap_username(matrix_id, types \\ [:puppet, :local, :remote]) do
+  @doc """
+  Transform a Matrix id to his associated ActivityPub username
+  """
+  def matrix_id_to_ap_username(matrix_id, types \\ [:activity_pub, :local_matrix, :remote_matrix]) do
     parse_matrix_id(matrix_id)
     |> filter_types(types)
     |> case do
-      {:puppet, sub_localpart, sub_domain} ->
+      {:activity_pub, sub_localpart, sub_domain} ->
         {:ok, "#{sub_localpart}@#{sub_domain}"}
 
-      {:local, localpart} ->
+      {:local_matrix, localpart} ->
         {:ok, "#{localpart}@#{domain()}"}
 
-      {:remote, localpart, remote_domain} ->
+      {:remote_matrix, localpart, remote_domain} ->
         {:ok, "#{localpart}=#{remote_domain}@#{domain()}"}
 
       _ ->
@@ -124,7 +160,7 @@ defmodule Kazarma.Address do
     end
   end
 
-  def matrix_id_to_actor(matrix_id, types \\ [:puppet, :local, :remote]) do
+  def matrix_id_to_actor(matrix_id, types \\ [:activity_pub, :local_matrix, :remote_matrix]) do
     case matrix_id_to_ap_username(matrix_id, types) do
       {:ok, username} ->
         ActivityPub.Actor.get_or_fetch_by_username(username)

@@ -65,7 +65,9 @@ defmodule Kazarma.MixProject do
       {:junit_formatter, "~> 3.1", only: :test},
       {:cobertura_cover, "~> 0.9.0", only: :test},
       {:credo, "~> 1.4.1", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false}
+      {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
+      {:hackney, "~> 1.17", override: true},
+      {:oban, "~> 2.8", override: true}
     ]
   end
 

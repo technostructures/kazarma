@@ -74,13 +74,13 @@ defmodule Kazarma.ActivityPub.Actor do
 
   def get_by_matrix_id(matrix_id) do
     case Kazarma.Address.parse_matrix_id(matrix_id) do
-      {:puppet, sub_localpart, sub_domain} ->
+      {:activity_pub, sub_localpart, sub_domain} ->
         ActivityPub.Actor.get_or_fetch_by_username("#{sub_localpart}@#{sub_domain}")
 
-      {:local, localpart} ->
+      {:local_matrix, localpart} ->
         ActivityPub.Actor.get_by_username(localpart)
 
-      {:remote, localpart, remote_domain} ->
+      {:remote_matrix, localpart, remote_domain} ->
         ActivityPub.Actor.get_or_fetch_by_username(
           "#{localpart}=#{remote_domain}@#{Kazarma.Address.domain()}"
         )

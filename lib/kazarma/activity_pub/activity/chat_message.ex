@@ -83,7 +83,7 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
   end
 
   def accept_puppet_invitation(user_id, room_id) do
-    with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:puppet]),
+    with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),
          {:ok, _room} <-
            Bridge.create_room(%{
              local_id: room_id,
