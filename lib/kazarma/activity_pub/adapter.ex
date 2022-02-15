@@ -37,7 +37,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
-    with {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:remote]),
+    with {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub]),
          {:ok, %{"user_id" => ^matrix_id}} <-
            Kazarma.Matrix.Client.register(matrix_id) do
       Kazarma.Matrix.Client.put_displayname(matrix_id, name)

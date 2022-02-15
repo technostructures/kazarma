@@ -98,7 +98,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   end
 
   def accept_puppet_invitation(user_id, room_id) do
-    with {:ok, _actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:puppet]),
+    with {:ok, _actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),
          {:ok, _room} <-
            Kazarma.Matrix.Bridge.join_or_create_note_bridge_room(room_id, user_id),
          _ <- Kazarma.Matrix.Client.join(user_id, room_id) do
