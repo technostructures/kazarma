@@ -66,8 +66,8 @@ defmodule Kazarma.MixProject do
       {:cobertura_cover, "~> 0.9.0", only: :test},
       {:credo, "~> 1.4.1", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
-      {:hackney, "~> 1.17", override: true},
-      {:oban, "~> 2.8", override: true}
+      {:hackney, "~> 1.17.0", override: true},
+      {:oban, "~> 2.8.0", override: true}
     ]
   end
 
