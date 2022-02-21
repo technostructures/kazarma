@@ -6,6 +6,12 @@ defmodule Kazarma.Address do
   """
   require Logger
 
+  @alphanum "A-z0-9"
+  @alphanum_lowercased "a-z0-9"
+  @ap_chars @alphanum <> "_"
+  @matrix_chars @alphanum_lowercased <> "_\\.\\-\\/"
+  @valid_domain "[#{@alphanum}][#{@alphanum}\\.\\-]*[#{@alphanum}]"
+
   def domain, do: Application.fetch_env!(:activity_pub, :domain)
 
   def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "ap_")
@@ -16,23 +22,16 @@ defmodule Kazarma.Address do
     |> String.replace_leading("@", "")
   end
 
-  @alphanum "A-z0-9"
-  @alphanum_lowercased "a-z0-9"
-  @ap_chars @alphanum <> "_"
-  @matrix_chars @alphanum_lowercased <> "_\\.\\-\\/"
-  @valid_domain "[#{@alphanum}][#{@alphanum}\\.\\-]*[#{@alphanum}]"
-
   @doc """
-  Parse an ActivityPub username
+  Parses an ActivityPub username.
 
-  If the ActivityPub domain is controlled by the Kazarma instance, it can be:
-    - :local_matrix when both the Matrix instance and ActivityPub instance are controlled by us
-    ex: my_user@my_instance
-    - :remote_matrix when the Matrix server isn't controlled by us
-    ex: my_user=my_remote_instance@my_instance
-  If the ActivityPub domain isn't controlled by us:
-    - :activity_pub
-    ex: my_user@my_remote_instance
+  It can be:
+    - `:activity_pub`: a user from an ActivityPub instance
+      eg: `user@remote_activity_pub`
+    - `:local_matrix`: a Matrix user from the bridged instance
+      eg: `user@instance`
+    - `:remote_matrix`: a Matrix user from another Matrix instance (if activated)
+      eg: `user=remote_matrix_instance@instance`
   """
   def parse_ap_username(username) do
     regex = ~r/^@?(?<localpart>[#{@ap_chars}\-\.=]+)@(?<domain>#{@valid_domain})/
@@ -98,16 +97,15 @@ defmodule Kazarma.Address do
   end
 
   @doc """
-  Parse a Matrix username
+  Parses a Matrix username
 
-  If the Matrix domain is controlled by the Kazarma instance, it can be:
-    - :activity_pub when the user belongs to a remote Matrix instance (bridging)
-    The username starts with the puppet prefix and is suffixed by =remote_ap_instance
-    ex: ap_user=remote_ap_instance@my_domain
-    - :local_matrix when when we control the Matrix instance
-    ex: my_user@my_domain
-  If the Matrix domain isn't controlled by us
-    - :remote_matrix ex: my_user@my_remote_instance
+  It can be:
+    - `:activity_pub`: a puppet user corresponding to a remote ActivityPub instance
+      eg: `user=remote_activity_pub@instance`
+    - `:local_matrix`: a Matrix user from the bridged instance
+      eg: `user@instance`
+    - `:remote_matrix`: a Matrix user from another Matrix instance (if activated)
+      eg: `user@remote_matrix_instance`
   """
   def parse_matrix_id(user_id) do
     domain = domain()
