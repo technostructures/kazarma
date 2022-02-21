@@ -12,6 +12,19 @@ defmodule Kazarma.Matrix.TransactionTest do
   import Kazarma.Matrix.Transaction
   alias MatrixAppService.Event
 
+  # Those are accounts created on public ActivityPub instances
+  @pleroma_user_server "kiwifarms.cc"
+  @pleroma_user_name "test_user_bob2"
+  @pleroma_user_displayname "Bob"
+  @pleroma_puppet_username "ap_#{@pleroma_user_name}=#{@pleroma_user_server}"
+  @pleroma_puppet_address "@#{@pleroma_puppet_username}:kazarma"
+
+  @mastodon_user_server "mastodon.social"
+  @mastodon_user_name "test_user_alice1"
+  @mastodon_user_displayname "Alice"
+  @mastodon_puppet_username "ap_#{@mastodon_user_name}=#{@mastodon_user_server}"
+  @mastodon_puppet_address "@#{@mastodon_puppet_username}:kazarma"
+
   describe "User invitation" do
     setup :set_mox_from_context
     setup :verify_on_exit!
@@ -22,7 +35,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         content: %{"membership" => "invite", "is_direct" => true},
         sender: "@alice:kazarma",
         room_id: "!direct_room:kazarma",
-        state_key: "@ap_test_user_bob1=blob.cat:kazarma"
+        state_key: @pleroma_puppet_address
       }
     end
 
@@ -40,7 +53,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         type: "m.room.member",
         content: %{"membership" => "invite"},
         room_id: "!room:kazarma",
-        state_key: "@ap_test_user_bob1=blob.cat:kazarma"
+        state_key: @pleroma_puppet_address
       }
     end
 
@@ -49,7 +62,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         type: "m.room.member",
         content: %{"membership" => "invite"},
         room_id: "!room:kazarma",
-        state_key: "@ap_test_user_alice1=mastodon.social:kazarma"
+        state_key: @mastodon_puppet_address
       }
     end
 
@@ -64,7 +77,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when a puppet user is invited to a direct room a Bridge record is created and the room is joined" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 4, fn [user_id: "@ap_test_user_bob1=blob.cat:kazarma"] ->
+      |> expect(:client, 4, fn [user_id: @pleroma_puppet_address] ->
         :client_puppet
       end)
       |> expect(:join, fn :client_puppet, "!direct_room:kazarma" ->
@@ -72,23 +85,23 @@ defmodule Kazarma.Matrix.TransactionTest do
       end)
       |> expect(:register, fn
         [
-          username: "ap_test_user_bob1=blob.cat",
+          username: @pleroma_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
           initial_device_display_name: "Kazarma"
         ] ->
-          {:ok, %{"user_id" => "@ap_test_user_bob1=blob.cat:kazarma"}}
+          {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
       |> expect(:put_displayname, fn
-        :client_puppet, "@ap_test_user_bob1=blob.cat:kazarma", "Bob" ->
+        :client_puppet, @pleroma_puppet_address, @pleroma_user_displayname ->
           :ok
       end)
       |> expect(:get_data, fn
-        :client_puppet, "@ap_test_user_bob1=blob.cat:kazarma", "m.direct" ->
+        :client_puppet, @pleroma_puppet_address, "m.direct" ->
           {:ok, %{}}
       end)
       |> expect(:put_data, fn
         :client_puppet,
-        "@ap_test_user_bob1=blob.cat:kazarma",
+        @pleroma_puppet_address,
         "m.direct",
         %{"@alice:kazarma" => ["!direct_room:kazarma"]} ->
           :ok
@@ -99,7 +112,7 @@ defmodule Kazarma.Matrix.TransactionTest do
       assert %{
                local_id: "!direct_room:kazarma",
                data: %{
-                 "to_ap_id" => "https://blob.cat/users/test_user_bob1",
+                 "to_ap_id" => "https://#{@pleroma_user_server}/users/#{@pleroma_user_name}",
                  "type" => "chat_message"
                }
              } = Kazarma.Matrix.Bridge.get_room_by_local_id("!direct_room:kazarma")
@@ -108,29 +121,29 @@ defmodule Kazarma.Matrix.TransactionTest do
     test "when a puppet user is invited to a multiuser room a Bridge record is created and the room is joined" do
       Kazarma.Matrix.TestClient
       |> expect(:client, 4, fn
-        [user_id: "@ap_test_user_bob1=blob.cat:kazarma"] -> :client_pleroma
-        [user_id: "@ap_test_user_alice1=mastodon.social:kazarma"] -> :client_mastodon
+        [user_id: @pleroma_puppet_address] -> :client_pleroma
+        [user_id: @mastodon_puppet_address] -> :client_mastodon
       end)
       |> expect(:register, 2, fn
         [
-          username: "ap_test_user_bob1=blob.cat",
+          username: @pleroma_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
           initial_device_display_name: "Kazarma"
         ] ->
-          {:ok, %{"user_id" => "@ap_test_user_bob1=blob.cat:kazarma"}}
+          {:ok, %{"user_id" => @pleroma_puppet_address}}
 
         [
-          username: "ap_test_user_alice1=mastodon.social",
+          username: @mastodon_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
           initial_device_display_name: "Kazarma"
         ] ->
-          {:ok, %{"user_id" => "@ap_test_user_alice1=mastodon.social:kazarma"}}
+          {:ok, %{"user_id" => @mastodon_puppet_address}}
       end)
       |> expect(:put_displayname, 2, fn
-        :client_pleroma, "@ap_test_user_bob1=blob.cat:kazarma", "Bob" ->
+        :client_pleroma, @pleroma_puppet_address, @pleroma_user_displayname ->
           :ok
 
-        :client_mastodon, "@ap_test_user_alice1=mastodon.social:kazarma", "Alice" ->
+        :client_mastodon, @mastodon_puppet_address, @mastodon_user_displayname ->
           :ok
       end)
       |> expect(:join, 2, fn
@@ -143,7 +156,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
       assert :ok == new_event(invitation_event_multiuser_fixture_pleroma())
 
-      assert %{data: %{"to" => ["@ap_test_user_bob1=blob.cat:kazarma"], "type" => "note"}} =
+      assert %{data: %{"to" => [@pleroma_puppet_address], "type" => "note"}} =
                Kazarma.Matrix.Bridge.get_room_by_local_id("!room:kazarma")
 
       assert :ok == new_event(invitation_event_multiuser_fixture_mastodon())
@@ -151,8 +164,8 @@ defmodule Kazarma.Matrix.TransactionTest do
       assert %{
                data: %{
                  "to" => [
-                   "@ap_test_user_alice1=mastodon.social:kazarma",
-                   "@ap_test_user_bob1=blob.cat:kazarma"
+                   @mastodon_puppet_address,
+                   @pleroma_puppet_address
                  ],
                  "type" => "note"
                }
@@ -475,7 +488,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           local_id: "!foo:kazarma",
           remote_id: "http://pleroma/contexts/context",
           data: %{
-            "to" => ["@ap_test_user_bob1=blob.cat:kazarma"],
+            "to" => [@pleroma_puppet_address],
             "type" => "note"
           }
         })
@@ -489,7 +502,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         :client_kazarma
       end)
       |> expect(:client, fn
-        [user_id: "@ap_test_user_bob1=blob.cat:kazarma"] ->
+        [user_id: @pleroma_puppet_address] ->
           :client_bob
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
@@ -497,14 +510,14 @@ defmodule Kazarma.Matrix.TransactionTest do
       end)
       |> expect(:register, fn
         [
-          username: "ap_test_user_bob1=blob.cat",
+          username: @pleroma_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
           initial_device_display_name: "Kazarma"
         ] ->
-          {:ok, %{"user_id" => "@ap_test_user_bob1=blob.cat:kazarma"}}
+          {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
       |> expect(:put_displayname, fn
-        :client_bob, "@ap_test_user_bob1=blob.cat:kazarma", "Bob" ->
+        :client_bob, @pleroma_puppet_address, @pleroma_user_displayname ->
           :ok
       end)
 
@@ -540,10 +553,10 @@ defmodule Kazarma.Matrix.TransactionTest do
             "content" => "hello",
             "context" => "http://pleroma/contexts/context",
             "conversation" => "http://pleroma/contexts/context",
-            "to" => ["https://blob.cat/users/test_user_bob1"],
+            "to" => ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"],
             "type" => "Note"
           },
-          to: ["https://blob.cat/users/test_user_bob1"]
+          to: ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"]
         },
         nil ->
           {:ok, :activity}
@@ -560,19 +573,19 @@ defmodule Kazarma.Matrix.TransactionTest do
         {:ok, %{"displayname" => "Bob"}}
       end)
       |> expect(:client, fn
-        [user_id: "@ap_test_user_bob1=blob.cat:kazarma"] ->
+        [user_id: @pleroma_puppet_address] ->
           :client_bob
       end)
       |> expect(:register, fn
         [
-          username: "ap_test_user_bob1=blob.cat",
+          username: @pleroma_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
           initial_device_display_name: "Kazarma"
         ] ->
-          {:ok, %{"user_id" => "@ap_test_user_bob1=blob.cat:kazarma"}}
+          {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
       |> expect(:put_displayname, fn
-        :client_bob, "@ap_test_user_bob1=blob.cat:kazarma", "Bob" ->
+        :client_bob, @pleroma_puppet_address, @pleroma_user_displayname ->
           :ok
       end)
 
@@ -621,10 +634,10 @@ defmodule Kazarma.Matrix.TransactionTest do
             "content" => "hello.jpg",
             "context" => "http://pleroma/contexts/context",
             "conversation" => "http://pleroma/contexts/context",
-            "to" => ["https://blob.cat/users/test_user_bob1"],
+            "to" => ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"],
             "type" => "Note"
           },
-          to: ["https://blob.cat/users/test_user_bob1"]
+          to: ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"]
         },
         nil ->
           {:ok, :activity}

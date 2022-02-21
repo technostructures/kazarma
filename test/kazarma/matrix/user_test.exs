@@ -6,29 +6,33 @@ defmodule Kazarma.Matrix.UserTest do
   import Mox
   import Kazarma.Matrix.User
 
+  # This is an account created on a public ActivityPub instance
+  @ap_user_server "kiwifarms.cc"
+  @ap_user_name "test_user_bob2"
+
   describe "User search" do
     setup :set_mox_from_context
     setup :verify_on_exit!
 
     test "hey" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 1, fn [user_id: "@ap_test_user_bob1=blob.cat:kazarma"] ->
+      |> expect(:client, 1, fn [user_id: "@ap_#{@ap_user_name}=#{@ap_user_server}:kazarma"] ->
         :client_puppet
       end)
       |> expect(:register, 2, fn
         [
-          username: "ap_test_user_bob1=blob.cat",
+          username: "ap_#{@ap_user_name}=#{@ap_user_server}",
           device_id: "KAZARMA_APP_SERVICE",
           initial_device_display_name: "Kazarma"
         ] ->
-          {:ok, %{"user_id" => "@ap_test_user_bob1=blob.cat:kazarma"}}
+          {:ok, %{"user_id" => "@ap_#{@ap_user_name}=#{@ap_user_server}:kazarma"}}
       end)
       |> expect(:put_displayname, fn
-        :client_puppet, "@ap_test_user_bob1=blob.cat:kazarma", "Bob" ->
+        :client_puppet, "@ap_#{@ap_user_name}=#{@ap_user_server}:kazarma", "Bob" ->
           :ok
       end)
 
-      assert :ok = query_user("@ap_test_user_bob1=blob.cat:kazarma")
+      assert :ok = query_user("@ap_#{@ap_user_name}=#{@ap_user_server}:kazarma")
     end
 
     test "hey3" do
