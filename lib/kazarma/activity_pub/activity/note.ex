@@ -81,11 +81,11 @@ defmodule Kazarma.ActivityPub.Activity.Note do
           remote_id: remote_id
         }
       ) do
-    with {:ok, actor} = Kazarma.ActivityPub.Actor.get_by_matrix_id(sender) do
+    with {:ok, actor} = Kazarma.Address.matrix_id_to_actor(sender) do
       to =
         List.delete(to, sender)
         |> Enum.map(fn matrix_id ->
-          case Kazarma.ActivityPub.Actor.get_by_matrix_id(matrix_id) do
+          case Kazarma.Address.matrix_id_to_actor(matrix_id) do
             {:ok, actor} -> actor.ap_id
             _ -> nil
           end

@@ -54,7 +54,7 @@ defmodule Kazarma.Matrix.Transaction do
         sender: sender_id,
         state_key: user_id
       }) do
-    case Kazarma.ActivityPub.Actor.get_by_matrix_id(user_id) do
+    case Kazarma.Address.matrix_id_to_actor(user_id) do
       {:ok, %ActivityPub.Actor{local: true} = actor} ->
         bridge_profile_change(user_id, actor, content)
 

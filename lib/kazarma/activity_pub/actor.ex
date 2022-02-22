@@ -72,24 +72,6 @@ defmodule Kazarma.ActivityPub.Actor do
     %{actor | data: put_in(actor.data, ["icon"], %{"type" => "Image", "url" => avatar_url})}
   end
 
-  def get_by_matrix_id(matrix_id) do
-    case Kazarma.Address.parse_matrix_id(matrix_id) do
-      {:activity_pub, sub_localpart, sub_domain} ->
-        ActivityPub.Actor.get_or_fetch_by_username("#{sub_localpart}@#{sub_domain}")
-
-      {:local_matrix, localpart} ->
-        ActivityPub.Actor.get_by_username(localpart)
-
-      {:remote_matrix, localpart, remote_domain} ->
-        ActivityPub.Actor.get_or_fetch_by_username(
-          "#{localpart}=#{remote_domain}@#{Kazarma.Address.domain()}"
-        )
-
-      {:error, :invalid_address} ->
-        {:error, :invalid_address}
-    end
-  end
-
   def get_from_matrix(username) do
     case Kazarma.Address.ap_username_to_matrix_id(username, [:remote_matrix, :local_matrix]) do
       {:ok, matrix_id} ->
