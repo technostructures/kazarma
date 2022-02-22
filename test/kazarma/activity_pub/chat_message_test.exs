@@ -80,30 +80,31 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
         :client_kazarma
       end)
       |> expect(:client, 4, fn
-        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
+        [user_id: "@ap_alice___pleroma:kazarma"] -> :client_alice
       end)
       |> expect(:register, fn [
-                                username: "ap_alice=pleroma",
+                                username: "ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma"
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
                               ] ->
-        {:ok, %{"user_id" => "@ap_alice=pleroma:kazarma"}}
+        {:ok, %{"user_id" => "@ap_alice___pleroma:kazarma"}}
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
-        #         :client_alice, "@ap_alice=pleroma:kazarma" ->
+        #         :client_alice, "@ap_alice___pleroma:kazarma" ->
         #         {:ok, %{"displayname" => "Alice"}}
       end)
-      |> expect(:put_displayname, fn :client_alice, "@ap_alice=pleroma:kazarma", "Alice" ->
+      |> expect(:put_displayname, fn :client_alice, "@ap_alice___pleroma:kazarma", "Alice" ->
         :ok
       end)
       |> expect(:get_data, 2, fn
-        :client_alice, "@ap_alice=pleroma:kazarma", "m.direct" ->
+        :client_alice, "@ap_alice___pleroma:kazarma", "m.direct" ->
           {:ok, %{}}
       end)
       |> expect(:put_data, fn
         :client_alice,
-        "@ap_alice=pleroma:kazarma",
+        "@ap_alice___pleroma:kazarma",
         "m.direct",
         %{"@bob:kazarma" => ["!room:kazarma"]} ->
           :ok
@@ -117,12 +118,12 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
           invite: ["@bob:kazarma"],
           room_version: "5"
         ],
-        [user_id: "@ap_alice=pleroma:kazarma"] ->
+        [user_id: "@ap_alice___pleroma:kazarma"] ->
           {:ok, %{"room_id" => "!room:kazarma"}}
       end)
       |> expect(:send_message, fn "!room:kazarma",
                                   {"hello \uFEFF", "hello \uFEFF"},
-                                  [user_id: "@ap_alice=pleroma:kazarma"] ->
+                                  [user_id: "@ap_alice___pleroma:kazarma"] ->
         {:ok, :something}
       end)
 
@@ -145,27 +146,28 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
         :client_kazarma
       end)
       |> expect(:client, 2, fn
-        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
+        [user_id: "@ap_alice___pleroma:kazarma"] -> :client_alice
       end)
       |> expect(:register, fn [
-                                username: "ap_alice=pleroma",
+                                username: "ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma"
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
                               ] ->
-        {:ok, %{"user_id" => "@ap_alice=pleroma:kazarma"}}
+        {:ok, %{"user_id" => "@ap_alice___pleroma:kazarma"}}
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
-      |> expect(:put_displayname, fn :client_alice, "@ap_alice=pleroma:kazarma", "Alice" ->
+      |> expect(:put_displayname, fn :client_alice, "@ap_alice___pleroma:kazarma", "Alice" ->
         :ok
       end)
-      |> expect(:get_data, fn :client_alice, "@ap_alice=pleroma:kazarma", "m.direct" ->
+      |> expect(:get_data, fn :client_alice, "@ap_alice___pleroma:kazarma", "m.direct" ->
         {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
       end)
       |> expect(:send_message, fn "!room:kazarma",
                                   {"hello \uFEFF", "hello \uFEFF"},
-                                  [user_id: "@ap_alice=pleroma:kazarma"] ->
+                                  [user_id: "@ap_alice___pleroma:kazarma"] ->
         {:ok, :something}
       end)
 
@@ -179,20 +181,21 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       end)
       |> expect(:client, 2, fn
         [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
-        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
+        [user_id: "ap_alice___pleroma:kazarma"] -> :client_alice
+        [user_id: "@ap_alice___pleroma:kazarma"] -> :client_alice
       end)
       |> expect(:register, fn [
-                                username: "ap_alice=pleroma",
+                                username: "ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma"
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
                               ] ->
-        {:ok, %{"user_id" => "ap_alice=pleroma:kazarma"}}
+        {:ok, %{"user_id" => "ap_alice___pleroma:kazarma"}}
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
-      |> expect(:get_data, fn :client_alice, "@ap_alice=pleroma:kazarma", "m.direct" ->
+      |> expect(:get_data, fn :client_alice, "@ap_alice___pleroma:kazarma", "m.direct" ->
         {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
       end)
       |> expect(:create_attachment_message, fn :client_alice,
@@ -209,7 +212,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       |> expect(:send_message, 2, fn
         "!room:kazarma",
         {"hello \uFEFF", "hello \uFEFF"},
-        [user_id: "@ap_alice=pleroma:kazarma"] ->
+        [user_id: "@ap_alice___pleroma:kazarma"] ->
           {:ok, :something}
 
         "!room:kazarma",
@@ -220,7 +223,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
             "mimetype" => "image/jpeg"
           }
         },
-        [user_id: "@ap_alice=pleroma:kazarma"] ->
+        [user_id: "@ap_alice___pleroma:kazarma"] ->
           {:ok, :something}
       end)
 
@@ -234,20 +237,21 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       end)
       |> expect(:client, 2, fn
         [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
-        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
+        [user_id: "ap_alice___pleroma:kazarma"] -> :client_alice
+        [user_id: "@ap_alice___pleroma:kazarma"] -> :client_alice
       end)
       |> expect(:register, fn [
-                                username: "ap_alice=pleroma",
+                                username: "ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma"
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
                               ] ->
-        {:ok, %{"user_id" => "ap_alice=pleroma:kazarma"}}
+        {:ok, %{"user_id" => "ap_alice___pleroma:kazarma"}}
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
-      |> expect(:get_data, fn :client_alice, "@ap_alice=pleroma:kazarma", "m.direct" ->
+      |> expect(:get_data, fn :client_alice, "@ap_alice___pleroma:kazarma", "m.direct" ->
         {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
       end)
       |> expect(:create_attachment_message, fn :client_alice,
@@ -270,7 +274,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
             "mimetype" => "image/jpeg"
           }
         },
-        [user_id: "@ap_alice=pleroma:kazarma"] ->
+        [user_id: "@ap_alice___pleroma:kazarma"] ->
           {:ok, :something}
       end)
 

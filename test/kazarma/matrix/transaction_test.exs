@@ -16,13 +16,13 @@ defmodule Kazarma.Matrix.TransactionTest do
   @pleroma_user_server "kiwifarms.cc"
   @pleroma_user_name "test_user_bob2"
   @pleroma_user_displayname "Bob"
-  @pleroma_puppet_username "ap_#{@pleroma_user_name}=#{@pleroma_user_server}"
+  @pleroma_puppet_username "ap_#{@pleroma_user_name}___#{@pleroma_user_server}"
   @pleroma_puppet_address "@#{@pleroma_puppet_username}:kazarma"
 
   @mastodon_user_server "mastodon.social"
   @mastodon_user_name "test_user_alice1"
   @mastodon_user_displayname "Alice"
-  @mastodon_puppet_username "ap_#{@mastodon_user_name}=#{@mastodon_user_server}"
+  @mastodon_puppet_username "ap_#{@mastodon_user_name}___#{@mastodon_user_server}"
   @mastodon_puppet_address "@#{@mastodon_puppet_username}:kazarma"
 
   describe "User invitation" do
@@ -44,7 +44,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         type: "m.room.member",
         content: %{"membership" => "invite", "is_direct" => true},
         room_id: "!direct_room:kazarma",
-        state_key: "@ap_nonexisting1=pleroma:kazarma"
+        state_key: "@ap_nonexisting1___pleroma:kazarma"
       }
     end
 
@@ -71,7 +71,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         type: "m.room.member",
         content: %{"membership" => "invite"},
         room_id: "!room:kazarma",
-        state_key: "@ap_nonexisting2=pleroma:kazarma"
+        state_key: "@ap_nonexisting2___pleroma:kazarma"
       }
     end
 
@@ -87,7 +87,8 @@ defmodule Kazarma.Matrix.TransactionTest do
         [
           username: @pleroma_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma"
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
         ] ->
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
@@ -128,14 +129,16 @@ defmodule Kazarma.Matrix.TransactionTest do
         [
           username: @pleroma_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma"
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
         ] ->
           {:ok, %{"user_id" => @pleroma_puppet_address}}
 
         [
           username: @mastodon_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma"
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
         ] ->
           {:ok, %{"user_id" => @mastodon_puppet_address}}
       end)
@@ -512,7 +515,8 @@ defmodule Kazarma.Matrix.TransactionTest do
         [
           username: @pleroma_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma"
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
         ] ->
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
@@ -580,7 +584,8 @@ defmodule Kazarma.Matrix.TransactionTest do
         [
           username: @pleroma_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma"
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
         ] ->
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
