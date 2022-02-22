@@ -75,7 +75,7 @@ defmodule Kazarma.Address do
         {:ok, "@#{localpart}:#{domain()}"}
 
       {:activity_pub, localpart, remote_domain} ->
-        {:ok, "@#{puppet_prefix()}#{localpart}=#{remote_domain}:#{domain()}"}
+        {:ok, "@#{puppet_prefix()}#{String.downcase(localpart)}=#{remote_domain}:#{domain()}"}
 
       _ ->
         {:error, :not_found}
