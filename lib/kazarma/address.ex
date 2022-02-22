@@ -12,6 +12,9 @@ defmodule Kazarma.Address do
   @matrix_chars @alphanum_lowercased <> "_\\.\\-\\/"
   @valid_domain "[#{@alphanum}][#{@alphanum}\\.\\-]*[#{@alphanum}]"
 
+  @matrix_puppet_separation "___"
+  @ap_puppet_separation "___"
+
   def domain, do: Application.fetch_env!(:activity_pub, :domain)
 
   def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "ap_")
@@ -31,11 +34,14 @@ defmodule Kazarma.Address do
     - `:local_matrix`: a Matrix user from the bridged instance
       eg: `user@instance`
     - `:remote_matrix`: a Matrix user from another Matrix instance (if activated)
-      eg: `user=remote_matrix_instance@instance`
+      eg: `user___remote_matrix_instance@instance`
   """
   def parse_ap_username(username) do
     regex = ~r/^@?(?<localpart>[#{@ap_chars}\-\.=]+)@(?<domain>#{@valid_domain})/
-    sub_regex = ~r/(?<localpart>[#{@ap_chars}]+)=(?<domain>#{@valid_domain})/
+
+    sub_regex =
+      ~r/(?<localpart>[#{@ap_chars}]+)#{@ap_puppet_separation}(?<domain>#{@valid_domain})/
+
     username = if String.contains?(username, "@"), do: username, else: "#{username}@#{domain()}"
 
     case Regex.named_captures(regex, username) do
@@ -75,7 +81,11 @@ defmodule Kazarma.Address do
         {:ok, "@#{localpart}:#{domain()}"}
 
       {:activity_pub, localpart, remote_domain} ->
-        {:ok, "@#{puppet_prefix()}#{String.downcase(localpart)}=#{remote_domain}:#{domain()}"}
+        {:ok,
+         "@" <>
+           puppet_prefix() <>
+           String.downcase(localpart) <>
+           @matrix_puppet_separation <> remote_domain <> ":" <> domain()}
 
       _ ->
         {:error, :not_found}
@@ -101,7 +111,7 @@ defmodule Kazarma.Address do
 
   It can be:
     - `:activity_pub`: a puppet user corresponding to a remote ActivityPub instance
-      eg: `user=remote_activity_pub@instance`
+      eg: `user___remote_activity_pub@instance`
     - `:local_matrix`: a Matrix user from the bridged instance
       eg: `user@instance`
     - `:remote_matrix`: a Matrix user from another Matrix instance (if activated)
@@ -112,7 +122,9 @@ defmodule Kazarma.Address do
     regex = ~r/^@?(?<localpart>[#{@matrix_chars}=]+):(?<domain>#{@valid_domain})$/
 
     sub_regex =
-      ~r/#{puppet_prefix()}(?<localpart>[#{@matrix_chars}]+)=(?<domain>#{@valid_domain})/
+      ~r/#{puppet_prefix()}(?<localpart>[#{@matrix_chars}]+)#{@matrix_puppet_separation}(?<domain>#{
+        @valid_domain
+      })/
 
     case Regex.named_captures(regex, user_id) do
       %{"localpart" => localpart, "domain" => ^domain} ->
@@ -151,7 +163,7 @@ defmodule Kazarma.Address do
         {:ok, "#{localpart}@#{domain()}"}
 
       {:remote_matrix, localpart, remote_domain} ->
-        {:ok, "#{localpart}=#{remote_domain}@#{domain()}"}
+        {:ok, localpart <> @matrix_puppet_separation <> remote_domain <> "@" <> domain()}
 
       _ ->
         {:error, :not_found}
