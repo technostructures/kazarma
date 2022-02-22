@@ -16,7 +16,8 @@ defmodule Kazarma.Matrix.Client do
     @matrix_client.register(
       username: localpart,
       device_id: "KAZARMA_APP_SERVICE",
-      initial_device_display_name: "Kazarma"
+      initial_device_display_name: "Kazarma",
+      registration_type: "m.login.application_service"
     )
   end
 
