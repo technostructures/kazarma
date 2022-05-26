@@ -3,16 +3,24 @@
 
 import Config
 
-database_url =
-  System.get_env("DATABASE_URL") ||
+database_host = System.get_env("DATABASE_HOST")
+database_username = System.get_env("DATABASE_USERNAME")
+database_password = System.get_env("DATABASE_PASSWORD")
+database_db = System.get_env("DATABASE_DB")
+
+_ =
+  database_host && database_username && database_password && database_db ||
     raise """
-    environment variable DATABASE_URL is missing.
-    For example: ecto://USER:PASS@HOST/DATABASE
+    Database environment variable missing.
+    Could be one of: DATABASE_HOST, DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_DB.
     """
 
 config :kazarma, Kazarma.Repo,
   # ssl: true,
-  url: database_url,
+  hostname: database_host,
+  username: database_username,
+  password: database_password,
+  database: database_db,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
 secret_key_base =
