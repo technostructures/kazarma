@@ -36,6 +36,8 @@ defmodule Kazarma.Matrix.Transaction do
 
         %Room{data: %{"type" => "note"}} = room ->
           Kazarma.ActivityPub.Activity.Note.forward_to_activitypub(event, room)
+
+        nil -> :ok
       end
     end
 

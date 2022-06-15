@@ -5,7 +5,7 @@ defmodule Kazarma.ActivityPub.Activity do
   Activity-related functions.
   """
 
-  def attachment_from_matrix_event_content(%{"msgtype" => "m.text"}), do: nil
+  def attachment_from_matrix_event_content(%{"msgtype" => "m.text"}), do: %{}
 
   def attachment_from_matrix_event_content(%{
         "url" => mxc_url,

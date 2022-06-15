@@ -10,7 +10,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
 
-  def create(sender, receivers_id, context, content, attachment \\ nil) do
+  def create(sender, receivers_id, context, content, attachment \\ %{}) do
     object = %{
       "type" => "Note",
       "content" => content,
