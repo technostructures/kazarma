@@ -15,8 +15,8 @@ config :cors_plug,
 
 config :pleroma, Pleroma.Captcha, enabled: false
 
-config :pleroma, Pleroma.Plugs.RemoteIp, enabled: false
+config :pleroma, Pleroma.Web.Plugs.RemoteIp, enabled: false
 config :pleroma, :rate_limit, nil
 
-config :logger, :console, level: :warn
+config :logger, :console, level: :debug
 config :logger, :ex_syslogger, level: :warn

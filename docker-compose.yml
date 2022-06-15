@@ -150,9 +150,11 @@ services:
     - DOMAIN=pleroma.local
     - DB_HOST=postgres_pleroma
     - DB_PASS=postgres
-    image: epenguincom/pleroma:2.1.0
+    image: epenguincom/pleroma:2.4.2
     # build: ./pleroma/
     init: true
+    healthcheck: 
+      test: "true"
     labels:
       - traefik.enable=true
       - traefik.http.services.pleroma.loadbalancer.server.port=4000
