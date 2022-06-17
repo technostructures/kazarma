@@ -9,7 +9,7 @@ database_password = System.get_env("DATABASE_PASSWORD")
 database_db = System.get_env("DATABASE_DB")
 
 _ =
-  database_host && database_username && database_password && database_db ||
+  (database_host && database_username && database_password && database_db) ||
     raise """
     Database environment variable missing.
     Could be one of: DATABASE_HOST, DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_DB.
