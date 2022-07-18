@@ -112,37 +112,40 @@ Tag tagged prod image:
 
 ### deploy_staging
 
-.staging:
-  image: tmaier/docker-compose:latest
-  variables:
-    DOCKER_HOST: "ssh://ci@staging.kazar.ma"
-  environment:
-    name: staging
-    url: https://staging.kazar.ma
-  before_script:
-    - apk add git gnupg
-    - apk add git-secret --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
-    - gpg --import $STAGING_GPG_PRIVATE_KEY
-    - git secret reveal
-    - eval `ssh-agent -s` > /dev/null
-    - chmod 600 $STAGING_SSH_PRIVATE_KEY
-    - ssh-add $STAGING_SSH_PRIVATE_KEY
-    - mkdir -p /root/.ssh
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > /root/.ssh/config
-    - alias docker-compose='docker-compose -f docker-compose.staging.yml'
-
 deploy_staging:
-  extends: .staging
   stage: deploy_staging
   needs:
     - build_docker_image
   when: manual
+  environment:
+    name: "staging"
+    url: "https://staging.kazar.ma"
   variables:
-    KAZARMA_VERSION: $CI_COMMIT_SHA
+    KAZARMA_TAG: $CI_COMMIT_SHA
+  image: dwdraju/alpine-curl-jq
+  # amazing hack from
+  # https://gitlab.com/davebarr/multi-pipeline-project-1/-/blob/100f7dbfb881b5ae5e87d8d89407c0970f1bcd42/.gitlab-ci.yml
   script:
-    - docker-compose pull kazarma
-    - docker-compose up -d kazarma
-    - docker-compose run kazarma eval "Kazarma.Release.migrate()"
+    - iid=$(curl -X POST -F "token=$CI_JOB_TOKEN" -F ref=main -F "variables[ENV]=staging" -F "variables[KAZARMA_TAG]=$CI_COMMIT_SHA" "https://gitlab.com/api/v4/projects/36494803/trigger/pipeline" | jq -r .id)
+    - >
+      curl -X GET -H "PRIVATE-TOKEN: $API_TOKEN" "https://gitlab.com/api/v4/projects/36494803/pipelines/$iid"
+    - exit 0
+    # unfortunately it doesn't seem to work without a user or group token?
+    # - |
+    #   while true; do
+    #     pipeline_status=$(curl -X GET -H "PRIVATE-TOKEN: $API_TOKEN" "https://gitlab.com/api/v4/projects/36494803/pipelines/$iid" | jq -r .status)
+    #     echo $pipeline_status
+    #     case "$pipeline_status" in
+    #       success)
+    #         exit 0
+    #       ;;
+    #       canceled | failed | skipped | manual | scheduled)
+    #         exit 1
+    #       ;;
+    #     esac
+    #     sleep 5
+    #   done
+
 
 ### analysis
 
