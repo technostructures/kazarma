@@ -7,4 +7,5 @@ defmodule Kazarma.ActivityPub.ServerBehaviour do
 
   @callback create(map(), String.t() | nil) :: {:ok, any()} | {:error, any()}
   @callback update(map()) :: {:ok, any()} | {:error, any()}
+  @callback follow(map(), map()) :: {:ok, any()} | {:error, any()}
 end

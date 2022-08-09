@@ -349,5 +349,47 @@ defmodule Kazarma.ActivityPub.NoteTest do
 
       assert :ok = handle_activity(note)
     end
+
+    def public_note_fixture do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://kazarma/pub/actors/bob",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Note",
+            "source" => "hello",
+            "actor" => "http://pleroma/pub/actors/alice",
+            "conversation" => "http://pleroma/pub/contexts/context",
+            "attachment" => nil
+          }
+        }
+      }
+    end
+
+    test "receiving a public note forwards it to the puppet's timeline room" do
+      Kazarma.Matrix.TestClient
+      |> expect(:send_message, fn "!room:kazarma",
+                                  {"hello \uFEFF", "hello"},
+                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
+        {:ok, :something}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma/pub/actors/alice",
+        data: %{
+          "type" => "outbox",
+          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+        }
+      }
+      |> Kazarma.Matrix.Bridge.create_room()
+
+      assert :ok = handle_activity(public_note_fixture())
+    end
   end
 end
