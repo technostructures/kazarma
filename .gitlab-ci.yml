@@ -203,7 +203,7 @@ credo:
   needs:
     - prepare_test
   script:
-    - mix credo suggest --only readability | tee credo.log
+    - mix credo suggest | tee credo.log
   artifacts:
     when: always
     paths:
