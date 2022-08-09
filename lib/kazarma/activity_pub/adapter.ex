@@ -10,6 +10,8 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   alias ActivityPub.Actor
   alias ActivityPub.Object
+  alias KazarmaWeb.Endpoint
+  alias KazarmaWeb.Router.Helpers, as: Routes
 
   @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
@@ -37,19 +39,21 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
-    with {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub]),
+    with {:ok, matrix_id} <- Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub]),
          {:ok, %{"user_id" => ^matrix_id}} <-
            Kazarma.Matrix.Client.register(matrix_id) do
       Kazarma.Matrix.Client.put_displayname(matrix_id, name)
       avatar_url = get_in(data, ["icon", "url"])
       if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
 
-      Kazarma.Matrix.Bridge.create_user(%{
-        local_id: matrix_id,
-        remote_id: ap_id,
-        data: %{}
-      })
+      {:ok, _bridge_user} =
+        Kazarma.Matrix.Bridge.create_user(%{
+          local_id: matrix_id,
+          remote_id: ap_id,
+          data: %{}
+        })
 
+      # should we always create a corresponding timeline room?
       :ok
     end
   end
@@ -88,7 +92,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Kazarma.ActivityPub.Activity.Note.forward_to_matrix(activity)
+    Kazarma.ActivityPub.Activity.Note.forward_create_to_matrix(activity)
   end
 
   # Pleroma style message
@@ -104,7 +108,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Kazarma.ActivityPub.Activity.ChatMessage.forward_to_matrix(activity)
+    Kazarma.ActivityPub.Activity.ChatMessage.forward_create_to_matrix(activity)
   end
 
   def handle_activity(%Object{} = object) do

@@ -7,4 +7,5 @@ defmodule Kazarma.ActivityPub do
 
   defdelegate create(params, pointer \\ nil), to: @activitypub_server
   defdelegate update(params), to: @activitypub_server
+  defdelegate follow(follower, followed), to: @activitypub_server
 end

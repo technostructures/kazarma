@@ -32,10 +32,13 @@ defmodule Kazarma.Matrix.Transaction do
       # room = Bridge.get_room_by_local_id(room_id) || Bridge.create_room(local_id: room_id, )
       case Bridge.get_room_by_local_id(room_id) do
         %Room{data: %{"type" => "chat_message"}} = room ->
-          Kazarma.ActivityPub.Activity.ChatMessage.forward_to_activitypub(event, room)
+          Kazarma.ActivityPub.Activity.ChatMessage.forward_create_to_activitypub(event, room)
 
         %Room{data: %{"type" => "note"}} = room ->
-          Kazarma.ActivityPub.Activity.Note.forward_to_activitypub(event, room)
+          Kazarma.ActivityPub.Activity.Note.forward_create_to_activitypub(event, room)
+
+        %Room{data: %{"type" => "outbox"}} = room ->
+          Kazarma.ActivityPub.Activity.Note.forward_create_to_activitypub(event, room)
 
         nil ->
           :ok
@@ -60,6 +63,7 @@ defmodule Kazarma.Matrix.Transaction do
     case Kazarma.Address.matrix_id_to_actor(user_id) do
       {:ok, %ActivityPub.Actor{local: true} = actor} ->
         bridge_profile_change(user_id, actor, content)
+        maybe_follow(room_id, actor, content)
 
       {:ok, %ActivityPub.Actor{local: false}} ->
         accept_puppet_invitation(user_id, sender_id, room_id, content)
@@ -89,6 +93,19 @@ defmodule Kazarma.Matrix.Transaction do
   end
 
   defp accept_puppet_invitation(_user_id, _sender_id, _room_id, _event_content), do: :ok
+
+  defp maybe_follow(room_id, follower, %{"membership" => "join"}) do
+    case Bridge.get_room_by_local_id(room_id) do
+      %Room{data: %{"type" => "outbox"}, remote_id: followed_ap_id} ->
+        {:ok, followed} = ActivityPub.Actor.get_or_fetch_by_ap_id(followed_ap_id)
+        Kazarma.ActivityPub.follow(follower, followed)
+
+      _ ->
+        nil
+    end
+  end
+
+  defp maybe_follow(_room_id, _follower, _content), do: nil
 
   defp bridge_profile_change(matrix_id, actor, content) do
     Logger.debug("bridge profile change")

@@ -57,20 +57,23 @@ defmodule Kazarma.Matrix.Client do
     )
   end
 
+  def upload_media(matrix_id, url) do
+    {:ok, %Tesla.Env{body: image_bin}} = ActivityPub.HTTP.get(url)
+    filename = Path.basename(url)
+    mimetype = MIME.from_path(filename)
+
+    @matrix_client.upload(
+      @matrix_client.client(user_id: matrix_id),
+      image_bin,
+      filename: filename,
+      mimetype: mimetype
+    )
+  end
+
   def upload_and_set_avatar(matrix_id, avatar_url) do
-    with {:ok, image_bin} <- download_file(avatar_url),
-         filename = Path.basename(avatar_url),
-         mimetype = MIME.from_path(filename),
-         {:ok, matrix_url} <-
-           @matrix_client.upload(
-             @matrix_client.client(user_id: matrix_id),
-             image_bin,
-             filename: filename,
-             mimetype: mimetype
-           ),
-         :ok <- put_avatar_url(matrix_id, matrix_url) do
-      :ok
-    end
+    {:ok, matrix_url} = upload_media(matrix_id, avatar_url)
+    :ok = put_avatar_url(matrix_id, matrix_url)
+    :ok
   end
 
   def create_attachment_message(matrix_id, file_bin, opts) do
@@ -121,23 +124,24 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def create_direct_room(from_matrix_id, to_matrix_id) do
-    with {:ok, %{"room_id" => room_id}} <-
-           @matrix_client.create_room(
-             [
-               visibility: :private,
-               name: nil,
-               topic: nil,
-               is_direct: true,
-               invite: [to_matrix_id],
-               room_version: "5"
-             ],
-             user_id: from_matrix_id
-           ) do
-      put_new_direct_room_data(from_matrix_id, to_matrix_id, room_id)
+    case @matrix_client.create_room(
+           [
+             visibility: :private,
+             name: nil,
+             topic: nil,
+             is_direct: true,
+             invite: [to_matrix_id],
+             room_version: "5"
+           ],
+           user_id: from_matrix_id
+         ) do
+      {:ok, %{"room_id" => room_id}} ->
+        put_new_direct_room_data(from_matrix_id, to_matrix_id, room_id)
 
-      {:ok, %{"room_id" => room_id}}
-    else
-      error -> error
+        {:ok, %{"room_id" => room_id}}
+
+      error ->
+        error
     end
   end
 
@@ -183,10 +187,35 @@ defmodule Kazarma.Matrix.Client do
     )
   end
 
-  def send_tagged_message(_room_id, _from_id, nil), do: {:ok, :empty_message_not_sent}
+  def create_outbox_room(
+        creator,
+        invites,
+        name \\ nil,
+        room_alias_name \\ nil
+      ) do
+    @matrix_client.create_room(
+      [
+        visibility: :public,
+        name: name,
+        topic: nil,
+        is_direct: false,
+        invite: invites,
+        room_version: "5",
+        room_alias_name: room_alias_name,
+        # power_level_content_override: %{},
+        initial_state: [%{type: "m.room.guest_access", content: %{guest_access: :can_join}}]
+      ],
+      user_id: creator
+    )
+  end
 
-  def send_tagged_message(room_id, from_id, body) do
-    @matrix_client.send_message(room_id, {body <> " \ufeff", body <> " \ufeff"}, user_id: from_id)
+  def send_tagged_message(_room_id, _from_id, nil, _formatted_body),
+    do: {:ok, :empty_message_not_sent}
+
+  def send_tagged_message(room_id, from_id, body, formatted_body \\ nil) do
+    @matrix_client.send_message(room_id, {body <> " \ufeff", formatted_body || body},
+      user_id: from_id
+    )
   end
 
   def send_message(room_id, from_id, msg) do
@@ -200,6 +229,8 @@ defmodule Kazarma.Matrix.Client do
     |> URI.merge("/_matrix/media/r0/download/" <> server_name <> "/" <> media_id)
     |> URI.to_string()
   end
+
+  def get_alias(alias), do: Polyjuice.Client.Room.get_alias(@matrix_client.client(), alias)
 
   def get_media_url(nil), do: nil
 

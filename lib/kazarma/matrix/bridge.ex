@@ -21,6 +21,14 @@ defmodule Kazarma.Matrix.Bridge do
     })
   end
 
+  def insert_outbox_room(room_id, ap_id, matrix_id) do
+    create_room(%{
+      local_id: room_id,
+      remote_id: ap_id,
+      data: %{type: :outbox, matrix_id: matrix_id}
+    })
+  end
+
   def join_or_create_note_bridge_room(room_id, user_id) do
     room =
       case get_room_by_local_id(room_id) do
