@@ -12,7 +12,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias ActivityPub.Actor
   alias ActivityPub.Object
-  # alias KazarmaWeb.Router.Helpers, as: Routes
+  alias KazarmaWeb.Router.Helpers, as: Routes
 
   @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
@@ -201,6 +201,57 @@ defmodule Kazarma.ActivityPub.Adapter do
         } = activity
       ) do
     Kazarma.ActivityPub.Activity.Video.forward_create_to_matrix(activity)
+  end
+
+  # Event
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Create",
+            "object" => %{
+              "type" => "Event"
+            }
+          }
+        } = activity
+      ) do
+    Logger.debug("received Create Event activity")
+    Kazarma.ActivityPub.Activity.Event.forward_create_to_matrix(activity)
+  end
+
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Announce",
+            "object" => object_ap_id
+          }
+        } = activity
+      ) do
+    case ActivityPub.Object.get_or_fetch_by_ap_id(object_ap_id) do
+      {:ok, %Object{data: %{"type" => "Event"}} = object} ->
+        Kazarma.ActivityPub.Activity.Event.forward_announce_to_matrix(activity, object)
+
+      _ ->
+        Logger.debug("unhandled Announce activity")
+    end
+  end
+
+  # Instance following (Mobilizon style)
+  def handle_activity(%{
+        data: %{
+          "type" => "Follow",
+          "actor" => remote_relay_ap_id,
+          "object" => local_relay_ap_id
+        }
+      }) do
+    Logger.debug("try following back remote relay")
+
+    if local_relay_ap_id ==
+         Routes.activity_pub_url(Endpoint, :actor, "relay") do
+      Logger.debug("following back remote relay")
+      {:ok, local_relay} = ActivityPub.Actor.get_cached_by_ap_id(local_relay_ap_id)
+      {:ok, remote_relay} = ActivityPub.Actor.get_cached_by_ap_id(remote_relay_ap_id)
+      ActivityPub.follow(local_relay, remote_relay)
+    end
   end
 
   def handle_activity(%Object{} = object) do
