@@ -9,7 +9,7 @@ defmodule Kazarma.Matrix.UserTest do
   # This is an account created on a public ActivityPub instance
   @ap_user_server "kiwifarms.cc"
   @ap_user_name "test_user_bob2"
-  @ap_puppet_username "ap_#{@ap_user_name}___#{@ap_user_server}"
+  @ap_puppet_username "_ap_#{@ap_user_name}___#{@ap_user_server}"
   @ap_puppet_matrix_id "@#{@ap_puppet_username}:kazarma"
 
   describe "User search (Synapse asks the application service for a user in its namespace)" do
@@ -21,7 +21,7 @@ defmodule Kazarma.Matrix.UserTest do
       |> expect(:client, 1, fn [user_id: @ap_puppet_matrix_id] ->
         :client_puppet
       end)
-      |> expect(:register, 2, fn
+      |> expect(:register, 1, fn
         [
           username: @ap_puppet_username,
           device_id: "KAZARMA_APP_SERVICE",
@@ -39,7 +39,7 @@ defmodule Kazarma.Matrix.UserTest do
     end
 
     test "if the AP user doesn't exist it returns an error" do
-      assert :error = query_user("@ap_nonexisting___pleroma:kazarma")
+      assert :error = query_user("@_ap_nonexisting___pleroma:kazarma")
     end
 
     test "if the address is not in puppet format it returns an error" do

@@ -91,19 +91,19 @@ defmodule Kazarma.ActivityPub.NoteTest do
         :client_kazarma
       end)
       |> expect(:register, fn [
-                                username: "ap_alice___pleroma",
+                                username: "_ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
                                 initial_device_display_name: "Kazarma",
                                 registration_type: "m.login.application_service"
                               ] ->
-        {:ok, %{"user_id" => "ap_alice___pleroma:kazarma"}}
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
       |> expect(:send_message, fn "!room:kazarma",
-                                  {"hello \uFEFF", "hello \uFEFF"},
-                                  [user_id: "@ap_alice___pleroma:kazarma"] ->
+                                  {"hello \uFEFF", "hello"},
+                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
         {:ok, :something}
       end)
 
@@ -112,7 +112,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
         remote_id: "http://pleroma/pub/contexts/context",
         data: %{
           "type" => "note",
-          "to" => ["@ap_alice___pleroma:kazarma", "@bob:kazarma"]
+          "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
       |> Kazarma.Matrix.Bridge.create_room()
@@ -126,12 +126,12 @@ defmodule Kazarma.ActivityPub.NoteTest do
         :client_kazarma
       end)
       |> expect(:register, fn [
-                                username: "ap_alice___pleroma",
+                                username: "_ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
                                 initial_device_display_name: "Kazarma",
                                 registration_type: "m.login.application_service"
                               ] ->
-        {:ok, %{"user_id" => "ap_alice___pleroma:kazarma"}}
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
@@ -145,12 +145,12 @@ defmodule Kazarma.ActivityPub.NoteTest do
           invite: ["@bob:kazarma"],
           room_version: "5"
         ],
-        [user_id: "@ap_alice___pleroma:kazarma"] ->
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, %{"room_id" => "!room:kazarma"}}
       end)
       |> expect(:send_message, fn "!room:kazarma",
-                                  {"hello \uFEFF", "hello \uFEFF"},
-                                  [user_id: "@ap_alice___pleroma:kazarma"] ->
+                                  {"hello \uFEFF", "hello"},
+                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
         {:ok, :something}
       end)
 
@@ -162,7 +162,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                  remote_id: "http://pleroma/pub/contexts/context",
                  data: %{
                    "type" => "note",
-                   "to" => ["@ap_alice___pleroma:kazarma", "@bob:kazarma"]
+                   "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
                  }
                }
              ] = Kazarma.Matrix.Bridge.list_rooms()
@@ -175,16 +175,16 @@ defmodule Kazarma.ActivityPub.NoteTest do
       end)
       |> expect(:client, 2, fn
         [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "ap_alice___pleroma:kazarma"] -> :client_alice
-        [user_id: "@ap_alice___pleroma:kazarma"] -> :client_alice
+        [user_id: "_ap_alice___pleroma:kazarma"] -> :client_alice
+        [user_id: "@_ap_alice___pleroma:kazarma"] -> :client_alice
       end)
       |> expect(:register, fn [
-                                username: "ap_alice___pleroma",
+                                username: "_ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
                                 initial_device_display_name: "Kazarma",
                                 registration_type: "m.login.application_service"
                               ] ->
-        {:ok, %{"user_id" => "ap_alice___pleroma:kazarma"}}
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
@@ -219,9 +219,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
            }}
       end)
       |> expect(:send_message, 3, fn
-        "!room:kazarma",
-        {"hello \uFEFF", "hello \uFEFF"},
-        [user_id: "@ap_alice___pleroma:kazarma"] ->
+        "!room:kazarma", {"hello \uFEFF", "hello"}, [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, :something}
 
         "!room:kazarma",
@@ -232,7 +230,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
             "mimetype" => "image/jpeg"
           }
         },
-        [user_id: "@ap_alice___pleroma:kazarma"] ->
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, :something}
 
         "!room:kazarma",
@@ -243,7 +241,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
             "mimetype" => "image/jpeg"
           }
         },
-        [user_id: "@ap_alice___pleroma:kazarma"] ->
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, :something}
       end)
 
@@ -252,7 +250,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
         remote_id: "http://pleroma.local/contexts/aabbccddeeff",
         data: %{
           "type" => "note",
-          "to" => ["@ap_alice___pleroma:kazarma", "@bob:kazarma"]
+          "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
       |> Kazarma.Matrix.Bridge.create_room()
@@ -267,16 +265,16 @@ defmodule Kazarma.ActivityPub.NoteTest do
       end)
       |> expect(:client, 2, fn
         [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "ap_alice___pleroma:kazarma"] -> :client_alice
-        [user_id: "@ap_alice___pleroma:kazarma"] -> :client_alice
+        [user_id: "_ap_alice___pleroma:kazarma"] -> :client_alice
+        [user_id: "@_ap_alice___pleroma:kazarma"] -> :client_alice
       end)
       |> expect(:register, fn [
-                                username: "ap_alice___pleroma",
+                                username: "_ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
                                 initial_device_display_name: "Kazarma",
                                 registration_type: "m.login.application_service"
                               ] ->
-        {:ok, %{"user_id" => "ap_alice___pleroma:kazarma"}}
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
       end)
       |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
@@ -319,7 +317,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
             "mimetype" => "image/jpeg"
           }
         },
-        [user_id: "@ap_alice___pleroma:kazarma"] ->
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, :something}
 
         "!room:kazarma",
@@ -330,7 +328,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
             "mimetype" => "image/jpeg"
           }
         },
-        [user_id: "@ap_alice___pleroma:kazarma"] ->
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, :something}
       end)
 
@@ -339,7 +337,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
         remote_id: "http://pleroma.local/contexts/aabbccddeeff",
         data: %{
           "type" => "note",
-          "to" => ["@ap_alice___pleroma:kazarma", "@bob:kazarma"]
+          "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
       |> Kazarma.Matrix.Bridge.create_room()
