@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
 
-FROM bitwalker/alpine-elixir-phoenix:1.11.3
+FROM bitwalker/alpine-elixir-phoenix:1.13
 
 ENV HEX_HTTP_CONCURRENCY=1
 ENV HEX_HTTP_TIMEOUT=240

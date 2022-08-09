@@ -132,7 +132,7 @@ services:
       - traefik.http.routers.delegations.tls=true
 
   element:
-    image: vectorim/riot-web
+    image: vectorim/element-web:v1.11.0
     labels:
       - traefik.enable=true
       - traefik.http.services.element.loadbalancer.server.port=80
