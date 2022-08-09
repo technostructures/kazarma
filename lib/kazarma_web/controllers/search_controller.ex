@@ -20,10 +20,10 @@ defmodule KazarmaWeb.SearchController do
   end
 
   defp halt_if_disabled(conn, _opts) do
-    unless Application.get_env(:kazarma, :html_search, false) do
-      conn |> redirect(to: "/") |> halt()
-    else
+    if Application.get_env(:kazarma, :html_search, false) do
       conn
+    else
+      conn |> redirect(to: "/") |> halt()
     end
   end
 end

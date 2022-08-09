@@ -6,8 +6,8 @@ defmodule Kazarma.Config do
   """
   defmacro __using__(_) do
     quote do
-      @matrix_client Application.get_env(:kazarma, :matrix) |> Keyword.fetch!(:client)
-      @activitypub_server Application.get_env(:kazarma, :activity_pub) |> Keyword.fetch!(:server)
+      @matrix_client Application.compile_env!(:kazarma, [:matrix, :client])
+      @activitypub_server Application.compile_env!(:kazarma, [:activity_pub, :server])
     end
   end
 end

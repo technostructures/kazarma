@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 defmodule Kazarma.ActivityPub.Activity.ChatMessage do
   @moduledoc """
-  Functions for ChatMessage activities, used Pleroma for its chat system.
+  Functions for ChatMessage activities, used by Pleroma for its chat system.
   """
   alias ActivityPub.Object
   alias Kazarma.Address
@@ -15,11 +15,19 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
     object = %{
       "type" => "ChatMessage",
       "content" => content,
-      "attachment" => attachment,
       "actor" => sender.ap_id,
       "attributedTo" => sender.ap_id,
       "to" => [receiver_id]
     }
+
+    Logger.error(inspect(attachment))
+
+    object =
+      if is_nil(attachment) do
+        object
+      else
+        Map.put(object, "attachment", attachment)
+      end
 
     params = %{
       actor: sender,
@@ -31,7 +39,7 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
     Kazarma.ActivityPub.create(params)
   end
 
-  def forward_to_matrix(%{
+  def forward_create_to_matrix(%{
         data: %{
           "actor" => from_id,
           "to" => [to_id]
@@ -63,7 +71,9 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
     end
   end
 
-  def forward_to_activitypub(
+  def forward_create_to_matrix(_), do: :ok
+
+  def forward_create_to_activitypub(
         %Event{
           sender: sender,
           type: "m.room.message",
@@ -81,6 +91,8 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
       create(actor, remote_id, body, attachment)
     end
   end
+
+  def forward_create_to_activitypub(_), do: :ok
 
   def accept_puppet_invitation(user_id, room_id) do
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),

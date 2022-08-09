@@ -93,22 +93,22 @@ defmodule Kazarma.ActivityPub.ActorTest do
     test "it registers a puppet user" do
       Kazarma.Matrix.TestClient
       |> expect(:client, 3, fn
-        [user_id: "@ap_bob___pleroma:kazarma"] -> :client_bob
+        [user_id: "@_ap_bob___pleroma:kazarma"] -> :client_bob
       end)
       |> expect(:register, fn [
-                                username: "ap_bob___pleroma",
+                                username: "_ap_bob___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
                                 initial_device_display_name: "Kazarma",
                                 registration_type: "m.login.application_service"
                               ] ->
-        {:ok, %{"user_id" => "@ap_bob___pleroma:kazarma"}}
+        {:ok, %{"user_id" => "@_ap_bob___pleroma:kazarma"}}
       end)
-      |> expect(:put_displayname, fn :client_bob, "@ap_bob___pleroma:kazarma", "Bob" ->
+      |> expect(:put_displayname, fn :client_bob, "@_ap_bob___pleroma:kazarma", "Bob" ->
         :ok
       end)
       |> expect(:upload, fn :client_bob, _blob, _opts -> {:ok, "mxc://server/media_id"} end)
       |> expect(:put_avatar_url, fn :client_bob,
-                                    "@ap_bob___pleroma:kazarma",
+                                    "@_ap_bob___pleroma:kazarma",
                                     "mxc://server/media_id" ->
         :ok
       end)

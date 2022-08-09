@@ -17,11 +17,17 @@ defmodule Kazarma.Address do
 
   def domain, do: Application.fetch_env!(:activity_pub, :domain)
 
-  def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "ap_")
+  def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "_ap_")
 
   def get_username_localpart(username) do
     username
     |> String.replace_suffix("@#{Kazarma.Address.domain()}", "")
+    |> String.replace_leading("@", "")
+  end
+
+  def get_matrix_id_localpart(username) do
+    username
+    |> String.replace_suffix(":#{Kazarma.Address.domain()}", "")
     |> String.replace_leading("@", "")
   end
 
@@ -96,10 +102,10 @@ defmodule Kazarma.Address do
     KazarmaWeb.Router.Helpers.activity_pub_url(KazarmaWeb.Endpoint, :actor, localpart)
   end
 
-  def ap_id_to_matrix(ap_id) do
+  def ap_id_to_matrix(ap_id, types \\ [:remote_matrix, :local_matrix, :activity_pub]) do
     case ActivityPub.Actor.get_cached_by_ap_id(ap_id) do
       {:ok, %ActivityPub.Actor{username: username}} ->
-        ap_username_to_matrix_id(username)
+        ap_username_to_matrix_id(username, types)
 
       _ ->
         {:error, :not_found}
@@ -122,9 +128,7 @@ defmodule Kazarma.Address do
     regex = ~r/^@?(?<localpart>[#{@matrix_chars}=]+):(?<domain>#{@valid_domain})$/
 
     sub_regex =
-      ~r/#{puppet_prefix()}(?<localpart>[#{@matrix_chars}]+)#{@matrix_puppet_separation}(?<domain>#{
-        @valid_domain
-      })/
+      ~r/#{puppet_prefix()}(?<localpart>[#{@matrix_chars}]+)#{@matrix_puppet_separation}(?<domain>#{@valid_domain})/
 
     case Regex.named_captures(regex, user_id) do
       %{"localpart" => localpart, "domain" => ^domain} ->

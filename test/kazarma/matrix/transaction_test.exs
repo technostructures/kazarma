@@ -16,13 +16,13 @@ defmodule Kazarma.Matrix.TransactionTest do
   @pleroma_user_server "kiwifarms.cc"
   @pleroma_user_name "test_user_bob2"
   @pleroma_user_displayname "Bob"
-  @pleroma_puppet_username "ap_#{@pleroma_user_name}___#{@pleroma_user_server}"
+  @pleroma_puppet_username "_ap_#{@pleroma_user_name}___#{@pleroma_user_server}"
   @pleroma_puppet_address "@#{@pleroma_puppet_username}:kazarma"
 
   @mastodon_user_server "mastodon.social"
   @mastodon_user_name "test_user_alice1"
   @mastodon_user_displayname "Alice"
-  @mastodon_puppet_username "ap_#{@mastodon_user_name}___#{@mastodon_user_server}"
+  @mastodon_puppet_username "_ap_#{@mastodon_user_name}___#{@mastodon_user_server}"
   @mastodon_puppet_address "@#{@mastodon_puppet_username}:kazarma"
 
   describe "User invitation" do
@@ -44,7 +44,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         type: "m.room.member",
         content: %{"membership" => "invite", "is_direct" => true},
         room_id: "!direct_room:kazarma",
-        state_key: "@ap_nonexisting1___pleroma:kazarma"
+        state_key: "@_ap_nonexisting1___pleroma:kazarma"
       }
     end
 
@@ -71,7 +71,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         type: "m.room.member",
         content: %{"membership" => "invite"},
         room_id: "!room:kazarma",
-        state_key: "@ap_nonexisting2___pleroma:kazarma"
+        state_key: "@_ap_nonexisting2___pleroma:kazarma"
       }
     end
 

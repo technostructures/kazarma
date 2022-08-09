@@ -8,7 +8,7 @@ stages:
   - deploy_production
   - docs
 
-image: bitwalker/alpine-elixir:1.11
+image: elixir:1.13-otp-25-alpine
 
 cache: &global_cache
   key: cache-test
@@ -28,6 +28,10 @@ variables:
   stage: setup
   interruptible: true
   script:
+    - apk update
+    - apk add git
+    - mix local.hex --force
+    - mix local.rebar --force
     - mix deps.get
     - mix compile
 
@@ -142,6 +146,14 @@ deploy_staging:
   stage: analysis
   interruptible: true
 
+.mix:
+  before_script:
+    - apk update
+    - apk add git
+    - mix local.hex --force
+    - mix deps.get
+    - mix compile
+
 test:
   extends: .analysis
   needs:
@@ -156,6 +168,11 @@ test:
     POSTGRES_HOST_AUTH_METHOD: trust
     MIX_ENV: test
   before_script:
+    - apk update
+    - apk add git
+    - mix local.hex --force
+    - mix deps.get
+    - mix compile
     - mix ecto.create
     - mix ecto.migrate
   script:
@@ -171,25 +188,31 @@ test:
         path: coverage.xml
 
 format:
-  extends: .analysis
+  extends:
+    - .analysis
+    - .mix
   needs:
     - prepare_test
   script:
     - mix format --check-formatted
 
 credo:
-  extends: .analysis
+  extends:
+    - .analysis
+    - .mix
   needs:
     - prepare_test
   script:
-    - mix credo suggest --only readability | tee credo.log
+    - mix credo suggest | tee credo.log
   artifacts:
     when: always
     paths:
       - "credo.log"
 
 dialyzer:
-  extends: .analysis
+  extends:
+    - .analysis
+    - .mix
   needs:
     - prepare_test
   script:

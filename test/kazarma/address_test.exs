@@ -47,16 +47,16 @@ defmodule Kazarma.AddressTest do
   describe "ap_username_to_matrix_id/2" do
     test "remote" do
       assert ap_username_to_matrix_id("TeS_t@ex-sample.edu") ==
-               {:ok, "@ap_tes_t___ex-sample.edu:kazarma"}
+               {:ok, "@_ap_tes_t___ex-sample.edu:kazarma"}
 
       assert ap_username_to_matrix_id("@teSt@xn--exsampleedu") ==
-               {:ok, "@ap_test___xn--exsampleedu:kazarma"}
+               {:ok, "@_ap_test___xn--exsampleedu:kazarma"}
 
       assert ap_username_to_matrix_id("xn--teS.t@exsampleedu") ==
-               {:ok, "@ap_xn--tes.t___exsampleedu:kazarma"}
+               {:ok, "@_ap_xn--tes.t___exsampleedu:kazarma"}
 
       assert ap_username_to_matrix_id("TeS_t@ex-sample.edu", [:activity_pub]) ==
-               {:ok, "@ap_tes_t___ex-sample.edu:kazarma"}
+               {:ok, "@_ap_tes_t___ex-sample.edu:kazarma"}
 
       assert ap_username_to_matrix_id("TeS_t@ex-sample.edu", [:remote_matrix]) ==
                {:error, :not_found}
@@ -96,7 +96,7 @@ defmodule Kazarma.AddressTest do
   describe "parse_matrix_username/1" do
     test("recognizes correct local Matrix addresses") do
       assert parse_matrix_id("tes-t:kazarma") == {:local_matrix, "tes-t"}
-      assert parse_matrix_id("ap_te.s=-t:kazarma") == {:local_matrix, "ap_te.s=-t"}
+      assert parse_matrix_id("_ap_te.s=-t:kazarma") == {:local_matrix, "_ap_te.s=-t"}
     end
 
     test("recognizes correct remote Matrix addresses") do
@@ -132,7 +132,7 @@ defmodule Kazarma.AddressTest do
     end
 
     test("recognizes correct puppet Matrix addresses") do
-      assert parse_matrix_id("ap_te___sa.t:kazarma") == {:activity_pub, "te", "sa.t"}
+      assert parse_matrix_id("_ap_te___sa.t:kazarma") == {:activity_pub, "te", "sa.t"}
     end
 
     test("rejects invalid Matrix addresses") do
@@ -153,7 +153,7 @@ defmodule Kazarma.AddressTest do
   describe "matrix_id_to_ap_username/1" do
     test("recognizes correct local Matrix addresses") do
       assert matrix_id_to_ap_username("tes-t:kazarma") == {:ok, "tes-t@kazarma"}
-      assert matrix_id_to_ap_username("ap_te.s=-t:kazarma") == {:ok, "ap_te.s=-t@kazarma"}
+      assert matrix_id_to_ap_username("_ap_te.s=-t:kazarma") == {:ok, "_ap_te.s=-t@kazarma"}
 
       assert matrix_id_to_ap_username("test=test:kazarma", [:activity_pub]) ==
                {:error, :not_found}
@@ -186,13 +186,15 @@ defmodule Kazarma.AddressTest do
     end
 
     test("recognizes correct puppet Matrix addresses") do
-      assert matrix_id_to_ap_username("ap_te___sa.t:kazarma") == {:ok, "te@sa.t"}
-      assert matrix_id_to_ap_username("ap_te___sa.t:kazarma", [:activity_pub]) == {:ok, "te@sa.t"}
+      assert matrix_id_to_ap_username("_ap_te___sa.t:kazarma") == {:ok, "te@sa.t"}
 
-      assert matrix_id_to_ap_username("ap_te___sa.t:kazarma", [:local_matrix]) ==
+      assert matrix_id_to_ap_username("_ap_te___sa.t:kazarma", [:activity_pub]) ==
+               {:ok, "te@sa.t"}
+
+      assert matrix_id_to_ap_username("_ap_te___sa.t:kazarma", [:local_matrix]) ==
                {:error, :not_found}
 
-      assert matrix_id_to_ap_username("ap_te___sa.t:kazarma", [:remote_matrix]) ==
+      assert matrix_id_to_ap_username("_ap_te___sa.t:kazarma", [:remote_matrix]) ==
                {:error, :not_found}
     end
 

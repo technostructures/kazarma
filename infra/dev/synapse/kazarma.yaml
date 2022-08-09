@@ -5,10 +5,10 @@ hs_token: "MDAyMGxvY2F0aW9uIG1hdHJpeC5pbWFnby5sb2NhbAowMDEzaWRlbnRpZmllciBrZXkKM
 sender_localpart: "_kazarma" # Will result in @_irc_bot:example.org
 namespaces:
   aliases:
-    - exclusive: false
-      regex: "#ap_.+___.+:kazarma.local"
+    - exclusive: true
+      regex: "#_ap_.+___.+:kazarma.local"
   users:
     - exclusive: true
-      regex: "@ap_.+___.+:kazarma.local"
+      regex: "@_ap_.+___.+:kazarma.local"
     - exclusive: false
       regex: "@.+:kazarma.local"

@@ -20,7 +20,7 @@
 #   docker image, with a development
 #   toolset.
 # -----------------------------------
-FROM qhwa/elixir-builder:1.12 AS elixir-builder
+FROM bitwalker/alpine-elixir-phoenix:1.13 AS elixir-builder
 
 # If you're using a hex mirror:
 # ARG HEX_MIRROR=https://my_hex_mirror
@@ -28,10 +28,10 @@ FROM qhwa/elixir-builder:1.12 AS elixir-builder
 RUN mix local.hex --force
 RUN mix local.rebar --force
 
-RUN mkdir -p /root/.config/rebar3 && \
-  echo '{plugins, [rebar3_hex]}.' > /root/.config/rebar3/rebar.config
+RUN mkdir -p .config/rebar3 && \
+  echo '{plugins, [rebar3_hex]}.' > .config/rebar3/rebar.config
 
-RUN /root/.mix/rebar3 plugins upgrade rebar3_hex
+RUN /opt/mix/rebar3 plugins upgrade rebar3_hex
 
 # -----------------------------------
 # Base Image #2: Elixir Runner
@@ -40,7 +40,7 @@ RUN /root/.mix/rebar3 plugins upgrade rebar3_hex
 #   system image to host your
 #   application
 # -----------------------------------
-FROM qhwa/elixir-runner:latest as elixir-runner
+FROM alpine:latest as elixir-runner
 
 # You can add any libraries required by your application
 # here:
@@ -187,6 +187,8 @@ FROM elixir-runner AS release_image
 
 ARG APP_REVISION=latest
 ARG MIX_ENV=prod
+
+RUN mkdir /app
 
 RUN chown nobody:nogroup /app
 
