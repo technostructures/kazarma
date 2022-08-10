@@ -244,6 +244,7 @@ reuse:
 ### docs
 
 pages:
+  extends: .mix
   stage: docs
   only:
     - master
