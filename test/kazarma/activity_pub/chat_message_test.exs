@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-
 defmodule Kazarma.ActivityPub.ChatMessageTest do
   use Kazarma.DataCase
 
@@ -40,7 +39,8 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
         object: %ActivityPub.Object{
           data: %{
             "type" => "ChatMessage",
-            "content" => "hello"
+            "content" => "hello",
+            "id" => "chat_message_id"
           }
         }
       }
@@ -57,6 +57,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
           data: %{
             "type" => "ChatMessage",
             "content" => "hello",
+            "id" => "chat_message_id",
             "attachment" => %{
               "mediaType" => "image/jpeg",
               "name" => nil,
@@ -124,7 +125,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       |> expect(:send_message, fn "!room:kazarma",
                                   {"hello \uFEFF", "hello"},
                                   [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, :something}
+        {:ok, "event_id"}
       end)
 
       assert :ok = handle_activity(chat_message_fixture())
@@ -138,6 +139,14 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
                  }
                }
              ] = Kazarma.Matrix.Bridge.list_rooms()
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "chat_message_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
 
     test "when receiving a ChatMessage activity for an existing conversation gets the corresponding room and forwards the message" do
@@ -168,10 +177,18 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       |> expect(:send_message, fn "!room:kazarma",
                                   {"hello \uFEFF", "hello"},
                                   [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, :something}
+        {:ok, "event_id"}
       end)
 
       assert :ok = handle_activity(chat_message_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "chat_message_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
 
     test "when receiving a ChatMessage activity with an attachement and some text forwards both the attachment and the text" do
@@ -211,7 +228,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       end)
       |> expect(:send_message, 2, fn
         "!room:kazarma", {"hello \uFEFF", "hello"}, [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, :something}
+          {:ok, "event_id1"}
 
         "!room:kazarma",
         %{
@@ -222,10 +239,18 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
           }
         },
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, :something}
+          {:ok, "event_id2"}
       end)
 
       assert :ok = handle_activity(chat_message_with_attachment_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id1",
+                 remote_id: "chat_message_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
 
     test "when receiving a ChatMessage activity with an attachement and no text forwards only the attachment" do
@@ -273,7 +298,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
           }
         },
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, :something}
+          {:ok, "event_id"}
       end)
 
       chat_message =
@@ -284,6 +309,14 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
         )
 
       assert :ok = handle_activity(chat_message)
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "chat_message_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
   end
 end

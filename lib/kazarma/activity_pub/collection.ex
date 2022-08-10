@@ -30,8 +30,7 @@ defmodule Kazarma.ActivityPub.Collection do
   end
 
   def get_or_create_outbox(
-        %ActivityPub.Actor{ap_id: ap_id, data: %{"outbox" => _outbox_ap_id, "name" => name}} =
-          actor,
+        %ActivityPub.Actor{ap_id: ap_id, data: %{"name" => name}} = actor,
         matrix_id
       ) do
     alias = Kazarma.Address.get_matrix_id_localpart(matrix_id)

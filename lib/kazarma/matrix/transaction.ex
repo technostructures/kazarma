@@ -25,6 +25,19 @@ defmodule Kazarma.Matrix.Transaction do
     Logger.debug("Attributing name #{name}")
   end
 
+  def new_event(%Event{
+        content: %{
+          "m.new_content" => _,
+          "m.relates_to" => %{"rel_type" => "m.replace"},
+          "org.matrix.msc1767.text" => _
+        },
+        type: "m.room.message"
+      }) do
+    Logger.debug("Replace message event")
+  end
+
+  def new_event(%Event{type: "m.room.message", content: content}) when content == %{}, do: :ok
+
   def new_event(%Event{type: "m.room.message", room_id: room_id} = event) do
     Logger.debug("Received m.room.message from Synapse")
 
@@ -46,11 +59,22 @@ defmodule Kazarma.Matrix.Transaction do
     end
 
     :ok
-  rescue
-    # for development, we prefere acknowledging transactions even if processing them fails
-    err ->
-      Logger.error(Exception.format(:error, err, __STACKTRACE__))
-      :ok
+  end
+
+  def new_event(
+        %Event{
+          type: "m.room.redaction",
+          room_id: room_id,
+          redacts: _redacts
+        } = event
+      ) do
+    if !is_tagged_redact(event) do
+      Logger.debug("Processing m.room.redaction event")
+
+      Kazarma.ActivityPub.Activity.forward_redaction(event)
+    end
+
+    :ok
   end
 
   def new_event(%Event{
@@ -174,4 +198,10 @@ defmodule Kazarma.Matrix.Transaction do
   end
 
   defp is_tagged_message(_), do: false
+
+  defp is_tagged_redact(%Event{content: %{"reason" => reason}}) do
+    String.ends_with?(reason, " \ufeff")
+  end
+
+  defp is_tagged_redact(_), do: false
 end
