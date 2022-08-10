@@ -31,6 +31,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     def invitation_event_direct_fixture do
       %Event{
+        event_id: "event_id",
         type: "m.room.member",
         content: %{"membership" => "invite", "is_direct" => true},
         sender: "@alice:kazarma",
@@ -41,6 +42,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     def invitation_event_direct_nonexisting do
       %Event{
+        event_id: "event_id",
         type: "m.room.member",
         content: %{"membership" => "invite", "is_direct" => true},
         room_id: "!direct_room:kazarma",
@@ -50,6 +52,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     def invitation_event_multiuser_fixture_pleroma do
       %Event{
+        event_id: "event_id",
         type: "m.room.member",
         content: %{"membership" => "invite"},
         room_id: "!room:kazarma",
@@ -59,6 +62,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     def invitation_event_multiuser_fixture_mastodon do
       %Event{
+        event_id: "event_id",
         type: "m.room.member",
         content: %{"membership" => "invite"},
         room_id: "!room:kazarma",
@@ -68,6 +72,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     def invitation_event_multiuser_fixture_nonexisting do
       %Event{
+        event_id: "event_id",
         type: "m.room.member",
         content: %{"membership" => "invite"},
         room_id: "!room:kazarma",
@@ -189,6 +194,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     def profile_update_fixture(displayname, avatar_url) do
       %Event{
+        event_id: "event_id",
         type: "m.room.member",
         content: %{"displayname" => displayname, "avatar_url" => avatar_url},
         room_id: "!room:kazarma",
@@ -325,8 +331,9 @@ defmodule Kazarma.Matrix.TransactionTest do
 
   def message_fixture do
     %Event{
+      event_id: "event_id",
       sender: "@bob:kazarma",
-      room_id: "!foo:kazarma",
+      room_id: "!room:kazarma",
       type: "m.room.message",
       content: %{"msgtype" => "m.text", "body" => "hello"}
     }
@@ -334,8 +341,9 @@ defmodule Kazarma.Matrix.TransactionTest do
 
   def message_with_attachment_fixture do
     %Event{
+      event_id: "event_id",
       sender: "@bob:kazarma",
-      room_id: "!foo:kazarma",
+      room_id: "!room:kazarma",
       type: "m.room.message",
       content: %{
         "body" => "hello.jpg",
@@ -358,7 +366,7 @@ defmodule Kazarma.Matrix.TransactionTest do
     setup do
       {:ok, _room} =
         Kazarma.Matrix.Bridge.create_room(%{
-          local_id: "!foo:kazarma",
+          local_id: "!room:kazarma",
           remote_id: nil,
           data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
         })
@@ -411,10 +419,18 @@ defmodule Kazarma.Matrix.TransactionTest do
           to: ["alice@pleroma"]
         },
         nil ->
-          {:ok, :activity}
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
       assert :ok == new_event(message_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "object_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
 
     test "when receiving a message with an attachment it forwards it in a ChatMessage activity" do
@@ -474,74 +490,20 @@ defmodule Kazarma.Matrix.TransactionTest do
           to: ["alice@pleroma"]
         },
         nil ->
-          {:ok, :activity}
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
       assert :ok == new_event(message_with_attachment_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "object_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
   end
-
-  # FIXME:
-  # describe "Message deletion in direct room" do
-  #   setup :set_mox_from_context
-  #   setup :verify_on_exit!
-
-  #   setup do
-  #     {:ok, _room} =
-  #       Kazarma.Matrix.Bridge.create_room(%{
-  #         local_id: "!foo:kazarma",
-  #         remote_id: "choco",
-  #         data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
-  #       })
-
-  #     :ok
-
-  #     {:ok, _event} =
-  #       Kazarma.Matrix.Bridge.create_event(%{
-  #         local_id: "!local_event_foo:kazarma",
-  #         remote_id: "!remote_event_foo:kazarma",
-  #         data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
-  #       })
-
-  #     :ok
-  #   end
-
-  #   def redaction_fixture do
-  #     %Event{
-  #       sender: "@bob:kazarma",
-  #       room_id: "!foo:kazarma",
-  #       event_id: "!local_event_foo:kazarma",
-  #       type: "m.room.redaction",
-  #       redacts: "!local_event_foo:kazarma",
-  #       content: %{"reason" => "Just want to"}
-  #       # content: %{"body" => "reason: Just want to"}
-  #     }
-  #   end
-
-  #   # Need to test case when message created by ap or matrix initially
-  #   #     si c'était pas exemple quelque chose qui était renvoyé par le serveur matrix tu mettrais dans le mock un appel à une fonction y'a-t-il-un-event qui retournerait ce que tu veux (comme si y'avait bien un event)
-  #   # exemple hypothétique hein
-
-  #   # ou alors je flib/kazarma/activity_pub/activity/chat_message.ex:123:ais dans la même batterie de tests après le test qui crée le message le test qui suppr le même
-  #   # clairement c'est mieux d'avoir des tests séparés, et comme t'as rajouté le fait de créer le record quand un message est envoyé t'aurais juste à rajouter un assert après l'envoi du message pour vérifier que le record a été créé, et dans le test du delete tu commences en créant le record donc au final tu t'assures qu'un message créé peut-être supprimé
-  #   # d'accord
-  #   # en fait y'a le même fonctionnement au moment de si les activités créent des rooms ou pas
-  #   # y'a des tests qui testent si ça crée bien le record
-  #   # et des test qui commencent par (si y'a record existant / si y'en a pas) (faire des tests sur les cas d'erreurs c'est bien au
-
-  #   test "when receiving a redaction event it forwards it as Delete activity" do
-  #     Kazarma.Matrix.TestClient
-  #     |> expect(:client, fn ->
-  #       :client_kazarma
-  #     end)
-  #     # ** (Mox.UnexpectedCallError) no expectation defined for Kazarma.Matrix.TestClient.get_data/3 in process #PID<0.716.0> with args [:client_bob, "@bob:kazarma", "m.direct"]
-  #     |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
-  #       {:ok, %{"displayname" => "Bob"}}
-  #     end)
-
-  #     assert :ok = new_event(redaction_fixture())
-  #   end
-  # end
 
   describe "Message reception in multiuser room" do
     setup :set_mox_from_context
@@ -550,7 +512,7 @@ defmodule Kazarma.Matrix.TransactionTest do
     setup do
       {:ok, _room} =
         Kazarma.Matrix.Bridge.create_room(%{
-          local_id: "!foo:kazarma",
+          local_id: "!room:kazarma",
           remote_id: "http://pleroma/contexts/context",
           data: %{
             "to" => [@pleroma_puppet_address],
@@ -625,10 +587,18 @@ defmodule Kazarma.Matrix.TransactionTest do
           to: ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"]
         },
         nil ->
-          {:ok, :activity}
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
       assert :ok == new_event(message_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "object_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
 
     test "when receiving a message with an attachment it forwards it in a Note activity" do
@@ -707,10 +677,108 @@ defmodule Kazarma.Matrix.TransactionTest do
           to: ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"]
         },
         nil ->
-          {:ok, :activity}
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
       assert :ok == new_event(message_with_attachment_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "object_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
+    end
+  end
+
+  describe "Message deletion" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      ActivityPub.Object.insert(%{data: %{"id" => "remote_id"}})
+
+      {:ok, _event} =
+        Kazarma.Matrix.Bridge.create_event(%{
+          local_id: "local_id",
+          remote_id: "remote_id",
+          room_id: "!room:kazarma"
+        })
+
+      :ok
+    end
+
+    def redaction_fixture do
+      %Event{
+        sender: "@bob:kazarma",
+        room_id: "!room:kazarma",
+        event_id: "delete_event_id",
+        type: "m.room.redaction",
+        redacts: "local_id",
+        content: %{"reason" => "Just want to"}
+      }
+    end
+
+    test "when receiving a redaction event it forwards it as Delete activity" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn ->
+        :client_kazarma
+      end)
+      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:delete, fn
+        %ActivityPub.Object{
+          data: %{"id" => "remote_id"},
+          id: _,
+          local: true,
+          pointer_id: nil,
+          public: nil
+        },
+        true,
+        %ActivityPub.Actor{
+          ap_id: "http://kazarma/pub/actors/bob",
+          data: %{
+            :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+            "capabilities" => %{"acceptsChatMessages" => true},
+            "followers" => "http://kazarma/pub/actors/bob/followers",
+            "followings" => "http://kazarma/pub/actors/bob/following",
+            "icon" => nil,
+            "id" => "http://kazarma/pub/actors/bob",
+            "inbox" => "http://kazarma/pub/actors/bob/inbox",
+            "manuallyApprovesFollowers" => false,
+            "name" => "Bob",
+            "outbox" => "http://kazarma/pub/actors/bob/outbox",
+            "preferredUsername" => "bob",
+            "type" => "Person"
+          },
+          deactivated: false,
+          id: nil,
+          keys: _,
+          local: true,
+          pointer_id: nil,
+          username: "bob@kazarma"
+        } ->
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "delete_object_id"}}}}
+      end)
+
+      assert :ok = new_event(redaction_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "local_id",
+                 remote_id: "remote_id",
+                 room_id: "!room:kazarma"
+               },
+               %MatrixAppService.Bridge.Event{
+                 local_id: "delete_event_id",
+                 remote_id: "delete_object_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
   end
 end

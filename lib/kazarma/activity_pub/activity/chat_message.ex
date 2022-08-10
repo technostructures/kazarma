@@ -21,7 +21,7 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
       "to" => [receiver_id]
     }
 
-    Logger.error(inspect(attachment))
+    Logger.debug("attachment: " <> inspect(attachment))
 
     object =
       if is_nil(attachment) do
@@ -59,27 +59,40 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
          {:ok, room_id} <-
            get_or_create_direct_room(from_id, to_id),
          {:ok, event_id} <-
-           Kazarma.Matrix.Client.send_tagged_message(
-             room_id,
-             matrix_id,
-             body
-           ) do
-      send_attachment(matrix_id, room_id, Map.get(object_data, "attachment"))
-
-      Kazarma.Matrix.Bridge.create_event(%{local_id: event_id, remote_id: object_id})
-
+           send_message_and_attachment(matrix_id, room_id, object_data),
+         {:ok, _} <-
+           Kazarma.Matrix.Bridge.create_event(%{
+             local_id: event_id,
+             remote_id: object_id,
+             room_id: room_id
+           }) do
       :ok
-    else
-      {:error, _code, %{"error" => error}} -> Logger.error(error)
-      {:error, error} -> Logger.error(inspect(error))
     end
   end
 
-  def forward_create_to_matrix(_), do: :ok
+  defp send_message_and_attachment(matrix_id, room_id, object_data) do
+    case {call_if_not_nil(Map.get(object_data, "content"), fn body ->
+            Kazarma.Matrix.Client.send_tagged_message(
+              room_id,
+              matrix_id,
+              body
+            )
+          end),
+          call_if_not_nil(Map.get(object_data, "attachment"), fn attachment ->
+            send_attachment(matrix_id, room_id, attachment)
+          end)} do
+      {nil, nil} -> {:error, :no_message_to_send}
+      {{:error, err}, _} -> {:error, err}
+      {_, {:error, err}} -> {:error, err}
+      {{:ok, event_id}, _} -> {:ok, event_id}
+      {_, {:ok, event_id}} -> {:ok, event_id}
+    end
+  end
 
   def forward_create_to_activitypub(
         %Event{
           event_id: event_id,
+          room_id: room_id,
           sender: sender,
           type: "m.room.message",
           content:
@@ -89,54 +102,20 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
         },
         %Room{data: %{"type" => "chat_message", "to_ap_id" => remote_id}}
       ) do
-    with {:ok, username} <- Kazarma.Address.matrix_id_to_ap_username(sender),
-         {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_username(username) do
-      attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(content)
-
-      Logger.debug("Forwarding ChatMessage creation")
-      # {:ok, object} = create(actor, ap_id, content)
-      with {:ok, %Object{data: %{"object" => remote_id}} = _activity} <-
-             create(actor, remote_id, body, attachment) do
-        # Logger.debug("ap activity: " <> inspect(activity))
-        # Logger.debug("ap created object: " <> inspect(%Object{"object" => created_object} <- object))
-
-        Logger.debug(
-          "Logging correspondence between existing local_id (Matrix) #{event_id} and created remote_id (AP) #{
-            remote_id
-          } in db"
-        )
-
-        Kazarma.Matrix.Bridge.create_event(%{local_id: event_id, remote_id: remote_id})
-        :ok
-      end
-    end
-  end
-
-  # Delete an AP object: this should only be in Matrix transaction (clause matching twice on type: "m.room.redaction")
-  def forward_to_activitypub(
-        %Event{
-          sender: sender,
-          type: "m.room.redaction",
-          redacts: redacts
-        },
-        %Room{data: %{"type" => "chat_message", "to_ap_id" => _ap_id}}
-      ) do
-    Logger.debug("Forwarding ChatMessage deletion")
+    Logger.debug("Forwarding ChatMessage creation")
 
     with {:ok, username} <- Kazarma.Address.matrix_id_to_ap_username(sender),
-         {:ok, delete_actor} <- ActivityPub.Actor.get_or_fetch_by_username(username),
-         Logger.debug("Attempting to get object ID"),
-         %BridgeEvent{remote_id: remote_id} <-
-           Kazarma.Matrix.Bridge.get_event_by_local_id(redacts),
-         %Object{} = object <- ActivityPub.Object.get_by_ap_id(remote_id),
-         Logger.debug(inspect(object)) do
-      Logger.debug("Deleting object")
-      # Should we deduce this from something?
-      local = true
-      Kazarma.ActivityPub.delete(object, local, delete_actor)
-      # Unmatchable clause apparently
-      # else
-      #   nil -> Logger.warn("Couldn't find corresponding object to Event ID #{redacts}")
+         {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_username(username),
+         attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(content),
+         {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
+           create(actor, remote_id, body, attachment) do
+      Kazarma.Matrix.Bridge.create_event(%{
+        local_id: event_id,
+        remote_id: remote_id,
+        room_id: room_id
+      })
+
+      :ok
     end
   end
 
@@ -180,5 +159,11 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
 
   defp normalize_attachment(%{"mediaType" => mimetype, "url" => [%{"href" => url} | _]}) do
     %{mimetype: mimetype, url: url}
+  end
+
+  defp call_if_not_nil(nil, _fun), do: nil
+
+  defp call_if_not_nil(value, fun) do
+    fun.(value)
   end
 end

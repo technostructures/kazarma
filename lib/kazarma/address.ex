@@ -102,6 +102,7 @@ defmodule Kazarma.Address do
     KazarmaWeb.Router.Helpers.activity_pub_url(KazarmaWeb.Endpoint, :actor, localpart)
   end
 
+  # @TODO => ap_id_to_matrix_id
   def ap_id_to_matrix(ap_id, types \\ [:remote_matrix, :local_matrix, :activity_pub]) do
     case ActivityPub.Actor.get_cached_by_ap_id(ap_id) do
       {:ok, %ActivityPub.Actor{username: username}} ->

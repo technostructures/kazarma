@@ -22,7 +22,7 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def register_puppet(localpart, remote_domain) do
-    register("#{Kazarma.Address.puppet_prefix()}#{localpart}=#{remote_domain}")
+    register("#{Kazarma.Address.puppet_prefix()}#{localpart}___#{remote_domain}")
   end
 
   def join(user_id, room_id) do
@@ -218,10 +218,12 @@ defmodule Kazarma.Matrix.Client do
     )
   end
 
+  def send_tagged_message(room_id, from_id, body, formatted_body \\ nil)
+
   def send_tagged_message(_room_id, _from_id, nil, _formatted_body),
     do: {:ok, :empty_message_not_sent}
 
-  def send_tagged_message(room_id, from_id, body, formatted_body \\ nil) do
+  def send_tagged_message(room_id, from_id, body, formatted_body) do
     @matrix_client.send_message(room_id, {body <> " \ufeff", formatted_body || body},
       user_id: from_id
     )

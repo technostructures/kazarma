@@ -25,6 +25,19 @@ defmodule Kazarma.Matrix.Transaction do
     Logger.debug("Attributing name #{name}")
   end
 
+  def new_event(%Event{
+        content: %{
+          "m.new_content" => _,
+          "m.relates_to" => %{"rel_type" => "m.replace"},
+          "org.matrix.msc1767.text" => _
+        },
+        type: "m.room.message"
+      }) do
+    Logger.debug("Replace message event")
+  end
+
+  def new_event(%Event{type: "m.room.message", content: content}) when content == %{}, do: :ok
+
   def new_event(%Event{type: "m.room.message", room_id: room_id} = event) do
     Logger.debug("Received m.room.message from Synapse")
 
@@ -46,15 +59,8 @@ defmodule Kazarma.Matrix.Transaction do
     end
 
     :ok
-  rescue
-    # for development, we prefere acknowledging transactions even if processing them fails
-    err ->
-      Logger.error(Exception.format(:error, err, __STACKTRACE__))
-      :ok
   end
 
-  # Delete / redact event
-  # https://matrix.org/docs/spec/client_server/r0.6.1#m-room-redaction
   def new_event(
         %Event{
           type: "m.room.redaction",
@@ -65,21 +71,10 @@ defmodule Kazarma.Matrix.Transaction do
     if !is_tagged_redact(event) do
       Logger.debug("Processing m.room.redaction event")
 
-      case Bridge.get_room_by_local_id(room_id) do
-        %Room{data: %{"type" => "chat_message"}} = room ->
-          Kazarma.ActivityPub.Activity.ChatMessage.forward_to_activitypub(event, room)
-
-        %Room{data: %{"type" => "note"}} = room ->
-          Kazarma.ActivityPub.Activity.Note.forward_to_activitypub(event, room)
-      end
+      Kazarma.ActivityPub.Activity.forward_redaction(event)
     end
 
     :ok
-  rescue
-    # for development, we prefere acknoledging transactions even if processing them fails
-    err ->
-      Logger.error(Exception.format(:error, err, __STACKTRACE__))
-      :ok
   end
 
   def new_event(%Event{

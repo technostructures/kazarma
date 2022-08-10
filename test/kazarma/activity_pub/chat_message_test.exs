@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-
 defmodule Kazarma.ActivityPub.ChatMessageTest do
   use Kazarma.DataCase
 
@@ -41,7 +40,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
           data: %{
             "type" => "ChatMessage",
             "content" => "hello",
-            "id" => "activitypub_id"
+            "id" => "chat_message_id"
           }
         }
       }
@@ -58,6 +57,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
           data: %{
             "type" => "ChatMessage",
             "content" => "hello",
+            "id" => "chat_message_id",
             "attachment" => %{
               "mediaType" => "image/jpeg",
               "name" => nil,
@@ -125,7 +125,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       |> expect(:send_message, fn "!room:kazarma",
                                   {"hello \uFEFF", "hello"},
                                   [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, :something}
+        {:ok, "event_id"}
       end)
 
       assert :ok = handle_activity(chat_message_fixture())
@@ -140,12 +140,13 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
                }
              ] = Kazarma.Matrix.Bridge.list_rooms()
 
-      # assert [
-      #          %MatrixAppService.Bridge.Event{
-      #            local_id: "!local_event_foo:kazarma",
-      #            remote_id: "http://pleroma/pub/transactions/object_id"
-      #          }
-      #        ] = Kazarma.Matrix.Bridge.list_events()
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "chat_message_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
 
     test "when receiving a ChatMessage activity for an existing conversation gets the corresponding room and forwards the message" do
@@ -176,10 +177,18 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       |> expect(:send_message, fn "!room:kazarma",
                                   {"hello \uFEFF", "hello"},
                                   [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, :something}
+        {:ok, "event_id"}
       end)
 
       assert :ok = handle_activity(chat_message_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "chat_message_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
 
     test "when receiving a ChatMessage activity with an attachement and some text forwards both the attachment and the text" do
@@ -219,7 +228,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
       end)
       |> expect(:send_message, 2, fn
         "!room:kazarma", {"hello \uFEFF", "hello"}, [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, :something}
+          {:ok, "event_id1"}
 
         "!room:kazarma",
         %{
@@ -230,10 +239,18 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
           }
         },
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, :something}
+          {:ok, "event_id2"}
       end)
 
       assert :ok = handle_activity(chat_message_with_attachment_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id1",
+                 remote_id: "chat_message_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
 
     test "when receiving a ChatMessage activity with an attachement and no text forwards only the attachment" do
@@ -281,7 +298,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
           }
         },
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, :something}
+          {:ok, "event_id"}
       end)
 
       chat_message =
@@ -292,65 +309,14 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
         )
 
       assert :ok = handle_activity(chat_message)
-    end
-  end
 
-  describe "activity handler (handle_activity/1) for ChatMessage Delete activity" do
-    def delete_fixture do
-      %ActivityPub.Object{
-        data: %{
-          "actor" => "http://kazarma/pub/actors/bob",
-          "type" => "Delete",
-          "to" => ["http://pleroma/pub/actors/alice"],
-          "object" => "http://pleroma/pub/transactions/object_id"
-        }
-      }
-    end
-
-    setup do
-      {:ok, event} =
-        Kazarma.Matrix.Bridge.create_event(%{
-          local_id: "!local_event_foo:kazarma",
-          remote_id: "http://pleroma/pub/transactions/object_id"
-        })
-
-      :ok
-    end
-
-    test "when receiving a Delete activity for an existing object, gets the corresponding ids and forwards the redact event" do
-      Kazarma.Matrix.TestClient
-      |> expect(:client, 1, fn ->
-        :client_kazarma
-      end)
-      |> expect(:client, 3, fn
-        [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "ap_alice=pleroma:kazarma"] -> :client_alice
-        [user_id: "@ap_alice=pleroma:kazarma"] -> :client_alice
-      end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:register, fn [
-                                username: "ap_alice=pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma"
-                              ] ->
-        {:ok, %{"user_id" => "ap_alice=pleroma:kazarma"}}
-      end)
-      |> expect(:put_displayname, fn :client_alice, "ap_alice=pleroma:kazarma", "Alice" ->
-        :ok
-      end)
-      |> expect(:get_data, fn :client_alice, "@ap_alice=pleroma:kazarma", "m.direct" ->
-        {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
-      end)
-      |> expect(:redact_message, fn :client_bob,
-                                    "!room:kazarma",
-                                    "!local_event_foo:kazarma",
-                                    nil ->
-        :ok
-      end)
-
-      assert :ok == handle_activity(delete_fixture())
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "chat_message_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
     end
   end
 end
