@@ -54,10 +54,12 @@ prepare_dev:
 
 .docker:
   stage: setup
-  image: docker:19.03.1
+  image: docker:stable
   services:
-    - docker:19.03.1-dind
-  interruptible: true
+    - docker:dind
+  variables:
+    - DOCKER_DRIVER: overlay2
+    - DOCKER_BUILDKIT: 1
   before_script:
     - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   variables:
@@ -76,6 +78,7 @@ prepare_dev:
 
 build_docker_image:
   extends: .docker
+  interruptible: true
   script:
     - docker pull $CI_REGISTRY_IMAGE/production:latest || true
     - >
@@ -86,6 +89,7 @@ build_docker_image:
       --build-arg VCS_URL=$CI_PROJECT_URL
       --cache-from $CI_REGISTRY_IMAGE:latest
       --tag $IMAGE_TAG
+      --build-arg BUILDKIT_INLINE_CACHE=1
       .
     - docker push $IMAGE_TAG
 
