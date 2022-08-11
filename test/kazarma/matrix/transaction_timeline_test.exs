@@ -46,14 +46,7 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
 
     test "it makes the AP puppet follow the AP user" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        :client_kazarma
-      end)
-      |> expect(:client, fn
-        [user_id: @pleroma_puppet_address] ->
-          :client_bob
-      end)
-      |> expect(:get_profile, fn :client_kazarma, "@alice:kazarma" ->
+      |> expect(:get_profile, fn "@alice:kazarma" ->
         {:ok, %{"displayname" => "Alice"}}
       end)
       |> expect(:register, fn
@@ -66,7 +59,7 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
       |> expect(:put_displayname, fn
-        :client_bob, @pleroma_puppet_address, @pleroma_user_displayname ->
+        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
       end)
 
@@ -174,15 +167,8 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
 
     test "it sends a public Note mentioning the AP user" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        :client_kazarma
-      end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:client, fn
-        [user_id: @pleroma_puppet_address] ->
-          :client_bob
       end)
       |> expect(:register, fn
         [
@@ -194,7 +180,7 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
       |> expect(:put_displayname, fn
-        :client_bob, @pleroma_puppet_address, @pleroma_user_displayname ->
+        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
       end)
 

@@ -26,43 +26,43 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def join(user_id, room_id) do
-    @matrix_client.join(@matrix_client.client(user_id: user_id), room_id)
+    @matrix_client.join(room_id, user_id: user_id)
   end
 
   def get_profile(matrix_id) do
-    @matrix_client.get_profile(@matrix_client.client(), matrix_id)
+    @matrix_client.get_profile(matrix_id)
   end
 
   def get_direct_rooms(matrix_id) do
     @matrix_client.get_data(
-      @matrix_client.client(user_id: matrix_id),
       matrix_id,
-      "m.direct"
+      "m.direct",
+      user_id: matrix_id
     )
   end
 
   def redact_message(from_matrix_id, room_id, event, reason \\ nil) do
     @matrix_client.redact_message(
-      @matrix_client.client(user_id: from_matrix_id),
       room_id,
       event,
-      reason
+      reason,
+      user_id: from_matrix_id
     )
   end
 
   def put_displayname(matrix_id, displayname) do
     @matrix_client.put_displayname(
-      @matrix_client.client(user_id: matrix_id),
       matrix_id,
-      displayname
+      displayname,
+      user_id: matrix_id
     )
   end
 
   def put_avatar_url(matrix_id, avatar_url) do
     @matrix_client.put_avatar_url(
-      @matrix_client.client(user_id: matrix_id),
       matrix_id,
-      avatar_url
+      avatar_url,
+      user_id: matrix_id
     )
   end
 
@@ -72,10 +72,9 @@ defmodule Kazarma.Matrix.Client do
     mimetype = MIME.from_path(filename)
 
     @matrix_client.upload(
-      @matrix_client.client(user_id: matrix_id),
       image_bin,
-      filename: filename,
-      mimetype: mimetype
+      [filename: filename, mimetype: mimetype],
+      user_id: matrix_id
     )
   end
 
@@ -87,9 +86,9 @@ defmodule Kazarma.Matrix.Client do
 
   def create_attachment_message(matrix_id, file_bin, opts) do
     @matrix_client.create_attachment_message(
-      @matrix_client.client(user_id: matrix_id),
       {:data, file_bin, Keyword.fetch!(opts, :filename)},
-      opts
+      opts,
+      user_id: matrix_id
     )
   end
 
@@ -157,9 +156,9 @@ defmodule Kazarma.Matrix.Client do
   def put_new_direct_room_data(from_matrix_id, to_matrix_id, room_id) do
     data =
       case @matrix_client.get_data(
-             @matrix_client.client(user_id: from_matrix_id),
              from_matrix_id,
-             "m.direct"
+             "m.direct",
+             user_id: from_matrix_id
            ) do
         {:ok, data} -> data
         _ -> %{}
@@ -171,10 +170,10 @@ defmodule Kazarma.Matrix.Client do
       end)
 
     @matrix_client.put_data(
-      @matrix_client.client(user_id: from_matrix_id),
       from_matrix_id,
       "m.direct",
-      new_data
+      new_data,
+      user_id: from_matrix_id
     )
   end
 
@@ -233,6 +232,8 @@ defmodule Kazarma.Matrix.Client do
     @matrix_client.send_message(room_id, msg, user_id: from_id)
   end
 
+  def get_media_url(nil), do: nil
+
   def get_media_url("mxc://" <> matrix_url) do
     [server_name, media_id] = String.split(matrix_url, "/", parts: 2)
 
@@ -241,9 +242,7 @@ defmodule Kazarma.Matrix.Client do
     |> URI.to_string()
   end
 
-  def get_alias(alias), do: Polyjuice.Client.Room.get_alias(@matrix_client.client(), alias)
-
-  def get_media_url(nil), do: nil
+  def get_alias(alias), do: @matrix_client.get_alias(alias)
 
   defp msgtype_for_mimetype("image" <> _), do: "m.image"
   defp msgtype_for_mimetype("audio" <> _), do: "m.audio"
