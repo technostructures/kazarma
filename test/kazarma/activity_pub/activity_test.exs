@@ -35,16 +35,10 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "when receiving a Delete activity for an existing object, gets the corresponding ids and forwards the redact event" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 1, fn ->
-        :client_kazarma
-      end)
-      |> expect(:client, fn
-        [user_id: "@bob:kazarma"] -> :client_bob
-      end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
-      |> expect(:redact_message, fn :client_bob, "!room:kazarma", "local_id", nil ->
+      |> expect(:redact_message, fn "!room:kazarma", "local_id", nil, user_id: "@bob:kazarma" ->
         {:ok, "delete_event_id"}
       end)
 

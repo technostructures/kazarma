@@ -82,10 +82,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when a puppet user is invited to a direct room a Bridge record is created and the room is joined" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 4, fn [user_id: @pleroma_puppet_address] ->
-        :client_puppet
-      end)
-      |> expect(:join, fn :client_puppet, "!direct_room:kazarma" ->
+      |> expect(:join, fn "!direct_room:kazarma", user_id: @pleroma_puppet_address ->
         :ok
       end)
       |> expect(:register, fn
@@ -98,18 +95,18 @@ defmodule Kazarma.Matrix.TransactionTest do
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
       |> expect(:put_displayname, fn
-        :client_puppet, @pleroma_puppet_address, @pleroma_user_displayname ->
+        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
       end)
       |> expect(:get_data, fn
-        :client_puppet, @pleroma_puppet_address, "m.direct" ->
+        @pleroma_puppet_address, "m.direct", user_id: @pleroma_puppet_address ->
           {:ok, %{}}
       end)
       |> expect(:put_data, fn
-        :client_puppet,
         @pleroma_puppet_address,
         "m.direct",
-        %{"@alice:kazarma" => ["!direct_room:kazarma"]} ->
+        %{"@alice:kazarma" => ["!direct_room:kazarma"]},
+        user_id: @pleroma_puppet_address ->
           :ok
       end)
 
@@ -126,10 +123,6 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when a puppet user is invited to a multiuser room a Bridge record is created and the room is joined" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 4, fn
-        [user_id: @pleroma_puppet_address] -> :client_pleroma
-        [user_id: @mastodon_puppet_address] -> :client_mastodon
-      end)
       |> expect(:register, 2, fn
         [
           username: @pleroma_puppet_username,
@@ -148,17 +141,17 @@ defmodule Kazarma.Matrix.TransactionTest do
           {:ok, %{"user_id" => @mastodon_puppet_address}}
       end)
       |> expect(:put_displayname, 2, fn
-        :client_pleroma, @pleroma_puppet_address, @pleroma_user_displayname ->
+        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
 
-        :client_mastodon, @mastodon_puppet_address, @mastodon_user_displayname ->
+        @mastodon_puppet_address, @mastodon_user_displayname, user_id: @mastodon_puppet_address ->
           :ok
       end)
       |> expect(:join, 2, fn
-        :client_pleroma, "!room:kazarma" ->
+        "!room:kazarma", user_id: @pleroma_puppet_address ->
           :ok
 
-        :client_mastodon, "!room:kazarma" ->
+        "!room:kazarma", user_id: @mastodon_puppet_address ->
           :ok
       end)
 
@@ -235,11 +228,11 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "it does nothing if not confirmed by profile" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 2, fn ->
+      |> expect(:client, fn ->
         %{base_url: "http://matrix"}
       end)
       |> expect(:get_profile, fn
-        _, "@alice:kazarma" ->
+        "@alice:kazarma" ->
           {:ok, %{"displayname" => "old_name", "avatar_url" => "mxc://server/old_avatar"}}
       end)
 
@@ -248,11 +241,11 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "it updates the avatar if it has changed" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 3, fn ->
+      |> expect(:client, 2, fn ->
         %{base_url: "http://matrix"}
       end)
       |> expect(:get_profile, fn
-        _, "@alice:kazarma" ->
+        "@alice:kazarma" ->
           {:ok, %{"displayname" => "old_name", "avatar_url" => "mxc://server/new_avatar"}}
       end)
 
@@ -288,11 +281,11 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "it updates the displayname if it has changed" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 2, fn ->
+      |> expect(:client, fn ->
         %{base_url: "http://matrix"}
       end)
       |> expect(:get_profile, fn
-        _, "@alice:kazarma" ->
+        "@alice:kazarma" ->
           Kazarma.ActivityPub.TestServer
           |> expect(:update, fn
             %{
@@ -376,10 +369,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a message it forwards it as ChatMessage activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        :client_kazarma
-      end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
 
@@ -435,9 +425,8 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a message with an attachment it forwards it in a ChatMessage activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn -> :client_kazarma end)
       |> expect(:client, fn -> %{base_url: "http://example.org"} end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
 
@@ -525,14 +514,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a message it forwards it as Note activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        :client_kazarma
-      end)
-      |> expect(:client, fn
-        [user_id: @pleroma_puppet_address] ->
-          :client_bob
-      end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
       |> expect(:register, fn
@@ -545,7 +527,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
       |> expect(:put_displayname, fn
-        :client_bob, @pleroma_puppet_address, @pleroma_user_displayname ->
+        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
       end)
 
@@ -603,14 +585,9 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a message with an attachment it forwards it in a Note activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn -> :client_kazarma end)
       |> expect(:client, fn -> %{base_url: "http://example.org"} end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:client, fn
-        [user_id: @pleroma_puppet_address] ->
-          :client_bob
       end)
       |> expect(:register, fn
         [
@@ -622,7 +599,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
       |> expect(:put_displayname, fn
-        :client_bob, @pleroma_puppet_address, @pleroma_user_displayname ->
+        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
       end)
 
@@ -722,10 +699,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a redaction event it forwards it as Delete activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        :client_kazarma
-      end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
 

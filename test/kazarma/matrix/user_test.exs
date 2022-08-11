@@ -18,9 +18,6 @@ defmodule Kazarma.Matrix.UserTest do
 
     test "if the given matrix ID corresponds to a puppet ID for an existing AP user it creates the puppet user" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 1, fn [user_id: @ap_puppet_matrix_id] ->
-        :client_puppet
-      end)
       |> expect(:register, 1, fn
         [
           username: @ap_puppet_username,
@@ -31,7 +28,7 @@ defmodule Kazarma.Matrix.UserTest do
           {:ok, %{"user_id" => @ap_puppet_matrix_id}}
       end)
       |> expect(:put_displayname, fn
-        :client_puppet, @ap_puppet_matrix_id, "Bob" ->
+        @ap_puppet_matrix_id, "Bob", user_id: @ap_puppet_matrix_id ->
           :ok
       end)
 

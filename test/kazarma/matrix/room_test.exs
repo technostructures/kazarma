@@ -41,11 +41,8 @@ defmodule Kazarma.Matrix.RoomTest do
         [user_id: @ap_puppet_matrix_id] ->
           {:ok, %{"room_id" => "!room_id:kazarma"}}
       end)
-      |> expect(:client, 1, fn [user_id: @ap_puppet_matrix_id] ->
-        :client_puppet
-      end)
       |> expect(:put_displayname, fn
-        :client_puppet, @ap_puppet_matrix_id, "Bob" ->
+        @ap_puppet_matrix_id, "Bob", user_id: @ap_puppet_matrix_id ->
           :ok
       end)
 

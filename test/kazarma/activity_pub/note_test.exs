@@ -89,9 +89,6 @@ defmodule Kazarma.ActivityPub.NoteTest do
 
     test "when receiving a Note activity for an existing conversation gets the corresponding room and forwards the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        :client_kazarma
-      end)
       |> expect(:register, fn [
                                 username: "_ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
@@ -100,7 +97,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                               ] ->
         {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
       end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
       |> expect(:send_message, fn "!room:kazarma",
@@ -132,9 +129,6 @@ defmodule Kazarma.ActivityPub.NoteTest do
 
     test "when receiving a Note activity for a first conversation creates a new room and sends forward the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        :client_kazarma
-      end)
       |> expect(:register, fn [
                                 username: "_ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
@@ -143,7 +137,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                               ] ->
         {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
       end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
       |> expect(:create_room, fn
@@ -188,14 +182,6 @@ defmodule Kazarma.ActivityPub.NoteTest do
 
     test "when receiving a Note activity with attachments and some text forwards the attachments and the text" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        :client_kazarma
-      end)
-      |> expect(:client, 2, fn
-        [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "_ap_alice___pleroma:kazarma"] -> :client_alice
-        [user_id: "@_ap_alice___pleroma:kazarma"] -> :client_alice
-      end)
       |> expect(:register, fn [
                                 username: "_ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
@@ -204,32 +190,32 @@ defmodule Kazarma.ActivityPub.NoteTest do
                               ] ->
         {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
       end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
       |> expect(:create_attachment_message, 2, fn
-        :client_alice,
         {:data, _, "example.jpg"},
         [
           body: "example.jpg",
           filename: "example.jpg",
           mimetype: "image/jpeg",
           msgtype: "m.image"
-        ] ->
+        ],
+        user_id: "@_ap_alice___pleroma:kazarma" ->
           {:ok,
            %{
              msgtype: "m.image",
              info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}
            }}
 
-        :client_alice,
         {:data, _, "example2.jpg"},
         [
           body: "example2.jpg",
           filename: "example2.jpg",
           mimetype: "image/jpeg",
           msgtype: "m.image"
-        ] ->
+        ],
+        user_id: "@_ap_alice___pleroma:kazarma" ->
           {:ok,
            %{
              msgtype: "m.image",
@@ -286,14 +272,6 @@ defmodule Kazarma.ActivityPub.NoteTest do
 
     test "when receiving a Note activity with attachments and no text forwards only the attachments" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        :client_kazarma
-      end)
-      |> expect(:client, 2, fn
-        [user_id: "@bob:kazarma"] -> :client_bob
-        [user_id: "_ap_alice___pleroma:kazarma"] -> :client_alice
-        [user_id: "@_ap_alice___pleroma:kazarma"] -> :client_alice
-      end)
       |> expect(:register, fn [
                                 username: "_ap_alice___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
@@ -302,32 +280,32 @@ defmodule Kazarma.ActivityPub.NoteTest do
                               ] ->
         {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
       end)
-      |> expect(:get_profile, fn :client_kazarma, "@bob:kazarma" ->
+      |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
       |> expect(:create_attachment_message, 2, fn
-        :client_alice,
         {:data, _, "example.jpg"},
         [
           body: "example.jpg",
           filename: "example.jpg",
           mimetype: "image/jpeg",
           msgtype: "m.image"
-        ] ->
+        ],
+        user_id: "@_ap_alice___pleroma:kazarma" ->
           {:ok,
            %{
              msgtype: "m.image",
              info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}
            }}
 
-        :client_alice,
         {:data, _, "example2.jpg"},
         [
           body: "example2.jpg",
           filename: "example2.jpg",
           mimetype: "image/jpeg",
           msgtype: "m.image"
-        ] ->
+        ],
+        user_id: "@_ap_alice___pleroma:kazarma" ->
           {:ok,
            %{
              msgtype: "m.image",
@@ -416,10 +394,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                               ] ->
         {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
       end)
-      |> expect(:client, fn
-        [user_id: "@_ap_alice___pleroma:kazarma"] -> :client_alice
-      end)
-      |> expect(:join, fn :client_alice, "!room:kazarma" ->
+      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
         :ok
       end)
       |> expect(:send_message, fn "!room:kazarma",

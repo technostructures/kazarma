@@ -12,8 +12,8 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
     test "when asked for an existing matrix users returns the corresponding actor and persists it in database" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 2, fn -> %{base_url: "http://matrix"} end)
-      |> expect(:get_profile, fn _, "@alice:kazarma" ->
+      |> expect(:client, fn -> %{base_url: "http://matrix"} end)
+      |> expect(:get_profile, fn "@alice:kazarma" ->
         {:ok, %{"displayname" => "Alice", "avatar_url" => "mxc://server/image_id"}}
       end)
 
@@ -78,8 +78,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
     test "when asked for a nonexisting matrix users returns an error tuple" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn -> nil end)
-      |> expect(:get_profile, fn _, "@nonexisting:kazarma" ->
+      |> expect(:get_profile, fn "@nonexisting:kazarma" ->
         {:error, :not_found}
       end)
 
@@ -92,9 +91,6 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
     test "it registers a puppet user" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 3, fn
-        [user_id: "@_ap_bob___pleroma:kazarma"] -> :client_bob
-      end)
       |> expect(:register, fn [
                                 username: "_ap_bob___pleroma",
                                 device_id: "KAZARMA_APP_SERVICE",
@@ -103,13 +99,17 @@ defmodule Kazarma.ActivityPub.ActorTest do
                               ] ->
         {:ok, %{"user_id" => "@_ap_bob___pleroma:kazarma"}}
       end)
-      |> expect(:put_displayname, fn :client_bob, "@_ap_bob___pleroma:kazarma", "Bob" ->
+      |> expect(:put_displayname, fn "@_ap_bob___pleroma:kazarma",
+                                     "Bob",
+                                     user_id: "@_ap_bob___pleroma:kazarma" ->
         :ok
       end)
-      |> expect(:upload, fn :client_bob, _blob, _opts -> {:ok, "mxc://server/media_id"} end)
-      |> expect(:put_avatar_url, fn :client_bob,
-                                    "@_ap_bob___pleroma:kazarma",
-                                    "mxc://server/media_id" ->
+      |> expect(:upload, fn _blob, _opts, user_id: "@_ap_bob___pleroma:kazarma" ->
+        {:ok, "mxc://server/media_id"}
+      end)
+      |> expect(:put_avatar_url, fn "@_ap_bob___pleroma:kazarma",
+                                    "mxc://server/media_id",
+                                    user_id: "@_ap_bob___pleroma:kazarma" ->
         :ok
       end)
 
@@ -130,14 +130,15 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
     test "it update the puppet profile" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 3, fn
-        [user_id: "@alice:kazarma"] -> :client_alice
-      end)
       |> expect(:put_displayname, fn
-        :client_alice, "@alice:kazarma", "new_name" -> :ok
+        "@alice:kazarma", "new_name", user_id: "@alice:kazarma" -> :ok
       end)
-      |> expect(:upload, fn :client_alice, _blob, _opts -> {:ok, "mxc://server/media_id"} end)
-      |> expect(:put_avatar_url, fn :client_alice, "@alice:kazarma", "mxc://server/media_id" ->
+      |> expect(:upload, fn _blob, _opts, user_id: "@alice:kazarma" ->
+        {:ok, "mxc://server/media_id"}
+      end)
+      |> expect(:put_avatar_url, fn "@alice:kazarma",
+                                    "mxc://server/media_id",
+                                    user_id: "@alice:kazarma" ->
         :ok
       end)
 
