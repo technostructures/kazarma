@@ -3,6 +3,32 @@
 
 import Config
 
+log_level =
+  case System.get_env("LOG_LEVEL") do
+    "debug" -> :debug
+    "emergency" -> :emergency
+    "alert" -> :alert
+    "critical" -> :critical
+    "error" -> :error
+    "warning" -> :warning
+    "warn" -> :warn
+    "notice" -> :notice
+    "debug" -> :debug
+    _ -> :info
+  end
+
+config :logger, level: log_level
+
+config :logger, Sentry.LoggerBackend,
+  # Also send warn messages
+  level: :warn,
+  # Send messages from Plug/Cowboy
+  excluded_domains: [],
+  # Include metadata added with `Logger.metadata([foo_bar: "value"])`
+  # metadata: [:foo_bar],
+  # Send messages like `Logger.error("error")` to Sentry
+  capture_log_messages: true
+
 database_host = System.get_env("DATABASE_HOST")
 database_username = System.get_env("DATABASE_USERNAME")
 database_password = System.get_env("DATABASE_PASSWORD")
@@ -86,6 +112,21 @@ html_activity_pub = System.get_env("HTML_AP") == "true"
 config :kazarma, bridge_remote_matrix_users: bridge_remote_matrix_users
 config :kazarma, html_search: html_search
 config :kazarma, html_actor_view_include_remote: html_activity_pub
+
+sentry_dsn = System.get_env("SENTRY_DSN")
+release_level = System.get_env("RELEASE_LEVEL") || "production"
+
+if sentry_dsn do
+  config :sentry,
+    dsn: sentry_dsn,
+    environment_name: release_level,
+    enable_source_code_context: true,
+    root_source_code_path: File.cwd!(),
+    tags: %{
+      env: "production"
+    },
+    included_environments: [release_level]
+end
 
 # ## Using releases (Elixir v1.9+)
 #
