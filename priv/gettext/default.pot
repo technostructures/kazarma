@@ -10,74 +10,83 @@
 msgid ""
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/layout/app.html.eex:22
+#: lib/kazarma_web/templates/layout/app.html.eex:29
+#: lib/kazarma_web/templates/layout/app.html.eex:30
+#, elixir-autogen, elixir-format
 msgid "@alice:matrix.org / bob@mastodon.social / https://mastodon.social/users/bob"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/actor/show.html.eex:54
+#: lib/kazarma_web/templates/actor/show.html.eex:59
+#, elixir-autogen, elixir-format
 msgid "ID"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/index/index.html.eex:3
+#: lib/kazarma_web/templates/index/index.html.eex:8
+#, elixir-autogen, elixir-format
 msgid "This a public Kazarma instance."
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/controllers/search_controller.ex:12
+#: lib/kazarma_web/controllers/actor_controller.ex:31
+#: lib/kazarma_web/controllers/search_controller.ex:17
+#, elixir-autogen, elixir-format
 msgid "User not found"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/actor/show.html.eex:32
-#: lib/kazarma_web/templates/actor/show.html.eex:67
+#: lib/kazarma_web/templates/actor/show.html.eex:37
+#: lib/kazarma_web/templates/actor/show.html.eex:72
+#, elixir-autogen, elixir-format
 msgid "Username"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/actor/show.html.eex:36
-#: lib/kazarma_web/templates/actor/show.html.eex:36 lib/kazarma_web/templates/actor/show.html.eex:58
-#: lib/kazarma_web/templates/actor/show.html.eex:58 lib/kazarma_web/templates/actor/show.html.eex:71
-#: lib/kazarma_web/templates/actor/show.html.eex:71
+#: lib/kazarma_web/templates/actor/show.html.eex:41
+#: lib/kazarma_web/templates/actor/show.html.eex:41
+#: lib/kazarma_web/templates/actor/show.html.eex:63
+#: lib/kazarma_web/templates/actor/show.html.eex:63
+#: lib/kazarma_web/templates/actor/show.html.eex:76
+#: lib/kazarma_web/templates/actor/show.html.eex:76
+#, elixir-autogen, elixir-format
 msgid "Copy"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/layout/app.html.eex:32
-#: lib/kazarma_web/templates/layout/app.html.eex:32
+#: lib/kazarma_web/templates/layout/app.html.eex:41
+#: lib/kazarma_web/templates/layout/app.html.eex:41
+#, elixir-autogen, elixir-format
 msgid "GitLab repository"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/layout/app.html.eex:22
+#: lib/kazarma_web/templates/layout/app.html.eex:29
+#, elixir-autogen, elixir-format
 msgid "Matrix or ActivityPub username, or ActivityPub ID"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/actor/show.html.eex:61
-#: lib/kazarma_web/templates/actor/show.html.eex:61
+#: lib/kazarma_web/templates/actor/show.html.eex:66
+#: lib/kazarma_web/templates/actor/show.html.eex:66
+#, elixir-autogen, elixir-format
 msgid "Open"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/layout/app.html.eex:26
-#: lib/kazarma_web/templates/layout/app.html.eex:26
+#: lib/kazarma_web/templates/layout/app.html.eex:34
+#: lib/kazarma_web/templates/layout/app.html.eex:34
+#, elixir-autogen, elixir-format
 msgid "Search"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/actor/show.html.eex:57
+#: lib/kazarma_web/templates/actor/show.html.eex:62
+#, elixir-autogen, elixir-format
 msgid "ActivityPub ID"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/actor/show.html.eex:70
+#: lib/kazarma_web/templates/actor/show.html.eex:75
+#, elixir-autogen, elixir-format
 msgid "ActivityPub username"
 msgstr ""
 
-#, elixir-format
-#: lib/kazarma_web/templates/actor/show.html.eex:35
+#: lib/kazarma_web/templates/actor/show.html.eex:40
+#, elixir-autogen, elixir-format
 msgid "Matrix username"
+msgstr ""
+
+#: lib/kazarma_web/templates/actor/show.html.eex:13
+#, elixir-autogen, elixir-format
+msgid "%{actor_name}'s avatar"
 msgstr ""
