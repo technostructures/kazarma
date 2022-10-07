@@ -20,7 +20,7 @@ defmodule KazarmaWeb.ActorController do
         |> protect_from_forgery()
         |> put_layout({KazarmaWeb.LayoutView, "app.html"})
         |> put_view(KazarmaWeb.ActorView)
-        |> render("show.html", actor: actor)
+        |> render("show.html", actor: actor, title: actor.data["name"])
 
       _ ->
         conn
