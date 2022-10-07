@@ -16,9 +16,9 @@
         </div>
       </div>
       <div class="flex-1">
-        <h2 class="card-title text-3xl">
+        <h1 class="card-title text-3xl">
           <%= display_name(@actor) %>
-        </h2>
+        </h1>
       </div>
       <div>
         <div class="badge badge-lg">
@@ -30,7 +30,7 @@
     <div class="divider"></div> 
 
     <div>
-      <h3 class="text-2xl text-center">Matrix</h3>
+      <h2 class="text-2xl text-center">Matrix</h2>
 
       <div class="form-control">
         <label for="matrix-username" class="label">
@@ -51,7 +51,7 @@
       </div>
     </div>
 
-    <h3 class="text-2xl text-center pt-5">ActivityPub</h3>
+    <h2 class="text-2xl text-center pt-5">ActivityPub</h2>
 
     <div class="flex flex-col space-y-2">
       <div class="form-control">
