@@ -14,6 +14,8 @@
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </head>
   <body>
+    <a class="sr-only" href="#main"><%= gettext("Skip to content") %></a>
+    <a class="sr-only" href="#search_address"><%= gettext("Skip to search") %></a>
     <div class="flex flex-col h-screen">
       <header class="">
         <div class="navbar mb-2 shadow-lg justify-between flex-wrap space-y-4 lg:space-y-0">
@@ -42,7 +44,7 @@
           </div>
         </div>
       </header>
-      <main role="main" class="container w-full lg:max-w-3xl mx-auto">
+      <main role="main" id="main" class="container w-full lg:max-w-3xl mx-auto">
         <p class="alert alert-info mb-2" role="alert"><%= get_flash(@conn, :info) %></p>
         <%= if get_flash(@conn, :error) do %>
           <div class="alert alert-error shadow-lg mb-2" role="alert">

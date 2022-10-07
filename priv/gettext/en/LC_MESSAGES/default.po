@@ -11,8 +11,8 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2\n"
 
-#: lib/kazarma_web/templates/layout/app.html.eex:29
-#: lib/kazarma_web/templates/layout/app.html.eex:30
+#: lib/kazarma_web/templates/layout/app.html.eex:31
+#: lib/kazarma_web/templates/layout/app.html.eex:32
 #, elixir-autogen, elixir-format
 msgid "@alice:matrix.org / bob@mastodon.social / https://mastodon.social/users/bob"
 msgstr ""
@@ -49,13 +49,13 @@ msgstr ""
 msgid "Copy"
 msgstr ""
 
-#: lib/kazarma_web/templates/layout/app.html.eex:41
-#: lib/kazarma_web/templates/layout/app.html.eex:41
+#: lib/kazarma_web/templates/layout/app.html.eex:43
+#: lib/kazarma_web/templates/layout/app.html.eex:43
 #, elixir-autogen, elixir-format
 msgid "GitLab repository"
 msgstr ""
 
-#: lib/kazarma_web/templates/layout/app.html.eex:29
+#: lib/kazarma_web/templates/layout/app.html.eex:31
 #, elixir-autogen, elixir-format
 msgid "Matrix or ActivityPub username, or ActivityPub ID"
 msgstr ""
@@ -66,8 +66,8 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: lib/kazarma_web/templates/layout/app.html.eex:34
-#: lib/kazarma_web/templates/layout/app.html.eex:34
+#: lib/kazarma_web/templates/layout/app.html.eex:36
+#: lib/kazarma_web/templates/layout/app.html.eex:36
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr ""
@@ -90,4 +90,14 @@ msgstr ""
 #: lib/kazarma_web/templates/actor/show.html.eex:13
 #, elixir-autogen, elixir-format
 msgid "%{actor_name}'s avatar"
+msgstr ""
+
+#: lib/kazarma_web/templates/layout/app.html.eex:17
+#, elixir-autogen, elixir-format
+msgid "Skip to content"
+msgstr ""
+
+#: lib/kazarma_web/templates/layout/app.html.eex:18
+#, elixir-autogen, elixir-format
+msgid "Skip to search"
 msgstr ""
