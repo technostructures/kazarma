@@ -13,10 +13,10 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
   alias MatrixAppService.Event
 
   # Those are accounts created on public ActivityPub instances
-  @pleroma_user_server "kiwifarms.cc"
+  @pleroma_user_server "pleroma.interhacker.space"
   @pleroma_user_name "test_user_bob2"
   @pleroma_user_displayname "Bob"
-  @pleroma_user_ap_id "https://kiwifarms.cc/users/test_user_bob2"
+  @pleroma_user_ap_id "https://pleroma.interhacker.space/users/test_user_bob2"
   @pleroma_puppet_username "_ap_#{@pleroma_user_name}___#{@pleroma_user_server}"
   @pleroma_puppet_address "@#{@pleroma_puppet_username}:kazarma"
 
@@ -89,11 +89,11 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
           username: "alice@kazarma"
         },
         %ActivityPub.Actor{
-          ap_id: "https://kiwifarms.cc/users/test_user_bob2",
+          ap_id: "https://pleroma.interhacker.space/users/test_user_bob2",
           data: %{
             "@context" => [
               "https://www.w3.org/ns/activitystreams",
-              "https://kiwifarms.cc/schemas/litepub-0.1.jsonld",
+              "https://pleroma.interhacker.space/schemas/litepub-0.1.jsonld",
               %{"@language" => "und"}
             ],
             "alsoKnownAs" => [],
@@ -101,30 +101,31 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
             "capabilities" => %{"acceptsChatMessages" => true},
             "discoverable" => false,
             "endpoints" => %{
-              "oauthAuthorizationEndpoint" => "https://kiwifarms.cc/oauth/authorize",
-              "oauthRegistrationEndpoint" => "https://kiwifarms.cc/api/v1/apps",
-              "oauthTokenEndpoint" => "https://kiwifarms.cc/oauth/token",
-              "sharedInbox" => "https://kiwifarms.cc/inbox",
-              "uploadMedia" => "https://kiwifarms.cc/api/ap/upload_media"
+              "oauthAuthorizationEndpoint" => "https://pleroma.interhacker.space/oauth/authorize",
+              "oauthRegistrationEndpoint" => "https://pleroma.interhacker.space/api/v1/apps",
+              "oauthTokenEndpoint" => "https://pleroma.interhacker.space/oauth/token",
+              "sharedInbox" => "https://pleroma.interhacker.space/inbox",
+              "uploadMedia" => "https://pleroma.interhacker.space/api/ap/upload_media"
             },
-            "featured" => "https://kiwifarms.cc/users/test_user_bob2/collections/featured",
-            "followers" => "https://kiwifarms.cc/users/test_user_bob2/followers",
-            "following" => "https://kiwifarms.cc/users/test_user_bob2/following",
-            "id" => "https://kiwifarms.cc/users/test_user_bob2",
-            "inbox" => "https://kiwifarms.cc/users/test_user_bob2/inbox",
+            "featured" =>
+              "https://pleroma.interhacker.space/users/test_user_bob2/collections/featured",
+            "followers" => "https://pleroma.interhacker.space/users/test_user_bob2/followers",
+            "following" => "https://pleroma.interhacker.space/users/test_user_bob2/following",
+            "id" => "https://pleroma.interhacker.space/users/test_user_bob2",
+            "inbox" => "https://pleroma.interhacker.space/users/test_user_bob2/inbox",
             "manuallyApprovesFollowers" => false,
             "name" => "Bob",
-            "outbox" => "https://kiwifarms.cc/users/test_user_bob2/outbox",
+            "outbox" => "https://pleroma.interhacker.space/users/test_user_bob2/outbox",
             "preferredUsername" => "test_user_bob2",
             "publicKey" => %{
-              "id" => "https://kiwifarms.cc/users/test_user_bob2#main-key",
-              "owner" => "https://kiwifarms.cc/users/test_user_bob2",
+              "id" => "https://pleroma.interhacker.space/users/test_user_bob2#main-key",
+              "owner" => "https://pleroma.interhacker.space/users/test_user_bob2",
               "publicKeyPem" => _
             },
             "summary" => "",
             "tag" => [],
             "type" => "Person",
-            "url" => "https://kiwifarms.cc/users/test_user_bob2",
+            "url" => "https://pleroma.interhacker.space/users/test_user_bob2",
             "vcard:bday" => nil
           },
           deactivated: false,
@@ -132,7 +133,7 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
           keys: nil,
           local: false,
           pointer_id: nil,
-          username: "test_user_bob2@kiwifarms.cc"
+          username: "test_user_bob2@pleroma.interhacker.space"
         } ->
           {:ok, :activity}
       end)
@@ -219,20 +220,20 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
             "conversation" => _,
             "tag" => [
               %{
-                "href" => "https://kiwifarms.cc/users/test_user_bob2",
+                "href" => "https://pleroma.interhacker.space/users/test_user_bob2",
                 "name" => "@test_user_bob2",
                 "type" => "Mention"
               }
             ],
             "to" => [
               "https://www.w3.org/ns/activitystreams#Public",
-              "https://kiwifarms.cc/users/test_user_bob2"
+              "https://pleroma.interhacker.space/users/test_user_bob2"
             ],
             "type" => "Note"
           },
           to: [
             "https://www.w3.org/ns/activitystreams#Public",
-            "https://kiwifarms.cc/users/test_user_bob2"
+            "https://pleroma.interhacker.space/users/test_user_bob2"
           ]
         },
         nil ->

@@ -13,7 +13,7 @@ defmodule Kazarma.Matrix.TransactionTest do
   alias MatrixAppService.Event
 
   # Those are accounts created on public ActivityPub instances
-  @pleroma_user_server "kiwifarms.cc"
+  @pleroma_user_server "pleroma.interhacker.space"
   @pleroma_user_name "test_user_bob2"
   @pleroma_user_displayname "Bob"
   @pleroma_puppet_username "_ap_#{@pleroma_user_name}___#{@pleroma_user_server}"

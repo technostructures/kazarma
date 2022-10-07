@@ -6,7 +6,7 @@ defmodule Kazarma.Matrix.RoomTest do
   import Mox
   import Kazarma.Matrix.Room
 
-  @ap_user_server "kiwifarms.cc"
+  @ap_user_server "pleroma.interhacker.space"
   @ap_user_name "test_user_bob2"
   @ap_puppet_username "_ap_#{@ap_user_name}___#{@ap_user_server}"
   @ap_puppet_matrix_id "@#{@ap_puppet_username}:kazarma"
