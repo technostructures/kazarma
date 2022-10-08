@@ -4,46 +4,58 @@
 %>
 
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="night">
   <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Kazarma</title>
+    <title><%= if @title && @title != "", do: "#{@title} - Kazarma", else: "Kazarma" %></title>
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </head>
   <body>
-    <header class="fixed w-full z-10 top-0">
-      <div class="navbar mb-2 shadow-lg justify-between">
-        <div class="flex-none px-2 mx-2 lg:flex">
-          <%= link [to: Routes.index_path(@conn, :index), class: "text-2xl font-bold"], do: "Kazarma" %>
-        </div>
-        <%= if Application.get_env(:kazarma, :html_search, false) do %>
-          <div class="flex-grow lg:max-w-3xl mt-0 lg:absolute lg:mx-auto lg:inset-x-0">
-            <%= form_for @conn, Routes.search_path(@conn, :search), [as: :search, class: "w-full"], fn f -> %>
-              <div class="flex flex-row items-center justify-between space-x-2">
-                <div class="flex-1 space-x-2">
-                  <div class="form-control">
-                    <%= text_input f, :address, aria_label: gettext("Matrix or ActivityPub username, or ActivityPub ID"), placeholder: gettext("@alice:matrix.org / bob@mastodon.social / https://mastodon.social/users/bob"), class: "w-full input input-bordered" %>
+    <a class="sr-only" href="#main"><%= gettext("Skip to content") %></a>
+    <a class="sr-only" href="#search_address"><%= gettext("Skip to search") %></a>
+    <div class="flex flex-col h-screen">
+      <header class="">
+        <div class="navbar mb-2 shadow-lg justify-between flex-wrap space-y-4 lg:space-y-0">
+          <div class="flex-none px-2 mx-2 lg:flex order-1">
+            <%= link [to: Routes.index_path(@conn, :index), class: "text-2xl font-bold"], do: "Kazarma" %>
+          </div>
+          <%= if Application.get_env(:kazarma, :html_search, false) do %>
+            <div class="flex-grow lg:max-w-3xl mt-0 lg:mx-auto lg:inset-x-0 order-3 lg:order-2">
+              <%= form_for @conn, Routes.search_path(@conn, :search), [as: :search, class: "w-full"], fn f -> %>
+                <div class="flex flex-row items-center justify-between space-x-2">
+                  <div class="flex-1 space-x-2">
+                    <div class="form-control relative">
+                      <%= text_input f, :address, aria_label: gettext("Matrix or ActivityPub username, or ActivityPub ID"), placeholder: gettext("@alice:matrix.org / bob@mastodon.social / https://mastodon.social/users/bob"), required: true, class: "peer text-base transition-all w-full placeholder-shown:h-20 focus:h-20 h-20 lg:placeholder-shown:h-10 lg:focus:h-16 lg:h-16 placeholder-shown:pt-4 focus:pt-8 pt-8 lg:placeholder-shown:pt-2 lg:focus:pt-4 lg:pt-4 input input-bordered border-opacity-80 placeholder-transparent" %>
+                      <label for="search_address" class="absolute transition-all left-4 top-1.5 peer-focus:top-1.5 text-xs peer-focus:text-xs text-gray-200 peer-placeholder-shown:cursor-text peer-placeholder-shown:top-3 lg:peer-placeholder-shown:top-1.5 peer-placeholder-shown:text-base"><%= gettext("@alice:matrix.org / bob@mastodon.social / https://mastodon.social/users/bob") %></label>
+                    </div>
+                  </div>
+                  <div class="flex-none">
+                    <%= submit [aria_label: gettext("Search"), title: gettext("Search"), class: "btn btn-outline"], do: KazarmaWeb.IconView.search_icon() %>
                   </div>
                 </div>
-                <div class="flex-none">
-                  <%= submit [aria_label: gettext("Search"), title: gettext("Search"), class: "btn btn-outline"], do: KazarmaWeb.IconView.search_icon() %>
-                </div>
-              </div>
-            <% end %>
+              <% end %>
+            </div>
+          <% end %>
+          <div class="flex-none px-2 mx-2 lg:flex order-2 lg:order-3">
+            <%= link [to: "https://gitlab.com/kazarma/kazarma", target: "_blank", aria_label: gettext("GitLab repository"), title: gettext("GitLab repository"), class: "text-2xl font-bold"], do: KazarmaWeb.IconView.gitlab_icon() %>
+          </div>
+        </div>
+      </header>
+      <main role="main" id="main" class="container w-full lg:max-w-3xl mx-auto">
+        <p class="alert alert-info mb-2" role="alert"><%= get_flash(@conn, :info) %></p>
+        <%= if get_flash(@conn, :error) do %>
+          <div class="alert alert-error shadow-lg mb-2" role="alert">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span><%= get_flash(@conn, :error) %></span>
+            </div>
           </div>
         <% end %>
-        <div class="flex-none px-2 mx-2 lg:flex">
-          <%= link [to: "https://gitlab.com/kazarma/kazarma", target: "_blank", aria_label: gettext("GitLab repository"), title: gettext("GitLab repository"), class: "text-2xl font-bold"], do: KazarmaWeb.IconView.gitlab_icon() %>
-        </div>
-      </div>
-    </header>
-    <main role="main" class="container w-full lg:max-w-3xl mx-auto pt-20">
-      <p class="alert alert-info mb-2" role="alert"><%= get_flash(@conn, :info) %></p>
-      <p class="alert alert-error mb-2" role="alert"><%= get_flash(@conn, :error) %></p>
-      <%= @inner_content %>
-    </main>
+        <%= @inner_content %>
+      </main>
+    </div>
   </body>
 </html>
