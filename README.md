@@ -40,8 +40,8 @@ namespaces:
 Run those commands:
 
 ```bash
-docker-compose -f docker-compose.production.yml run kazarma eval "Kazarma.Release.migrate()"
-docker-compose -f docker-compose.production.yml up -d
+docker compose -f docker-compose.production.yml run kazarma eval "Kazarma.Release.migrate()"
+docker compose -f docker-compose.production.yml up -d
 ```
 
 ### Configuration
@@ -64,9 +64,10 @@ docker-compose -f docker-compose.production.yml up -d
 
 ```bash
 git submodule update --init --recursive
-docker-compose run synapse generate
-docker-compose run kazarma mix do deps.get, ecto.setup
-docker-compose up
+docker compose run synapse generate
+docker compose run kazarma mix do deps.get, ecto.setup
+docker compose run kazarma npm --prefix assets install
+docker compose up
 ```
 
 On Linux, use `docker-hoster` to make container domains accessible:
@@ -117,10 +118,10 @@ Then the `docker-compose.yml` file should (at least) expose the `80` port in the
 #### Reset databases
 
 ```bash
-docker-compose rm -fs postgres_kazarma postgres_pleroma synapse
+docker compose rm -fs postgres_kazarma postgres_pleroma synapse
 docker volume rm kazarma_postgres_pleroma_files kazarma_postgres_kazarma_files kazarma_synapse_files
-docker-compose run synapse generate
-docker-compose run kazarma mix ecto.setup
+docker compose run synapse generate
+docker compose run kazarma mix ecto.setup
 ```
 
 ### Locally
