@@ -48,10 +48,10 @@ defmodule Kazarma.Matrix.Transaction do
           Kazarma.ActivityPub.Activity.ChatMessage.forward_create_to_activitypub(event, room)
 
         %Room{data: %{"type" => "note"}} = room ->
-          Kazarma.ActivityPub.Activity.Note.forward_create_to_activitypub(event, room)
+          Kazarma.ActivityPub.Activity.Note.forward(event, room)
 
         %Room{data: %{"type" => "outbox"}} = room ->
-          Kazarma.ActivityPub.Activity.Note.forward_create_to_activitypub(event, room)
+          Kazarma.ActivityPub.Activity.Note.forward(event, room)
 
         nil ->
           :ok

@@ -145,65 +145,34 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     end
   end
 
-  def forward_create_to_activitypub(
-        %Event{
-          event_id: event_id,
-          room_id: room_id,
-          content:
-            %{
-              "body" => body
-            } = content,
-          sender: sender,
-          type: "m.room.message"
-        },
-        %Room{
-          data: %{"type" => "note", "to" => to},
-          remote_id: remote_id
-        }
-      ) do
-    with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(sender),
-         to =
-           List.delete(to, sender)
-           |> Enum.map(fn matrix_id ->
-             case Kazarma.Address.matrix_id_to_actor(matrix_id) do
-               {:ok, actor} -> actor.ap_id
-               _ -> nil
-             end
-           end),
-         attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(content),
-         {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
-           create(actor, to, remote_id, body, attachment) do
-      Kazarma.Matrix.Bridge.create_event(%{
-        local_id: event_id,
-        remote_id: remote_id,
-        room_id: room_id
-      })
+  def ap_id_of_matrix(matrix_id) do
+    case Kazarma.Address.matrix_id_to_actor(matrix_id) do
+      {:ok, actor} -> actor.ap_id
+      _ -> nil
+    end
+  end
 
+  def forward(event, room = %Room{ data: %{ "type" => "note" } }) do
+    with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(event.sender),
+         to = List.delete(room.data["to"], event.sender) |> Enum.map(&ap_id_of_matrix(&1)),
+         attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
+         {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <- create(actor, to, room.remote_id, event.content["body"], attachment)
+    do
+      Kazarma.Matrix.Bridge.create_event(%{
+        local_id: event.event_id,
+        remote_id: remote_id,
+        room_id: event.room_id
+      })
       :ok
     end
   end
 
-  def forward_create_to_activitypub(
-        %Event{
-          event_id: event_id,
-          room_id: room_id,
-          content:
-            %{
-              "body" => body
-            } = content,
-          sender: sender,
-          type: "m.room.message"
-        },
-        %Room{
-          data: %{"type" => "outbox", "matrix_id" => receiver},
-          remote_id: _remote_id
-        }
-      ) do
-    with {:ok, sender_actor} <- Kazarma.Address.matrix_id_to_actor(sender),
-         {:ok, receiver_actor} <- Kazarma.Address.matrix_id_to_actor(receiver),
+  def forward(event, room = %Room{ data: %{"type" => "outbox"} }) do
+    with {:ok, sender_actor} <- Kazarma.Address.matrix_id_to_actor(event.sender),
+         {:ok, receiver_actor} <- Kazarma.Address.matrix_id_to_actor(room.data["matrix_id"]),
          to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id],
          context = ActivityPub.Utils.generate_context_id(),
-         attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(content),
+         attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
          tags = [
            %{
              "href" => receiver_actor.ap_id,
@@ -212,18 +181,19 @@ defmodule Kazarma.ActivityPub.Activity.Note do
            }
          ],
          {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
-           create(sender_actor, to, context, body, attachment, tags) do
+           create(sender_actor, to, context, event.content["body"], attachment, tags)
+    do
       Kazarma.Matrix.Bridge.create_event(%{
-        local_id: event_id,
+        local_id: event.event_id,
         remote_id: remote_id,
-        room_id: room_id
+        room_id: event.room_id
       })
 
       :ok
     end
   end
 
-  def forward_create_to_activitypub(_), do: :ok
+  def forward(_), do: :ok
 
   def accept_puppet_invitation(user_id, room_id) do
     with {:ok, _actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),
