@@ -32,7 +32,13 @@ config :logger, :file_log,
   format: "$message\n",
   path: "event.log",
   level: :debug,
-  metadata_filter: [device: 1]
+  metadata_filter: [device: :event]
+
+config :logger, :file_log,
+  format: "$message\n",
+  path: "activity.log",
+  level: :debug,
+  metadata_filter: [device: :activity]
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
