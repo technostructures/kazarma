@@ -22,6 +22,10 @@ defmodule Kazarma.Logger do
     Logger.error(message, metadata)
   end
 
+  def warn(message, metadata \\ []) do
+    Logger.warn(message, metadata)
+  end
+
   def matrix_input(%Event{} = object) do
     send_to_file_log(object |> Map.from_struct) # TODO: Test without from_struct
   end
