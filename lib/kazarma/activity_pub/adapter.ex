@@ -108,9 +108,11 @@ defmodule Kazarma.ActivityPub.Adapter do
             data: %{
               "type" => "Note"
             }
-          }
+          } = object
         } = activity
       ) do
+    Logger.ap_input(activity)
+    Logger.ap_input(object)
     case Kazarma.ActivityPub.Activity.Note.forward_create_to_matrix(activity) do
       {:error, error} ->
         Logger.error(error)
@@ -137,9 +139,11 @@ defmodule Kazarma.ActivityPub.Adapter do
             data: %{
               "type" => "ChatMessage"
             }
-          }
+          } = object
         } = activity
       ) do
+    Logger.ap_input(activity)
+    Logger.ap_input(object)
     Kazarma.ActivityPub.Activity.ChatMessage.forward_create_to_matrix(activity)
   end
 
@@ -156,6 +160,8 @@ defmodule Kazarma.ActivityPub.Adapter do
         } = activity
       ) do
     Logger.debug("Forwarding to Matrix delete activity")
+    Logger.ap_input(activity)
+    Logger.ap_input(object_ap_id)
 
     with {:ok, sender_matrix_id} <- Address.ap_id_to_matrix(sender_ap_id),
          %BridgeEvent{local_id: event_id, room_id: room_id} <-
@@ -181,6 +187,7 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   def handle_activity(%Object{} = object) do
     Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (other activity)")
+    Logger.ap_input(object)
     Logger.debug(inspect(object))
 
     :ok
