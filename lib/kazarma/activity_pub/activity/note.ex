@@ -154,22 +154,27 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     end
   end
 
-  def forward(event, room = %Room{ data: %{ "type" => "note" } }) do
+  def forward(event, room = %Room{data: %{"type" => "note"}}) do
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(event.sender),
          to = List.delete(room.data["to"], event.sender) |> Enum.map(&ap_id_of_matrix(&1)),
-         attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
-         {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <- create(actor, to, room.remote_id, event.content["body"], attachment)
-    do
+         attachment =
+           Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
+         {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
+           create(actor, to, room.remote_id, event.content["body"], attachment) do
       Kazarma.Matrix.Bridge.create_event(%{
         local_id: event.event_id,
         remote_id: remote_id,
         room_id: event.room_id
       })
+
       :ok
     end
   end
 
-  def forward(event = %Event{ content: %{"m.relates_to" => %{"m.in_reply_to" => replied_event }}}, room = %Room{ data: %{"type" => "outbox"} }) do
+  def forward(
+        event = %Event{content: %{"m.relates_to" => %{"m.in_reply_to" => replied_event}}},
+        room = %Room{data: %{"type" => "outbox"}}
+      ) do
     # TODO: Fallback to normal message if we can't find the replied activity
     Logger.debug("Replying to:")
     Logger.debug(Kazarma.Matrix.Bridge.get_event_by_local_id(replied_event["event_id"]))
@@ -191,8 +196,8 @@ defmodule Kazarma.ActivityPub.Activity.Note do
         "to" => to,
         "context" => context,
         "conversation" => context
-        #"attachment" => Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
-        #"tag" => [
+        # "attachment" => Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
+        # "tag" => [
         #   %{
         #     "href" => receiver_actor.ap_id,
         #     "name" => "@#{receiver_actor.data["preferredUsername"]}",
@@ -207,12 +212,13 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     {:ok, _activity} = Kazarma.ActivityPub.create(obj)
   end
 
-  def forward(event, room = %Room{ data: %{"type" => "outbox"} }) do
+  def forward(event, room = %Room{data: %{"type" => "outbox"}}) do
     with {:ok, sender_actor} <- Kazarma.Address.matrix_id_to_actor(event.sender),
          {:ok, receiver_actor} <- Kazarma.Address.matrix_id_to_actor(room.data["matrix_id"]),
          to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id],
          context = ActivityPub.Utils.generate_context_id(),
-         attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
+         attachment =
+           Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
          tags = [
            %{
              "href" => receiver_actor.ap_id,
@@ -221,8 +227,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
            }
          ],
          {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
-           create(sender_actor, to, context, event.content["body"], attachment, tags)
-    do
+           create(sender_actor, to, context, event.content["body"], attachment, tags) do
       Kazarma.Matrix.Bridge.create_event(%{
         local_id: event.event_id,
         remote_id: remote_id,

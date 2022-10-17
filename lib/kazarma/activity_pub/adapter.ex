@@ -104,15 +104,17 @@ defmodule Kazarma.ActivityPub.Adapter do
   def handle_activity(
         %{
           data: %{"type" => "Create"},
-          object: %Object{
-            data: %{
-              "type" => "Note"
-            }
-          } = object
+          object:
+            %Object{
+              data: %{
+                "type" => "Note"
+              }
+            } = object
         } = activity
       ) do
     Logger.ap_input(activity)
     Logger.ap_input(object)
+
     case Kazarma.ActivityPub.Activity.Note.forward_create_to_matrix(activity) do
       {:error, error} ->
         Logger.error(error)
@@ -135,11 +137,12 @@ defmodule Kazarma.ActivityPub.Adapter do
           data: %{
             "type" => "Create"
           },
-          object: %Object{
-            data: %{
-              "type" => "ChatMessage"
-            }
-          } = object
+          object:
+            %Object{
+              data: %{
+                "type" => "ChatMessage"
+              }
+            } = object
         } = activity
       ) do
     Logger.ap_input(activity)
