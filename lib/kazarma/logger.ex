@@ -9,6 +9,9 @@ Protocol.derive(Jason.Encoder, ActivityPub.Object,
 )
 
 defmodule Kazarma.Logger do
+  @moduledoc """
+  Kazarma logger
+  """
   alias ActivityPub.Object
   alias MatrixAppService.Event
   require Logger
@@ -39,14 +42,14 @@ defmodule Kazarma.Logger do
   end
 
   def ap_input(object) do
-    send_to_file_log(object)
+    send_to_file_log(object, :activity)
   end
 
   def ap_output(object) do
-    send_to_file_log(object)
+    send_to_file_log(object, :activity)
   end
 
-  defp send_to_file_log(object, device \\ 1) do
+  defp send_to_file_log(object, device \\ :event) do
     object
     |> Jason.encode!()
     |> Jason.Formatter.pretty_print()

@@ -154,7 +154,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     end
   end
 
-  def forward(event, room = %Room{data: %{"type" => "note"}}) do
+  def forward(event, %Room{data: %{"type" => "note"}} = room) do
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(event.sender),
          to = List.delete(room.data["to"], event.sender) |> Enum.map(&ap_id_of_matrix(&1)),
          attachment =
@@ -172,8 +172,8 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   end
 
   def forward(
-        event = %Event{content: %{"m.relates_to" => %{"m.in_reply_to" => replied_event}}},
-        room = %Room{data: %{"type" => "outbox"}}
+        %Event{content: %{"m.relates_to" => %{"m.in_reply_to" => replied_event}}} = event,
+        %Room{data: %{"type" => "outbox"}} = room
       ) do
     # TODO: Fallback to normal message if we can't find the replied activity
     Logger.debug("Replying to:")
@@ -195,7 +195,9 @@ defmodule Kazarma.ActivityPub.Activity.Note do
         "attributedTo" => sender_actor.ap_id,
         "to" => to,
         "context" => context,
-        "conversation" => context
+        "conversation" => context,
+        "inReplyTo" => "http://pleroma.local/objects/87eb67ea-19f2-4e3d-89cd-fd46ed3b15d5",
+
         # "attachment" => Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
         # "tag" => [
         #   %{
@@ -212,7 +214,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     {:ok, _activity} = Kazarma.ActivityPub.create(obj)
   end
 
-  def forward(event, room = %Room{data: %{"type" => "outbox"}}) do
+  def forward(event, %Room{data: %{"type" => "outbox"}} = room) do
     with {:ok, sender_actor} <- Kazarma.Address.matrix_id_to_actor(event.sender),
          {:ok, receiver_actor} <- Kazarma.Address.matrix_id_to_actor(room.data["matrix_id"]),
          to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id],
