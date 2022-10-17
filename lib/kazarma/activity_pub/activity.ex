@@ -4,7 +4,7 @@ defmodule Kazarma.ActivityPub.Activity do
   @moduledoc """
   Activity-related functions.
   """
-  require Logger
+  alias Kazarma.Logger
   alias ActivityPub.Object
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Event

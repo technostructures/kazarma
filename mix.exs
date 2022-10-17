@@ -67,7 +67,8 @@ defmodule Kazarma.MixProject do
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:hackney, "~> 1.17.0", override: true},
-      {:oban, "~> 2.8.0", override: true}
+      {:oban, "~> 2.8.0", override: true},
+      {:logger_file_backend, "~> 0.0.13"},
     ]
   end
 

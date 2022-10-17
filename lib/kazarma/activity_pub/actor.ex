@@ -7,7 +7,7 @@ defmodule Kazarma.ActivityPub.Actor do
   alias ActivityPub.Actor
   alias KazarmaWeb.Endpoint
   alias KazarmaWeb.Router.Helpers, as: Routes
-  require Logger
+  alias Kazarma.Logger
 
   def build_actor_from_data(
         %{"id" => ap_id, "preferredUsername" => local_username} = ap_data,

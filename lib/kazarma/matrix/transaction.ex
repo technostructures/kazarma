@@ -5,7 +5,7 @@ defmodule Kazarma.Matrix.Transaction do
   Implementation of `MatrixAppService.Adapter.Transaction`.
   """
   @behaviour MatrixAppService.Adapter.Transaction
-  require Logger
+  alias Kazarma.Logger
   alias Kazarma.Matrix.Bridge
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
@@ -39,7 +39,8 @@ defmodule Kazarma.Matrix.Transaction do
   def new_event(%Event{type: "m.room.message", content: content}) when content == %{}, do: :ok
 
   def new_event(%Event{type: "m.room.message", room_id: room_id} = event) do
-    Logger.debug("Received m.room.message from Synapse")
+    Logger.info("Received m.room.message from Synapse")
+    Logger.matrix_input(event)
 
     if !is_tagged_message(event) do
       # room = Bridge.get_room_by_local_id(room_id) || Bridge.create_room(local_id: room_id, )

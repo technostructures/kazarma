@@ -4,7 +4,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   @moduledoc """
   Implementation of `ActivityPub.Adapter`.
   """
-  require Logger
+  alias Kazarma.Logger
   use Kazarma.Config
   @behaviour ActivityPub.Adapter
 

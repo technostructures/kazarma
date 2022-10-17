@@ -4,7 +4,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   @moduledoc """
   Functions for Note activities, used by Mastodon and Pleroma for toots.
   """
-  require Logger
+  alias Kazarma.Logger
   alias ActivityPub.Object
   alias Kazarma.Address
   alias MatrixAppService.Bridge.Room
@@ -41,6 +41,8 @@ defmodule Kazarma.ActivityPub.Activity.Note do
       object: object,
       to: receivers_id
     }
+
+    Logger.ap_output(params)
 
     {:ok, _activity} = Kazarma.ActivityPub.create(params)
   end
@@ -165,6 +167,44 @@ defmodule Kazarma.ActivityPub.Activity.Note do
       })
       :ok
     end
+  end
+
+  def forward(event = %Event{ content: %{"m.relates_to" => %{"m.in_reply_to" => replied_event }}}, room = %Room{ data: %{"type" => "outbox"} }) do
+    # TODO: Fallback to normal message if we can't find the replied activity
+    Logger.debug("Replying to:")
+    Logger.debug(Kazarma.Matrix.Bridge.get_event_by_local_id(replied_event["event_id"]))
+
+    context = ActivityPub.Utils.generate_context_id()
+    {:ok, sender_actor} = Kazarma.Address.matrix_id_to_actor(event.sender)
+    {:ok, receiver_actor} = Kazarma.Address.matrix_id_to_actor(room.data["matrix_id"])
+    to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id]
+
+    obj = %{
+      actor: sender_actor,
+      context: context,
+      to: to,
+      object: %{
+        "type" => "Note",
+        "content" => event.content["body"],
+        "actor" => sender_actor.ap_id,
+        "attributedTo" => sender_actor.ap_id,
+        "to" => to,
+        "context" => context,
+        "conversation" => context
+        #"attachment" => Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
+        #"tag" => [
+        #   %{
+        #     "href" => receiver_actor.ap_id,
+        #     "name" => "@#{receiver_actor.data["preferredUsername"]}",
+        #     "type" => "Mention"
+        #   }
+        # ],
+      }
+    }
+
+    Logger.ap_output(obj)
+
+    {:ok, _activity} = Kazarma.ActivityPub.create(obj)
   end
 
   def forward(event, room = %Room{ data: %{"type" => "outbox"} }) do

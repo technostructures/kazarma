@@ -4,7 +4,7 @@ defmodule Kazarma.Address do
   @moduledoc """
   Functions about Matrix and ActivityPub addresses conversion.
   """
-  require Logger
+  alias Kazarma.Logger
 
   @alphanum "A-z0-9"
   @alphanum_lowercased "a-z0-9"

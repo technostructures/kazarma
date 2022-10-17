@@ -10,7 +10,7 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Event
-  require Logger
+  alias Kazarma.Logger
 
   def create(sender, receiver_id, content, attachment \\ nil) do
     object = %{

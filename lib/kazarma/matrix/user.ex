@@ -5,7 +5,7 @@ defmodule Kazarma.Matrix.User do
   Implementation of `MatrixAppService.Adapter.User`.
   """
   @behaviour MatrixAppService.Adapter.User
-  require Logger
+  alias Kazarma.Logger
 
   @impl MatrixAppService.Adapter.User
   def query_user(user_id) do
