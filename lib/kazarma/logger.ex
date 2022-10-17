@@ -35,12 +35,11 @@ defmodule Kazarma.Logger do
   end
 
   def matrix_input(%Event{} = object) do
-    # TODO: Test without from_struct
-    send_to_file_log(object, :event)
+    send_to_file_log(object |> Map.from_struct(), :event)
   end
 
   def matrix_output(%Event{} = object) do
-    send_to_file_log(object, :event)
+    send_to_file_log(object |> Map.from_struct(), :event)
   end
 
   def ap_input(object) do
