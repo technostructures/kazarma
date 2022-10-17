@@ -1,6 +1,6 @@
 require Protocol
 Protocol.derive(Jason.Encoder, ActivityPub.Actor)
-Protocol.derive(Jason.Encoder, Ecto.Schema.Metadata)
+Protocol.derive(Jason.Encoder, ActivityPub.Object, only: [:id, :data, :local, :public, :inserted_at, :updated_at])
 
 defmodule Kazarma.Logger do
   alias ActivityPub.Object
