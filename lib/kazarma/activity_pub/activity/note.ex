@@ -196,7 +196,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
         "to" => to,
         "context" => context,
         "conversation" => context,
-        "inReplyTo" => "http://pleroma.local/objects/87eb67ea-19f2-4e3d-89cd-fd46ed3b15d5",
+        "inReplyTo" => "http://pleroma.local/objects/87eb67ea-19f2-4e3d-89cd-fd46ed3b15d5"
 
         # "attachment" => Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
         # "tag" => [
