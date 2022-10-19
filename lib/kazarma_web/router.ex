@@ -19,10 +19,12 @@ defmodule KazarmaWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
 
-    plug Cldr.Plug.SetLocale,
+    plug Cldr.Plug.PutLocale,
       apps: [cldr: KazarmaWeb.Cldr, gettext: KazarmaWeb.Gettext],
-      from: [:query, :path, :body, :cookie, :accept_language],
-      param: "locale"
+      from: [:query, :path, :body, :cookie, :accept_language]
+
+    plug Cldr.Plug.AcceptLanguage,
+      cldr_backend: KazarmaWeb.Cldr
 
     plug :fetch_flash
     plug :protect_from_forgery
