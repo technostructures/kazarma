@@ -13,9 +13,7 @@ config :kazarma, Kazarma.Repo,
   hostname: System.get_env("POSTGRES_HOST") || "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
-config :kazarma, Oban,
-  plugins: false,
-  queues: false
+config :kazarma, Oban, testing: :manual
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
