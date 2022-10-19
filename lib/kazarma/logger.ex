@@ -2,11 +2,14 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 require Protocol
+
 Protocol.derive(Jason.Encoder, ActivityPub.Actor)
 
 Protocol.derive(Jason.Encoder, ActivityPub.Object,
   only: [:id, :data, :local, :public, :inserted_at, :updated_at]
 )
+
+Protocol.derive(Jason.Encoder, MatrixAppService.Event)
 
 defmodule Kazarma.Logger do
   @moduledoc """
