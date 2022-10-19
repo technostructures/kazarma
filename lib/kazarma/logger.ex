@@ -15,7 +15,6 @@ defmodule Kazarma.Logger do
   @moduledoc """
   Kazarma logger
   """
-  alias ActivityPub.Object
   alias MatrixAppService.Event
   require Logger
 
@@ -52,7 +51,7 @@ defmodule Kazarma.Logger do
     send_to_file_log(object, :activity)
   end
 
-  defp send_to_file_log(object, device \\ :event) do
+  defp send_to_file_log(object, device) do
     object
     |> Jason.encode!()
     |> Jason.Formatter.pretty_print()

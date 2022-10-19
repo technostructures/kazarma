@@ -5,7 +5,6 @@ defmodule Kazarma.Matrix.Client do
   Wrapper for MatrixAppService.Client.
   """
   use Kazarma.Config
-  alias Kazarma.Logger
 
   def register(username) do
     localpart =

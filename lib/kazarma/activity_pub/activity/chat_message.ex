@@ -8,7 +8,6 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
   alias Kazarma.Address
   alias Kazarma.Matrix.Bridge
   alias MatrixAppService.Bridge.Room
-  alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Event
   alias Kazarma.Logger
 
@@ -48,7 +47,7 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
         object: %Object{
           data:
             %{
-              "content" => body,
+              "content" => _body,
               "id" => object_id
             } = object_data
         }

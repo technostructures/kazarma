@@ -288,14 +288,15 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   defp get_result([]), do: nil
 
   defp call_if_not_nil(nil, nil, _fun), do: nil
+
+  defp call_if_not_nil(value1, value2, fun) do
+    fun.(value1, value2)
+  end
+
   defp call_if_not_nil(nil, _fun), do: nil
   defp call_if_not_nil([], _fun), do: nil
 
   defp call_if_not_nil(value, fun) do
     fun.(value)
-  end
-
-  defp call_if_not_nil(value1, value2, fun) do
-    fun.(value1, value2)
   end
 end

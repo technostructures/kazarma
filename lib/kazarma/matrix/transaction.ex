@@ -65,7 +65,7 @@ defmodule Kazarma.Matrix.Transaction do
   def new_event(
         %Event{
           type: "m.room.redaction",
-          room_id: room_id,
+          room_id: _room_id,
           redacts: _redacts
         } = event
       ) do

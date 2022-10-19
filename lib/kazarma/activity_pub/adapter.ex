@@ -12,8 +12,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias ActivityPub.Actor
   alias ActivityPub.Object
-  alias KazarmaWeb.Endpoint
-  alias KazarmaWeb.Router.Helpers, as: Routes
+  # alias KazarmaWeb.Router.Helpers, as: Routes
 
   @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
