@@ -32,13 +32,13 @@ config :logger, :console,
 
 config :logger, :event_log,
   format: "$message\n",
-  path: "event.log",
+  path: "matrix_event.log",
   level: :debug,
   metadata_filter: [device: :event]
 
 config :logger, :activity_log,
   format: "$message\n",
-  path: "activity.log",
+  path: "activity_pub.log",
   level: :debug,
   metadata_filter: [device: :activity]
 
