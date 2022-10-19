@@ -147,20 +147,32 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     end
   end
 
-  def ap_id_of_matrix(matrix_id) do
+  def unchecked_matrix_id_to_actor(matrix_id) do
     case Kazarma.Address.matrix_id_to_actor(matrix_id) do
-      {:ok, actor} -> actor.ap_id
+      {:ok, actor} -> actor
       _ -> nil
     end
   end
 
   def forward(event, %Room{data: %{"type" => "note"}} = room) do
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(event.sender),
-         to = List.delete(room.data["to"], event.sender) |> Enum.map(&ap_id_of_matrix(&1)),
+         to =
+           List.delete(room.data["to"], event.sender)
+           |> Enum.map(&unchecked_matrix_id_to_actor/1)
+           |> Enum.filter(&(!is_nil(&1))),
+         to_ap_id = Enum.map(to, & &1.ap_id),
          attachment =
            Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
+         tags =
+           Enum.map(to, fn actor ->
+             %{
+               "href" => actor.ap_id,
+               "name" => "@#{actor.data["preferredUsername"]}",
+               "type" => "Mention"
+             }
+           end),
          {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
-           create(actor, to, room.remote_id, event.content["body"], attachment) do
+           create(actor, to_ap_id, room.remote_id, event.content["body"], attachment, tags) do
       Kazarma.Matrix.Bridge.create_event(%{
         local_id: event.event_id,
         remote_id: remote_id,
