@@ -24,6 +24,7 @@ defmodule Kazarma.ActivityPub.Activity do
       |> maybe_put("context", Keyword.get(params, :context))
       |> maybe_put("attachment", Keyword.get(params, :attachment))
       |> maybe_put("tag", Keyword.get(params, :tags))
+      |> maybe_put("inReplyTo", Keyword.get(params, :in_reply_to))
 
     create_params = %{
       actor: Keyword.fetch!(params, :sender),
