@@ -4,10 +4,38 @@ defmodule Kazarma.ActivityPub.Activity do
   @moduledoc """
   Activity-related functions.
   """
-  alias Kazarma.Logger
   alias ActivityPub.Object
+  alias Kazarma.Logger
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Event
+
+  def create(params) do
+    sender = Keyword.fetch!(params, :sender)
+
+    object =
+      %{
+        "type" => Keyword.fetch!(params, :type),
+        "content" => Keyword.fetch!(params, :content),
+        "actor" => sender.ap_id,
+        "attributedTo" => sender.ap_id,
+        "to" => Keyword.fetch!(params, :receivers_id),
+        "conversation" => Keyword.get(params, :context)
+      }
+      |> maybe_put("context", Keyword.get(params, :context))
+      |> maybe_put("attachment", Keyword.get(params, :attachment))
+      |> maybe_put("tag", Keyword.get(params, :tags))
+
+    create_params = %{
+      actor: Keyword.fetch!(params, :sender),
+      context: Keyword.get(params, :context),
+      to: Keyword.fetch!(params, :receivers_id),
+      object: object
+    }
+
+    Logger.ap_output(object)
+
+    {:ok, _activity} = Kazarma.ActivityPub.create(create_params)
+  end
 
   def forward_redaction(%Event{
         room_id: room_id,
@@ -55,4 +83,7 @@ defmodule Kazarma.ActivityPub.Activity do
       ]
     }
   end
+
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
 end

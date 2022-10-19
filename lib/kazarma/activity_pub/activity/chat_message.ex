@@ -5,39 +5,12 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
   Functions for ChatMessage activities, used by Pleroma for its chat system.
   """
   alias ActivityPub.Object
+  alias Kazarma.ActivityPub.Activity
   alias Kazarma.Address
+  alias Kazarma.Logger
   alias Kazarma.Matrix.Bridge
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
-  alias Kazarma.Logger
-
-  def create(sender, receiver_id, content, attachment \\ nil) do
-    object = %{
-      "type" => "ChatMessage",
-      "content" => content,
-      "actor" => sender.ap_id,
-      "attributedTo" => sender.ap_id,
-      "to" => [receiver_id]
-    }
-
-    Logger.debug("attachment: " <> inspect(attachment))
-
-    object =
-      if is_nil(attachment) do
-        object
-      else
-        Map.put(object, "attachment", attachment)
-      end
-
-    params = %{
-      actor: sender,
-      context: nil,
-      object: object,
-      to: [receiver_id]
-    }
-
-    Kazarma.ActivityPub.create(params)
-  end
 
   def forward_create_to_matrix(%{
         data: %{
@@ -107,7 +80,13 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
          {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_username(username),
          attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(content),
          {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
-           create(actor, remote_id, body, attachment) do
+           Activity.create(
+             type: "ChatMessage",
+             sender: actor,
+             receivers_id: [remote_id],
+             content: body,
+             attachment: attachment
+           ) do
       Kazarma.Matrix.Bridge.create_event(%{
         local_id: event_id,
         remote_id: remote_id,

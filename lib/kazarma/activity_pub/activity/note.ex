@@ -4,48 +4,12 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   @moduledoc """
   Functions for Note activities, used by Mastodon and Pleroma for toots.
   """
-  alias Kazarma.Logger
   alias ActivityPub.Object
+  alias Kazarma.ActivityPub.Activity
   alias Kazarma.Address
+  alias Kazarma.Logger
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
-
-  def create(sender, receivers_id, context, content, attachment \\ nil, tags \\ nil) do
-    object = %{
-      "type" => "Note",
-      "content" => content,
-      "actor" => sender.ap_id,
-      "attributedTo" => sender.ap_id,
-      "to" => receivers_id,
-      "context" => context,
-      "conversation" => context
-    }
-
-    object =
-      if is_nil(attachment) do
-        object
-      else
-        Map.put(object, "attachment", attachment)
-      end
-
-    object =
-      if is_nil(tags) do
-        object
-      else
-        Map.put(object, "tag", tags)
-      end
-
-    params = %{
-      actor: sender,
-      context: context,
-      object: object,
-      to: receivers_id
-    }
-
-    Logger.ap_output(params)
-
-    {:ok, _activity} = Kazarma.ActivityPub.create(params)
-  end
 
   def forward_create_to_matrix(%{data: %{"to" => to}} = activity) do
     if "https://www.w3.org/ns/activitystreams#Public" in to do
@@ -172,7 +136,15 @@ defmodule Kazarma.ActivityPub.Activity.Note do
              }
            end),
          {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
-           create(actor, to_ap_id, room.remote_id, event.content["body"], attachment, tags) do
+           Activity.create(
+             type: "Note",
+             sender: actor,
+             receivers_id: to_ap_id,
+             context: room.remote_id,
+             content: event.content["body"],
+             attachment: attachment,
+             tags: tags
+           ) do
       Kazarma.Matrix.Bridge.create_event(%{
         local_id: event.event_id,
         remote_id: remote_id,
@@ -241,7 +213,15 @@ defmodule Kazarma.ActivityPub.Activity.Note do
            }
          ],
          {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
-           create(sender_actor, to, context, event.content["body"], attachment, tags) do
+           Activity.create(
+             type: "Note",
+             sender: sender_actor,
+             receivers_id: to,
+             context: context,
+             content: event.content["body"],
+             attachment: attachment,
+             tags: tags
+           ) do
       Kazarma.Matrix.Bridge.create_event(%{
         local_id: event.event_id,
         remote_id: remote_id,
