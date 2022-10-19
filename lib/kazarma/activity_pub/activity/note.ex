@@ -130,8 +130,8 @@ defmodule Kazarma.ActivityPub.Activity.Note do
               Kazarma.Matrix.Client.send_tagged_message(
                 room_id,
                 matrix_id,
-                source,
-                content
+                source || content,
+                content || source
               )
             end
           ),
@@ -140,10 +140,10 @@ defmodule Kazarma.ActivityPub.Activity.Note do
             |> get_result()
           end)} do
       {nil, nil} -> {:error, :no_message_to_send}
-      {{:error, err}, _} -> {:error, err}
-      {_, {:error, err}} -> {:error, err}
       {{:ok, event_id}, _} -> {:ok, event_id}
       {_, {:ok, event_id}} -> {:ok, event_id}
+      {{:error, err}, _} -> {:error, err}
+      {_, {:error, err}} -> {:error, err}
     end
   end
 
