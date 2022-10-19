@@ -129,7 +129,7 @@ if sentry_dsn do
 end
 
 config :kazarma, Kazarma.PromEx,
-  disabled: !System.get_env("ENABLE_PROM_EX", false),
+  disabled: System.get_env("ENABLE_PROM_EX") != "true",
   manual_metrics_start_delay: :no_delay,
   drop_metrics_groups: [],
   grafana: :disabled,
