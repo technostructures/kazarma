@@ -47,8 +47,7 @@ defmodule Kazarma.MixProject do
     [
       {:phoenix, "~> 1.6"},
       {:phoenix_ecto, "~> 4.4"},
-      {:ecto, "~> 3.8.4"},
-      {:ecto_sql, "~> 3.8.3"},
+      {:ecto_sql, "~> 3.6"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_live_dashboard, "~> 0.6"},
       {:telemetry_metrics, "~> 0.6"},
