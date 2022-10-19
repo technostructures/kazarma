@@ -128,6 +128,13 @@ if sentry_dsn do
     included_environments: [release_level]
 end
 
+config :kazarma, Kazarma.PromEx,
+  disabled: !System.get_env("ENABLE_PROM_EX", false),
+  manual_metrics_start_delay: :no_delay,
+  drop_metrics_groups: [],
+  grafana: :disabled,
+  metrics_server: :disabled
+
 # ## Using releases (Elixir v1.9+)
 #
 # If you are doing OTP releases, you need to instruct Phoenix

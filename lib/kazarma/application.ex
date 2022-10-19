@@ -9,6 +9,8 @@ defmodule Kazarma.Application do
 
   def start(_type, _args) do
     children = [
+      # Start gathering events for Prometheus
+      Kazarma.PromEx,
       # Start the Ecto repository
       Kazarma.Repo,
       # Start the Telemetry supervisor
