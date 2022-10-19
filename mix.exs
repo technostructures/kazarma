@@ -47,16 +47,18 @@ defmodule Kazarma.MixProject do
     [
       {:phoenix, "~> 1.6"},
       {:phoenix_ecto, "~> 4.4"},
-      {:ecto_sql, "~> 3.8"},
+      {:ecto, "~> 3.8.4"},
+      {:ecto_sql, "~> 3.8.3"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_live_dashboard, "~> 0.6"},
       {:telemetry_metrics, "~> 0.6"},
-      {:telemetry_poller, "~> 0.5"},
+      {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.3"},
       {:plug_cowboy, "~> 2.5"},
       {:httpoison, "~> 1.5"},
-      {:ex_cldr, "~> 2.23"},
+      {:ex_cldr, "~> 2.33"},
+      {:ex_cldr_plugs, "~> 1.2"},
       {:activity_pub, "~> 0.1.0", path: "./activity_pub"},
       {:polyjuice_client, path: "./polyjuice_client", override: true},
       {:matrix_app_service, path: "./matrix_app_service"},
@@ -67,8 +69,10 @@ defmodule Kazarma.MixProject do
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:hackney, "~> 1.17.0", override: true},
-      {:oban, "~> 2.8.0", override: true},
-      {:logger_file_backend, "~> 0.0.13"}
+      {:oban, "~> 2.13"},
+      {:logger_file_backend, "~> 0.0.13"},
+      {:sentry, "~> 8.0"},
+      {:prom_ex, "~> 1.7"}
     ]
   end
 
