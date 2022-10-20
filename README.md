@@ -1,26 +1,27 @@
 # Kazarma
 
 [![REUSE status](https://api.reuse.software/badge/gitlab.com/kazarma/kazarma)](https://api.reuse.software/info/gitlab.com/kazarma/kazarma)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/kazarma)](https://artifacthub.io/packages/search?repo=kazarma)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/kazarma)](https://artifacthub.io/packages/helm/kazarma/kazarma)
 [![Gitlab pipeline status](https://img.shields.io/gitlab/pipeline-status/kazarma/kazarma?branch=main)](https://gitlab.com/kazarma/kazarma/-/pipelines)
+[![Matrix room](https://img.shields.io/matrix/kazarma:matrix.org)](https://matrix.to/#/#kazarma:matrix.org?via=matrix.org)
 
 A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://github.com/commonspub/ActivityPub) and [those](https://gitlab.com/kazarma/matrix_app_service.ex) Matrix [libraries](https://gitlab.com/uhoreg/polyjuice_client).
 
 ![overview](doc_diagrams/overview.png)
 
-## Resources
-
-- [User guide](https://gitlab.com/kazarma/kazarma/-/wikis/User%20guide)
-- [API documentation](https://kazarma.gitlab.io/matrix_app_service.ex)
-- [Matrix room](https://matrix.to/#/#kazarma:matrix.org?via=matrix.asso-fare.fr&via=matrix.org&via=t2bot.io)
+## [User guide](https://docs.kazar.ma/category/user-guide)
 
 ## Installation
 
-### With Docker Compose
+### [Erlang release](https://docs.kazar.ma/administrator-guide/docker-compose)
 
-Use [this docker-compose file](./docker-compose.production.yml) (download it or clone the repository) and (download/copy) [.env.example](./.env.example) as `.env.production`, then modify it as explained below.
+### [Docker Compose](https://docs.kazar.ma/administrator-guide/docker-compose)
 
-Create an application service configuration file for your Matrix server. It should look like this (`url` points to your Kazarma instance, with the `/matrix` route):
+### [Helm](https://docs.kazar.ma/administrator-guide/docker-compose)
+
+## Application service configuration
+
+The application service configuration file for your Matrix server should look like this (`url` points to your Kazarma instance, with the `/matrix` route):
 
 ```yaml
 id: "Kazarma"
@@ -35,18 +36,9 @@ namespaces:
   users:
     - exclusive: true
       regex: "@_ap_.+=.+:matrix_domain"
-    - exclusive: false
-      regex: "@.+:matrix_domain"
 ```
 
-Run those commands:
-
-```bash
-docker compose -f docker-compose.production.yml run --rm kazarma eval "Kazarma.Release.migrate()"
-docker compose -f docker-compose.production.yml up -d
-```
-
-### Configuration
+## Configuration
 
 - `DATABASE_URL`: URL with `ecto://` scheme (`ecto://user:password@host:database`), as explained [here](https://hexdocs.pm/ecto/Ecto.Repo.html#module-urls)
 - `SECRET_KEY_BASE`: Phoenix's secret key base, used to sign session cookies. With Mix and Phoenix, it can be easily generated with `mix phx.gen.secret`.
@@ -134,21 +126,19 @@ mix do deps.get, ecto.setup
 iex -S mix phx.server
 ```
 
-## Generate documentation
-
-We use [ditaa](http://ditaa.sourceforge.net) to generate diagrams and integrate
-them into HexDoc. To edit diagrams use [asciiflow](http://asciiflow.com/) and paste
-the result in HTML files in the `doc_diagrams` folder.
-
-```bash
-rm doc_diagrams/*.png && ditaa doc_diagrams/*.html
-mix docs
-```
-
 ## Run tests
 
 ```bash
 mix test
+```
+
+## Generate documentation
+
+We use [ditaa](http://ditaa.sourceforge.net) to generate diagrams and integrate them into HexDoc. To edit diagrams use [asciiflow](http://asciiflow.com/) and paste the result in HTML files in the `doc_diagrams` folder.
+
+```bash
+rm doc_diagrams/*.png && ditaa doc_diagrams/*.html
+mix docs
 ```
 
 ## Sponsors
