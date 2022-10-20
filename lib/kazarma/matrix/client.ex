@@ -40,10 +40,10 @@ defmodule Kazarma.Matrix.Client do
     )
   end
 
-  def redact_message(from_matrix_id, room_id, event, reason \\ nil) do
+  def redact_message(from_matrix_id, room_id, event_id, reason \\ nil) do
     @matrix_client.redact_message(
       room_id,
-      event,
+      event_id,
       reason,
       user_id: from_matrix_id
     )
