@@ -65,6 +65,7 @@ ENV LC_ALL en_US.UTF-8
 FROM elixir-builder AS deps
 
 ARG MIX_ENV=prod
+ARG AP_BASE_PATH=/
 
 # If you're using a hex mirror:
 # ARG HEX_MIRROR=https://my_hex_mirror
@@ -98,6 +99,8 @@ FROM deps AS compile_deps
 WORKDIR /src
 
 ARG MIX_ENV=prod
+ARG AP_BASE_PATH=/
+
 RUN mix deps.compile
 
 # -----------------------------------
@@ -108,7 +111,6 @@ FROM compile_deps AS compile_app
 WORKDIR /src
 
 ARG MIX_ENV=prod
-
 ARG AP_BASE_PATH=/
 
 COPY lib/ ./lib
