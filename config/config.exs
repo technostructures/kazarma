@@ -23,7 +23,13 @@ config :kazarma, KazarmaWeb.Endpoint,
   live_view: [signing_salt: "yxA/keyK"]
 
 # Configures Elixir's Logger
-config :logger, backends: [:console, Sentry.LoggerBackend, {LoggerFileBackend, :event_log}, {LoggerFileBackend, :activity_log}]
+config :logger,
+  backends: [
+    :console,
+    Sentry.LoggerBackend,
+    {LoggerFileBackend, :event_log},
+    {LoggerFileBackend, :activity_log}
+  ]
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
