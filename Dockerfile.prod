@@ -22,6 +22,9 @@
 # -----------------------------------
 FROM bitwalker/alpine-elixir-phoenix:1.13 AS elixir-builder
 
+ENV MIX_ENV=prod
+ENV AP_BASE_PATH=/
+
 # If you're using a hex mirror:
 # ARG HEX_MIRROR=https://my_hex_mirror
 
@@ -64,9 +67,6 @@ ENV LC_ALL en_US.UTF-8
 # -----------------------------------
 FROM elixir-builder AS deps
 
-ARG MIX_ENV=prod
-ARG AP_BASE_PATH=/
-
 # If you're using a hex mirror:
 # ARG HEX_MIRROR=https://my_hex_mirror
 
@@ -97,9 +97,6 @@ RUN mix deps.get --only $MIX_ENV
 # -----------------------------------
 FROM deps AS compile_deps
 WORKDIR /src
-
-ARG MIX_ENV=prod
-ARG AP_BASE_PATH=/
 
 RUN mix deps.compile
 
@@ -173,11 +170,7 @@ FROM compile_app AS mix_release
 
 WORKDIR /src
 
-ARG MIX_ENV=prod
-
-
 COPY --from=digest /src/priv/static ./priv/static
-
 
 RUN mix release --path /app --quiet
 
@@ -188,7 +181,6 @@ RUN mix release --path /app --quiet
 FROM elixir-runner AS release_image
 
 ARG APP_REVISION=latest
-ARG MIX_ENV=prod
 
 RUN mkdir /app
 
