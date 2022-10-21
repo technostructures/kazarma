@@ -10,5 +10,3 @@ namespaces:
   users:
     - exclusive: true
       regex: "@_ap_.+___.+:kazarma.local"
-    - exclusive: false
-      regex: "@.+:kazarma.local"

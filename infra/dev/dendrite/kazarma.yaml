@@ -6,11 +6,7 @@ sender_localpart: "_kazarma" # Will result in @_irc_bot:example.org
 namespaces:
   aliases:
     - exclusive: false
-      regex: "#@ap_.+=.+:kazarma.local"
-    - exclusive: false
-      regex: "#@.+:kazarma.local"
+      regex: "#_ap_.+=.+:kazarma.local"
   users:
     - exclusive: true
-      regex: "@ap_.+=.+:kazarma.local"
-    - exclusive: false
-      regex: "@.+:kazarma.local"
+      regex: "@_ap_.+=.+:kazarma.local"
