@@ -220,6 +220,7 @@ services:
       - traefik.enable=false
     environment:
       - POSTGRES_USER=kazarma
+      - POSTGRES_DB=kazarma_dev
       - POSTGRES_PASSWORD=postgres
     volumes:
       - postgres_kazarma_files:/var/lib/postgresql/data
