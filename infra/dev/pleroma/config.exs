@@ -19,4 +19,4 @@ config :pleroma, Pleroma.Web.Plugs.RemoteIp, enabled: false
 config :pleroma, :rate_limit, nil
 
 config :logger, :console, level: :debug
-config :logger, :ex_syslogger, level: :warn
+config :logger, :ex_syslogger, level: :info
