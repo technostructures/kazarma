@@ -34,3 +34,6 @@ kazarma-*.tar
 /assets/node_modules/
 /.npm/
 /.cache/
+
+# ignore log files
+/*.log
