@@ -25,7 +25,7 @@ services:
     volumes:
       - ./:/opt/app:rw
       - kazarma_deps:/opt/app/deps
-        # - kazarma_node_deps:/opt/app/assets/node_modules
+      - kazarma_node_deps:/opt/app/assets/node_modules
       - kazarma_build_files:/opt/app/_build
     depends_on:
       - postgres_kazarma
