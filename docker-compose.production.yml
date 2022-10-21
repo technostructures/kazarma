@@ -4,23 +4,33 @@
 version: '3.7'
 
 volumes:
-  postgres_kazarma_files:
+  postgres_files:
 
 services:
   
   kazarma:
     image: registry.gitlab.com/kazarma/kazarma/production:${KAZARMA_VERSION:-latest}
-    restart: unless-stopped
     # ports:
     #   - "4000:4000"
+    environment:
+      - DATABASE_PASSWORD
+      - SECRET_KEY_BASE
+      - HOMESERVER_TOKEN
+      - ACCESS_TOKEN
+      - MATRIX_URL
+      - HOST
+      - ACTIVITY_PUB_DOMAIN
+      - PUPPET_PREFIX
+      - BRIDGE_REMOTE
+      - HTML_SEARCH
+      - HTML_AP
     depends_on:
-      - postgres_kazarma
-    env_file: .env.staging
+      - postgres
 
   postgres:
-    image: postgres:12-alpine
+    image: postgres:15-alpine
     environment:
       - POSTGRES_USER=kazarma
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD="$DATABASE_PASSWORD"
     volumes:
-      - postgres_kazarma_files:/var/lib/postgresql/data
+      - postgres_files:/var/lib/postgresql/data
