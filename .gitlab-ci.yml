@@ -44,7 +44,7 @@ prepare_test:
 prepare_dev:
   extends: .prepare
   only:
-    - master
+    - main
   variables:
     MIX_ENV: dev
   cache:
@@ -97,7 +97,7 @@ tag_latest_docker_image:
   extends: .docker_tag
   only:
     refs:
-      - master
+      - main
   variables:
     IMAGE_NEW_TAG: $CI_REGISTRY_IMAGE/production:latest
 
@@ -247,7 +247,7 @@ pages:
   extends: .mix
   stage: docs
   only:
-    - master
+    - main
   needs:
     - prepare_dev
   variables:
