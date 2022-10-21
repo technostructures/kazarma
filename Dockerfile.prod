@@ -187,7 +187,7 @@ RUN chown nobody:nogroup /app
 
 USER nobody
 
-COPY --link --from=mix_release --chown=nobody:nogroup /app /app
+COPY --from=mix_release --chown=nobody:nogroup /app /app
 
 WORKDIR /app
 ENTRYPOINT ["/app/bin/kazarma"]
