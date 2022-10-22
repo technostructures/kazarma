@@ -8,6 +8,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Address
   alias Kazarma.Logger
+  alias Kazarma.Matrix.Bridge
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
 
@@ -120,6 +121,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
 
   def forward(event, %Room{data: %{"type" => "note"}} = room) do
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(event.sender),
+         %MatrixAppService.Bridge.Event{remote_id: in_reply_to} <- Bridge.get_last_event_in_room(room.local_id),
          to =
            List.delete(room.data["to"], event.sender)
            |> Enum.map(&unchecked_matrix_id_to_actor/1)
@@ -141,6 +143,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
              sender: actor,
              receivers_id: to_ap_id,
              context: room.remote_id,
+             in_reply_to: in_reply_to,
              content: event.content["body"],
              attachment: attachment,
              tags: tags
