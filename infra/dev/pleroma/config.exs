@@ -18,5 +18,5 @@ config :pleroma, Pleroma.Captcha, enabled: false
 config :pleroma, Pleroma.Web.Plugs.RemoteIp, enabled: false
 config :pleroma, :rate_limit, nil
 
-config :logger, :console, level: :debug
+config :logger, :console, level: :info
 config :logger, :ex_syslogger, level: :info
