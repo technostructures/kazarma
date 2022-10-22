@@ -87,6 +87,12 @@ This should run containers with those services:
 - [element.local](http://element.local) -> Element, will connect to Synapse,
   should then be able to address Pleroma users using `pleroma.local` domain
 
+You can also start an IEx console:
+
+```bash
+docker compose run --rm kazarma iex -S mix
+```
+
 #### On macOS
 
 On macOS, instead of `docker-hoster` you need to add the following domains to your `/etc/hosts` file:
