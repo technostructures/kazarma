@@ -6,6 +6,7 @@ FROM bitwalker/alpine-elixir-phoenix:1.13
 ENV HEX_HTTP_CONCURRENCY=1
 ENV HEX_HTTP_TIMEOUT=240
 ENV MIX_ENV=dev
+ENV AP_BASE_PATH=/
 
 # Cache elixir deps
 COPY ./mix.exs ./mix.lock /opt/app/
