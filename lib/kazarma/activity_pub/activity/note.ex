@@ -124,7 +124,9 @@ defmodule Kazarma.ActivityPub.Activity.Note do
 
   def forward(event, %Room{data: %{"type" => "note"}} = room) do
     with {:ok, actor} <- Address.matrix_id_to_actor(event.sender),
-         %BridgeEvent{remote_id: in_reply_to} <- Bridge.get_last_event_in_room(room.local_id),
+         replying_to =
+           get_replied_activity_if_exists(event) || Bridge.get_last_event_in_room(room.local_id),
+         in_reply_to = make_in_reply_to(replying_to),
          to =
            List.delete(room.data["to"], event.sender)
            |> Enum.map(&unchecked_matrix_id_to_actor/1)
@@ -243,6 +245,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   defp make_context(_), do: ActivityPub.Utils.generate_context_id()
 
   defp make_in_reply_to(%Object{data: %{"id" => ap_id}}), do: ap_id
+  defp make_in_reply_to(%BridgeEvent{remote_id: ap_id}), do: ap_id
 
   defp make_in_reply_to(_), do: nil
 
