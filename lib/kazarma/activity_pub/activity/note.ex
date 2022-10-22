@@ -6,9 +6,12 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   """
   alias ActivityPub.Object
   alias Kazarma.ActivityPub.Activity
+  alias Kazarma.ActivityPub.Collection
   alias Kazarma.Address
   alias Kazarma.Logger
   alias Kazarma.Matrix.Bridge
+  alias MatrixAppService.Bridge.Event, as: BridgeEvent
+  alias Kazarma.Matrix.Client
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
 
@@ -33,14 +36,14 @@ defmodule Kazarma.ActivityPub.Activity.Note do
       }) do
     Logger.debug("Received public Note activity")
 
-    with {:ok, from_matrix_id} <- Kazarma.Address.ap_id_to_matrix(from_id),
+    with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
          {:ok, %MatrixAppService.Bridge.Room{local_id: room_id}} <-
-           Kazarma.ActivityPub.Collection.get_or_create_outbox({:ap_id, from_id}),
-         Kazarma.Matrix.Client.join(from_matrix_id, room_id),
+           Collection.get_or_create_outbox({:ap_id, from_id}),
+         Client.join(from_matrix_id, room_id),
          {:ok, event_id} <-
            send_message_and_attachment(from_matrix_id, room_id, object_data),
          {:ok, _} <-
-           Kazarma.Matrix.Bridge.create_event(%{
+           Bridge.create_event(%{
              local_id: event_id,
              remote_id: object_id,
              room_id: room_id
@@ -75,7 +78,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
          {:ok, event_id} <-
            send_message_and_attachment(matrix_id, room_id, object_data),
          {:ok, _} <-
-           Kazarma.Matrix.Bridge.create_event(%{
+           Bridge.create_event(%{
              local_id: event_id,
              remote_id: object_id,
              room_id: room_id
@@ -92,7 +95,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
             Map.get(object_data, "source"),
             Map.get(object_data, "content"),
             fn source, content ->
-              Kazarma.Matrix.Client.send_tagged_message(
+              Client.send_tagged_message(
                 room_id,
                 matrix_id,
                 source || content,
@@ -113,22 +116,21 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   end
 
   def unchecked_matrix_id_to_actor(matrix_id) do
-    case Kazarma.Address.matrix_id_to_actor(matrix_id) do
+    case Address.matrix_id_to_actor(matrix_id) do
       {:ok, actor} -> actor
       _ -> nil
     end
   end
 
   def forward(event, %Room{data: %{"type" => "note"}} = room) do
-    with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(event.sender),
-         %MatrixAppService.Bridge.Event{remote_id: in_reply_to} <- Bridge.get_last_event_in_room(room.local_id),
+    with {:ok, actor} <- Address.matrix_id_to_actor(event.sender),
+         %BridgeEvent{remote_id: in_reply_to} <- Bridge.get_last_event_in_room(room.local_id),
          to =
            List.delete(room.data["to"], event.sender)
            |> Enum.map(&unchecked_matrix_id_to_actor/1)
            |> Enum.filter(&(!is_nil(&1))),
          to_ap_id = Enum.map(to, & &1.ap_id),
-         attachment =
-           Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
+         attachment = Activity.attachment_from_matrix_event_content(event.content),
          tags =
            Enum.map(to, fn actor ->
              %{
@@ -137,7 +139,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
                "type" => "Mention"
              }
            end),
-         {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
+         {:ok, %{object: %Object{data: %{"id" => remote_id}}}} <-
            Activity.create(
              type: "Note",
              sender: actor,
@@ -148,7 +150,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
              attachment: attachment,
              tags: tags
            ) do
-      Kazarma.Matrix.Bridge.create_event(%{
+      Bridge.create_event(%{
         local_id: event.event_id,
         remote_id: remote_id,
         room_id: event.room_id
@@ -159,14 +161,13 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   end
 
   def forward(event, %Room{data: %{"type" => "outbox"}} = room) do
-    with {:ok, sender_actor} <- Kazarma.Address.matrix_id_to_actor(event.sender),
-         {:ok, receiver_actor} <- Kazarma.Address.matrix_id_to_actor(room.data["matrix_id"]),
+    with {:ok, sender_actor} <- Address.matrix_id_to_actor(event.sender),
+         {:ok, receiver_actor} <- Address.matrix_id_to_actor(room.data["matrix_id"]),
          to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id],
          replied_activity = get_replied_activity_if_exists(event),
          context = make_context(replied_activity),
          in_reply_to = make_in_reply_to(replied_activity),
-         attachment =
-           Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event.content),
+         attachment = Activity.attachment_from_matrix_event_content(event.content),
          tags = [
            %{
              "href" => receiver_actor.ap_id,
@@ -174,7 +175,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
              "type" => "Mention"
            }
          ],
-         {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
+         {:ok, %{object: %Object{data: %{"id" => remote_id}}}} <-
            Activity.create(
              type: "Note",
              sender: sender_actor,
@@ -185,7 +186,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
              attachment: attachment,
              tags: tags
            ) do
-      Kazarma.Matrix.Bridge.create_event(%{
+      Bridge.create_event(%{
         local_id: event.event_id,
         remote_id: remote_id,
         room_id: event.room_id
@@ -198,20 +199,20 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   def forward(_), do: :ok
 
   def accept_puppet_invitation(user_id, room_id) do
-    with {:ok, _actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),
+    with {:ok, _actor} <- Address.matrix_id_to_actor(user_id, [:activity_pub]),
          {:ok, _room} <-
-           Kazarma.Matrix.Bridge.join_or_create_note_bridge_room(room_id, user_id),
-         _ <- Kazarma.Matrix.Client.join(user_id, room_id) do
+           Bridge.join_or_create_note_bridge_room(room_id, user_id),
+         _ <- Client.join(user_id, room_id) do
       :ok
     end
   end
 
   defp get_or_create_conversation(conversation, creator, invites, opts \\ []) do
-    with nil <- Kazarma.Matrix.Bridge.get_room_by_remote_id(conversation),
+    with nil <- Bridge.get_room_by_remote_id(conversation),
          {:ok, %{"room_id" => room_id}} <-
-           Kazarma.Matrix.Client.create_multiuser_room(creator, invites, opts),
+           Client.create_multiuser_room(creator, invites, opts),
          {:ok, _} <-
-           Kazarma.Matrix.Bridge.insert_note_bridge_room(room_id, conversation, [
+           Bridge.insert_note_bridge_room(room_id, conversation, [
              creator | invites
            ]) do
       {:ok, room_id}
@@ -226,9 +227,9 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   defp get_replied_activity_if_exists(%Event{
          content: %{"m.relates_to" => %{"m.in_reply_to" => %{"event_id" => event_id}}}
        }) do
-    case Kazarma.Matrix.Bridge.get_event_by_local_id(event_id) do
-      %MatrixAppService.Bridge.Event{remote_id: ap_id} ->
-        ActivityPub.Object.get_cached_by_ap_id(ap_id)
+    case Bridge.get_event_by_local_id(event_id) do
+      %BridgeEvent{remote_id: ap_id} ->
+        Object.get_cached_by_ap_id(ap_id)
 
       _ ->
         nil
@@ -237,18 +238,18 @@ defmodule Kazarma.ActivityPub.Activity.Note do
 
   defp get_replied_activity_if_exists(_), do: nil
 
-  defp make_context(%ActivityPub.Object{data: %{"context" => context}}), do: context
+  defp make_context(%Object{data: %{"context" => context}}), do: context
 
   defp make_context(_), do: ActivityPub.Utils.generate_context_id()
 
-  defp make_in_reply_to(%ActivityPub.Object{data: %{"id" => ap_id}}), do: ap_id
+  defp make_in_reply_to(%Object{data: %{"id" => ap_id}}), do: ap_id
 
   defp make_in_reply_to(_), do: nil
 
   defp send_attachments(from, room_id, [attachment | rest]) do
     result =
       normalize_attachment(attachment)
-      |> Kazarma.Matrix.Client.send_attachment_message_for_ap_data(from, room_id)
+      |> Client.send_attachment_message_for_ap_data(from, room_id)
 
     [result | send_attachments(from, room_id, rest)]
   end
