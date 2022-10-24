@@ -5,6 +5,7 @@ defmodule Kazarma.Matrix.Client do
   Wrapper for MatrixAppService.Client.
   """
   use Kazarma.Config
+  alias Kazarma.Logger
 
   def register(username) do
     localpart =
@@ -216,16 +217,23 @@ defmodule Kazarma.Matrix.Client do
     )
   end
 
-  def send_tagged_message(room_id, from_id, body, formatted_body \\ nil)
-
-  def send_tagged_message(_room_id, _from_id, nil, _formatted_body),
+  def send_tagged_message(_room_id, _from_id, nil),
     do: {:error, :empty_message_not_sent}
 
-  def send_tagged_message(room_id, from_id, body, formatted_body) do
-    @matrix_client.send_message(room_id, {body <> " \ufeff", formatted_body || body},
-      user_id: from_id
-    )
+  def send_tagged_message(_room_id, _from_id, {nil, _}),
+    do: {:error, :empty_message_not_sent}
+
+  def send_tagged_message(_room_id, _from_id, %{"body" => nil}),
+    do: {:error, :empty_message_not_sent}
+
+  def send_tagged_message(room_id, from_id, body) do
+    Logger.error("sending msg")
+    @matrix_client.send_message(room_id, tag_message(body), user_id: from_id)
   end
+
+  def tag_message({body, formatted_body}), do: {body <> " \ufeff", formatted_body}
+  def tag_message(%{"body" => body} = event), do: Map.put(event, "body", body <> " \ufeff")
+  def tag_message(message), do: message <> " \ufeff"
 
   def send_message(room_id, from_id, msg) do
     @matrix_client.send_message(room_id, msg, user_id: from_id)

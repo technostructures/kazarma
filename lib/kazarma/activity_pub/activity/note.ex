@@ -91,22 +91,49 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   end
 
   def send_message_and_attachment(matrix_id, room_id, object_data) do
+
     case {call_if_not_nil(
             Map.get(object_data, "source"),
             Map.get(object_data, "content"),
             fn source, content ->
-              Client.send_tagged_message(
+              body =
+                case Map.get(object_data, "inReplyTo") |> IO.inspect() do
+                  nil ->
+                    {source || content, content || source}
+
+                  reply_to_ap_id ->
+                    case Bridge.get_event_by_remote_id(reply_to_ap_id) |> IO.inspect() do
+                      %BridgeEvent{local_id: event_id} ->
+                        %{
+                          "msgtype" => "m.text",
+                          "body" => source || content,
+                          "formatted_body" => content || source,
+                          "m.relates_to" => %{
+                            "m.in_reply_to" => %{
+                              "event_id" => event_id
+                            }
+                          }
+                        }
+
+                      nil ->
+                        {source || content, content || source}
+                    end
+                end
+
+              Kazarma.Matrix.Client.send_tagged_message(
                 room_id,
                 matrix_id,
-                source || content,
-                content || source
+                body
               )
+
             end
-          ),
+          )
+          |> IO.inspect(),
           call_if_not_nil(Map.get(object_data, "attachment"), fn attachment ->
             send_attachments(matrix_id, room_id, attachment)
             |> get_result()
-          end)} do
+          end)
+          |> IO.inspect()} do
       {nil, nil} -> {:error, :no_message_to_send}
       {{:ok, event_id}, _} -> {:ok, event_id}
       {_, {:ok, event_id}} -> {:ok, event_id}
