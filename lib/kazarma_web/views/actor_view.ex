@@ -13,10 +13,18 @@ defmodule KazarmaWeb.ActorView do
     matrix_username
   end
 
+  def matrix_outbox_room(%ActivityPub.Actor{username: username}) do
+    {:ok, matrix_username} = Kazarma.Address.ap_username_to_matrix_id(username)
+    String.replace_prefix(matrix_username, "@", "#")
+  end
+
   def matrix_to(actor), do: "https://matrix.to/#/#{matrix_username(actor)}"
 
-  def matrix_scheme(actor),
+  def matrix_scheme_user(actor),
     do: {:matrix, "u/#{matrix_username(actor) |> String.trim_leading("@")}"}
+
+  def matrix_scheme_room(room),
+    do: {:matrix, "r/#{matrix_outbox_room(room) |> String.trim_leading("#")}"}
 
   def ap_id(%ActivityPub.Actor{data: %{"id" => ap_id}}), do: ap_id
 
