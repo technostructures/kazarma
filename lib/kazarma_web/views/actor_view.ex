@@ -15,12 +15,7 @@ defmodule KazarmaWeb.ActorView do
 
   def matrix_outbox_room(%ActivityPub.Actor{username: username}) do
     {:ok, matrix_username} = Kazarma.Address.ap_username_to_matrix_id(username)
-      
-    matrix_username
-    |> String.graphemes
-    |> List.delete_at(0)
-    |> List.insert_at(0, "#")
-    |> to_string
+    String.replace_prefix(matrix_username, "@", "#")
   end
 
   def matrix_to(actor), do: "https://matrix.to/#/#{matrix_username(actor)}"
