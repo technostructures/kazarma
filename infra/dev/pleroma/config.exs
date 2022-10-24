@@ -13,6 +13,8 @@ config :pleroma, :instance,
 config :cors_plug,
   origin: ["http://pleroma.local", "https://pleroma.local"]
 
+config :pleroma, Pleroma.Emails.Mailer, enabled: false
+
 config :pleroma, Pleroma.Captcha, enabled: false
 
 config :pleroma, Pleroma.Web.Plugs.RemoteIp, enabled: false
