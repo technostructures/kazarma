@@ -190,17 +190,15 @@ test:
     - mix ecto.create
     - mix ecto.migrate
   script:
-    - mix coveralls.xml
-  coverage: '/\[TOTAL\]\s+(\d+\.\d+)%/'
+    - mix test --cover
+  coverage: '/Line total: (\d+\.\d+)%/' # Line total: 66.4%
   artifacts:
     when: always
-    paths:
-      - cover
     reports:
       junit: _build/test/lib/kazarma/test-junit-report.xml
       coverage_report:
         coverage_format: cobertura
-        path: cover/excoveralls.xml
+        path: coverage.xml
 
 format:
   extends:
