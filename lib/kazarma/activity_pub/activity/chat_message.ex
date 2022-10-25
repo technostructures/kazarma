@@ -30,8 +30,9 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from_id),
          {:ok, room_id} <-
            get_or_create_direct_room(from_id, to_id),
+         attachment = Map.get(object_data, "attachment"),
          {:ok, event_id} <-
-           send_message_and_attachment(matrix_id, room_id, object_data),
+           Activity.send_message_and_attachment(matrix_id, room_id, object_data, [attachment]),
          {:ok, _} <-
            Kazarma.Matrix.Bridge.create_event(%{
              local_id: event_id,
@@ -39,25 +40,6 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
              room_id: room_id
            }) do
       :ok
-    end
-  end
-
-  defp send_message_and_attachment(matrix_id, room_id, object_data) do
-    case {call_if_not_nil(Map.get(object_data, "content"), fn body ->
-            Kazarma.Matrix.Client.send_tagged_message(
-              room_id,
-              matrix_id,
-              body
-            )
-          end),
-          call_if_not_nil(Map.get(object_data, "attachment"), fn attachment ->
-            send_attachment(matrix_id, room_id, attachment)
-          end)} do
-      {nil, nil} -> {:error, :no_message_to_send}
-      {{:error, err}, _} -> {:error, err}
-      {_, {:error, err}} -> {:error, err}
-      {{:ok, event_id}, _} -> {:ok, event_id}
-      {_, {:ok, event_id}} -> {:ok, event_id}
     end
   end
 
@@ -126,22 +108,5 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
       {:ok, room_id} -> {:ok, room_id}
       {:error, error} -> {:error, error}
     end
-  end
-
-  defp send_attachment(_from, _room_id, nil), do: nil
-
-  defp send_attachment(from, room_id, attachment) do
-    normalize_attachment(attachment)
-    |> Kazarma.Matrix.Client.send_attachment_message_for_ap_data(from, room_id)
-  end
-
-  defp normalize_attachment(%{"mediaType" => mimetype, "url" => [%{"href" => url} | _]}) do
-    %{mimetype: mimetype, url: url}
-  end
-
-  defp call_if_not_nil(nil, _fun), do: nil
-
-  defp call_if_not_nil(value, fun) do
-    fun.(value)
   end
 end

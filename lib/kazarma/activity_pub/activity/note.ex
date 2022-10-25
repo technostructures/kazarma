@@ -40,8 +40,9 @@ defmodule Kazarma.ActivityPub.Activity.Note do
          {:ok, %MatrixAppService.Bridge.Room{local_id: room_id}} <-
            Collection.get_or_create_outbox({:ap_id, from_id}),
          Client.join(from_matrix_id, room_id),
+         attachments = Map.get(object_data, "attachment"),
          {:ok, event_id} <-
-           Activity.send_message_and_attachment(from_matrix_id, room_id, object_data),
+           Activity.send_message_and_attachment(from_matrix_id, room_id, object_data, attachments),
          {:ok, _} <-
            Bridge.create_event(%{
              local_id: event_id,
@@ -75,8 +76,9 @@ defmodule Kazarma.ActivityPub.Activity.Note do
            end),
          {:ok, room_id} <-
            get_or_create_conversation(conversation, matrix_id, to),
+         attachments = Map.get(object_data, "attachment"),
          {:ok, event_id} <-
-           Activity.send_message_and_attachment(matrix_id, room_id, object_data),
+           Activity.send_message_and_attachment(matrix_id, room_id, object_data, attachments),
          {:ok, _} <-
            Bridge.create_event(%{
              local_id: event_id,

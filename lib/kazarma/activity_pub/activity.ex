@@ -87,7 +87,7 @@ defmodule Kazarma.ActivityPub.Activity do
     }
   end
 
-  def send_message_and_attachment(matrix_id, room_id, object_data) do
+  def send_message_and_attachment(matrix_id, room_id, object_data, attachments) do
     message_source = Map.get(object_data, "source")
     message_content = Map.get(object_data, "content")
 
@@ -102,11 +102,12 @@ defmodule Kazarma.ActivityPub.Activity do
           event_for_activity_data(object_data, message_body, message_formatted_body)
         )
 
-    attachments = Map.get(object_data, "attachment")
     attachments_results = send_attachments(matrix_id, room_id, attachments)
 
     get_result([message_result | attachments_results])
   end
+
+  defp send_attachments(from, room_id, [nil | rest]), do: send_attachments(from, room_id, rest)
 
   defp send_attachments(from, room_id, [attachment | rest]) do
     result =
@@ -117,6 +118,10 @@ defmodule Kazarma.ActivityPub.Activity do
   end
 
   defp send_attachments(_from, _room_id, _), do: []
+
+  defp normalize_attachment(%{"mediaType" => mimetype, "url" => [%{"href" => url} | _]}) do
+    %{mimetype: mimetype, url: url}
+  end
 
   defp normalize_attachment(%{"mediaType" => mediatype, "url" => url}) do
     %{mimetype: mediatype, url: url}

@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 defmodule Kazarma.ActivityPub.NoteTest do
   use Kazarma.DataCase
-  alias Kazarma.Logger
 
   import Mox
   import Kazarma.ActivityPub.Adapter

@@ -23,7 +23,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     end
 
     setup do
-      {:ok, event} =
+      {:ok, _event} =
         Kazarma.Matrix.Bridge.create_event(%{
           local_id: "local_id",
           remote_id: "http://pleroma/pub/transactions/object_id",
