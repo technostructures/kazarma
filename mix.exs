@@ -19,12 +19,16 @@ defmodule Kazarma.MixProject do
       docs: [
         assets: "doc_diagrams"
       ],
-      test_coverage: test_coverage(System.get_env("CI"))
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.xml": :test
+      ]
     ]
   end
-
-  defp test_coverage(nil), do: []
-  defp test_coverage(_), do: [tool: CoberturaCover, html_output: "cover"]
 
   # Configuration for the OTP application.
   #
@@ -65,7 +69,7 @@ defmodule Kazarma.MixProject do
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: :test},
       {:junit_formatter, "~> 3.1", only: :test},
-      {:cobertura_cover, "~> 0.9.0", only: :test},
+      {:excoveralls, "~> 0.10", only: :test},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:hackney, "~> 1.17.0", override: true},
