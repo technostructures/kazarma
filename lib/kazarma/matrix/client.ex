@@ -227,13 +227,12 @@ defmodule Kazarma.Matrix.Client do
     do: {:error, :empty_message_not_sent}
 
   def send_tagged_message(room_id, from_id, body) do
-    Logger.error("sending msg")
     @matrix_client.send_message(room_id, tag_message(body), user_id: from_id)
   end
 
   def tag_message({body, formatted_body}), do: {body <> " \ufeff", formatted_body}
   def tag_message(%{"body" => body} = event), do: Map.put(event, "body", body <> " \ufeff")
-  def tag_message(message), do: message <> " \ufeff"
+  def tag_message(message), do: {message <> " \ufeff", message}
 
   def send_message(room_id, from_id, msg) do
     @matrix_client.send_message(room_id, msg, user_id: from_id)
@@ -250,6 +249,19 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def get_alias(alias), do: @matrix_client.get_alias(alias)
+
+  def reply_event(reply_to, body, formatted_body) do
+    %{
+      "msgtype" => "m.text",
+      "body" => body,
+      "formatted_body" => formatted_body,
+      "m.relates_to" => %{
+        "m.in_reply_to" => %{
+          "event_id" => reply_to
+        }
+      }
+    }
+  end
 
   defp msgtype_for_mimetype("image" <> _), do: "m.image"
   defp msgtype_for_mimetype("audio" <> _), do: "m.audio"

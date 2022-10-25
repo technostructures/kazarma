@@ -6,7 +6,9 @@ defmodule Kazarma.ActivityPub.Activity do
   """
   alias ActivityPub.Object
   alias Kazarma.Logger
+  alias Kazarma.Matrix.Bridge
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
+  alias Kazarma.Matrix.Client
   alias MatrixAppService.Event
 
   def create(params) do
@@ -84,6 +86,60 @@ defmodule Kazarma.ActivityPub.Activity do
       ]
     }
   end
+
+  def send_message_and_attachment(matrix_id, room_id, object_data) do
+    message_source = Map.get(object_data, "source")
+    message_content = Map.get(object_data, "content")
+
+    message_body = message_source || message_content
+    message_formatted_body = message_content || message_source
+
+    message_result =
+      message_body &&
+        Kazarma.Matrix.Client.send_tagged_message(
+          room_id,
+          matrix_id,
+          event_for_activity_data(object_data, message_body, message_formatted_body)
+        )
+
+    attachments = Map.get(object_data, "attachment")
+    attachments_results = send_attachments(matrix_id, room_id, attachments)
+
+    get_result([message_result | attachments_results])
+  end
+
+  defp send_attachments(from, room_id, [attachment | rest]) do
+    result =
+      normalize_attachment(attachment)
+      |> Client.send_attachment_message_for_ap_data(from, room_id)
+
+    [result | send_attachments(from, room_id, rest)]
+  end
+
+  defp send_attachments(_from, _room_id, _), do: []
+
+  defp normalize_attachment(%{"mediaType" => mediatype, "url" => url}) do
+    %{mimetype: mediatype, url: url}
+  end
+
+  defp event_for_activity_data(%{"inReplyTo" => reply_to_ap_id}, body, formatted_body) do
+    case Bridge.get_event_by_remote_id(reply_to_ap_id) do
+      %BridgeEvent{local_id: event_id} ->
+        Client.reply_event(event_id, body, formatted_body)
+
+      nil ->
+        {body, formatted_body}
+    end
+  end
+
+  defp event_for_activity_data(_, body, formatted_body) do
+    {body, formatted_body}
+  end
+
+  defp get_result([{:error, error} | _rest]), do: {:error, error}
+  defp get_result([{:ok, value} | _rest]), do: {:ok, value}
+  defp get_result([_anything_else | rest]), do: get_result(rest)
+  defp get_result([]), do: nil
 
   defp maybe_put(map, _key, nil), do: map
   defp maybe_put(map, key, value), do: Map.put(map, key, value)

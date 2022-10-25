@@ -41,7 +41,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
            Collection.get_or_create_outbox({:ap_id, from_id}),
          Client.join(from_matrix_id, room_id),
          {:ok, event_id} <-
-           send_message_and_attachment(from_matrix_id, room_id, object_data),
+           Activity.send_message_and_attachment(from_matrix_id, room_id, object_data),
          {:ok, _} <-
            Bridge.create_event(%{
              local_id: event_id,
@@ -76,7 +76,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
          {:ok, room_id} <-
            get_or_create_conversation(conversation, matrix_id, to),
          {:ok, event_id} <-
-           send_message_and_attachment(matrix_id, room_id, object_data),
+           Activity.send_message_and_attachment(matrix_id, room_id, object_data),
          {:ok, _} <-
            Bridge.create_event(%{
              local_id: event_id,
@@ -90,63 +90,19 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     end
   end
 
-  def send_message_and_attachment(matrix_id, room_id, object_data) do
-
-    case {call_if_not_nil(
-            Map.get(object_data, "source"),
-            Map.get(object_data, "content"),
-            fn source, content ->
-              body =
-                case Map.get(object_data, "inReplyTo") |> IO.inspect() do
-                  nil ->
-                    {source || content, content || source}
-
-                  reply_to_ap_id ->
-                    case Bridge.get_event_by_remote_id(reply_to_ap_id) |> IO.inspect() do
-                      %BridgeEvent{local_id: event_id} ->
-                        %{
-                          "msgtype" => "m.text",
-                          "body" => source || content,
-                          "formatted_body" => content || source,
-                          "m.relates_to" => %{
-                            "m.in_reply_to" => %{
-                              "event_id" => event_id
-                            }
-                          }
-                        }
-
-                      nil ->
-                        {source || content, content || source}
-                    end
-                end
-
-              Kazarma.Matrix.Client.send_tagged_message(
-                room_id,
-                matrix_id,
-                body
-              )
-
-            end
-          )
-          |> IO.inspect(),
-          call_if_not_nil(Map.get(object_data, "attachment"), fn attachment ->
-            send_attachments(matrix_id, room_id, attachment)
-            |> get_result()
-          end)
-          |> IO.inspect()} do
-      {nil, nil} -> {:error, :no_message_to_send}
-      {{:ok, event_id}, _} -> {:ok, event_id}
-      {_, {:ok, event_id}} -> {:ok, event_id}
-      {{:error, err}, _} -> {:error, err}
-      {_, {:error, err}} -> {:error, err}
-    end
-  end
-
   def unchecked_matrix_id_to_actor(matrix_id) do
     case Address.matrix_id_to_actor(matrix_id) do
       {:ok, actor} -> actor
       _ -> nil
     end
+  end
+
+  defp mention_tag_for_actor(actor) do
+    %{
+      "href" => actor.ap_id,
+      "name" => "@#{actor.data["preferredUsername"]}",
+      "type" => "Mention"
+    }
   end
 
   def forward(event, %Room{data: %{"type" => "note"}} = room) do
@@ -160,14 +116,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
            |> Enum.filter(&(!is_nil(&1))),
          to_ap_id = Enum.map(to, & &1.ap_id),
          attachment = Activity.attachment_from_matrix_event_content(event.content),
-         tags =
-           Enum.map(to, fn actor ->
-             %{
-               "href" => actor.ap_id,
-               "name" => "@#{actor.data["preferredUsername"]}",
-               "type" => "Mention"
-             }
-           end),
+         tags = Enum.map(to, &mention_tag_for_actor/1),
          {:ok, %{object: %Object{data: %{"id" => remote_id}}}} <-
            Activity.create(
              type: "Note",
@@ -275,36 +224,4 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   defp make_in_reply_to(%BridgeEvent{remote_id: ap_id}), do: ap_id
 
   defp make_in_reply_to(_), do: nil
-
-  defp send_attachments(from, room_id, [attachment | rest]) do
-    result =
-      normalize_attachment(attachment)
-      |> Client.send_attachment_message_for_ap_data(from, room_id)
-
-    [result | send_attachments(from, room_id, rest)]
-  end
-
-  defp send_attachments(_from, _room_id, _), do: []
-
-  defp normalize_attachment(%{"mediaType" => mediatype, "url" => url}) do
-    %{mimetype: mediatype, url: url}
-  end
-
-  defp get_result([{:error, error} | _rest]), do: {:error, error}
-  defp get_result([{:ok, value} | _rest]), do: {:ok, value}
-  defp get_result([_anything_else | rest]), do: get_result(rest)
-  defp get_result([]), do: nil
-
-  defp call_if_not_nil(nil, nil, _fun), do: nil
-
-  defp call_if_not_nil(value1, value2, fun) do
-    fun.(value1, value2)
-  end
-
-  defp call_if_not_nil(nil, _fun), do: nil
-  defp call_if_not_nil([], _fun), do: nil
-
-  defp call_if_not_nil(value, fun) do
-    fun.(value)
-  end
 end
