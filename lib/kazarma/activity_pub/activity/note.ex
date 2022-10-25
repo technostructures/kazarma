@@ -230,10 +230,21 @@ defmodule Kazarma.ActivityPub.Activity.Note do
 
   defp make_ap_content_from_matrix(event) do
     body = event.content["formatted_body"] || event.content["body"] || ""
-
+    
     body
     |> remove_mx_reply
+    |> translate_matrix_mentions
   end
+
+  defp translate_matrix_mentions(content) do
+    regex = ~r/<a href="https:\/\/matrix\.to\/#\/(?<matrix_id>.+?)">(?<display_name>.*?)<\/a>/
+    replace_function = fn _, matrix_id, display_name ->
+      {:ok, actor} = Address.matrix_id_to_actor(matrix_id)
+      ~s(<span class="h-card"><a href="#{actor.ap_id}" class="u-url mention">@<span>#{actor.username}</span></a></span>)
+    end
+    Regex.replace regex, content, replace_function
+  end
+ 
 
   defp remove_mx_reply(content) do
     Regex.replace ~r/\<mx\-reply\>.*\<\/mx\-reply\>/, content, ""
