@@ -148,7 +148,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
          context = make_context(replied_activity),
          in_reply_to = make_in_reply_to(replied_activity),
          attachment = Activity.attachment_from_matrix_event_content(event.content),
-         content = convert_body_ap_to_matrix(event.content["formatted_body"]),
+         content = make_ap_content_from_matrix(event),
          tags = [
            %{
              "href" => receiver_actor.ap_id,
@@ -228,7 +228,9 @@ defmodule Kazarma.ActivityPub.Activity.Note do
 
   defp make_in_reply_to(_), do: nil
 
-  defp convert_body_ap_to_matrix(body) do
+  defp make_ap_content_from_matrix(event) do
+    body = event.content["formatted_body"] || event.content["body"] || ""
+
     body
     |> remove_mx_reply
   end
