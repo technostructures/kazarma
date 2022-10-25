@@ -148,6 +148,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
          context = make_context(replied_activity),
          in_reply_to = make_in_reply_to(replied_activity),
          attachment = Activity.attachment_from_matrix_event_content(event.content),
+         content = convert_body_ap_to_matrix(event.content["formatted_body"]),
          tags = [
            %{
              "href" => receiver_actor.ap_id,
@@ -162,7 +163,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
              receivers_id: to,
              context: context,
              in_reply_to: in_reply_to,
-             content: event.content["body"],
+             content: content,
              attachment: attachment,
              tags: tags
            ) do
@@ -226,4 +227,13 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   defp make_in_reply_to(%BridgeEvent{remote_id: ap_id}), do: ap_id
 
   defp make_in_reply_to(_), do: nil
+
+  defp convert_body_ap_to_matrix(body) do
+    body
+    |> remove_mx_reply
+  end
+
+  defp remove_mx_reply(content) do
+    Regex.replace ~r/\<mx\-reply\>.*\<\/mx\-reply\>/, content, ""
+  end
 end
