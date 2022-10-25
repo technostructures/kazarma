@@ -230,23 +230,38 @@ defmodule Kazarma.ActivityPub.Activity.Note do
 
   defp make_ap_content_from_matrix(event) do
     body = event.content["formatted_body"] || event.content["body"] || ""
-    
+
     body
     |> remove_mx_reply
     |> translate_matrix_mentions
   end
 
-  defp translate_matrix_mentions(content) do
+  def translate_matrix_mentions(content) do
     regex = ~r/<a href="https:\/\/matrix\.to\/#\/(?<matrix_id>.+?)">(?<display_name>.*?)<\/a>/
-    replace_function = fn _, matrix_id, display_name ->
+
+    replace_function = fn _, matrix_id, _display_name ->
       {:ok, actor} = Address.matrix_id_to_actor(matrix_id)
+
       ~s(<span class="h-card"><a href="#{actor.ap_id}" class="u-url mention">@<span>#{actor.username}</span></a></span>)
     end
-    Regex.replace regex, content, replace_function
+
+    Regex.replace(regex, content, replace_function)
   end
- 
+
+  def translate_activity_pub_mentions(content, tags) do
+    Enum.reduce(tags, content, fn tag, content ->
+      {:ok, actor} = ActivityPub.Actor.get_cached_by_ap_id(tag["href"])
+      {:ok, matrix_id} = Address.ap_username_to_matrix_id(actor.username)
+      display_name = actor.data["name"]
+      mention_link = ~s(<a href="https://matrix.to/\#/#{matrix_id}">#{display_name}</a>)
+
+      content
+      |> String.replace(tag["name"], mention_link)
+      |> String.replace("@" <> actor.username, mention_link)
+    end)
+  end
 
   defp remove_mx_reply(content) do
-    Regex.replace ~r/\<mx\-reply\>.*\<\/mx\-reply\>/, content, ""
+    Regex.replace(~r/\<mx\-reply\>.*\<\/mx\-reply\>/, content, "")
   end
 end

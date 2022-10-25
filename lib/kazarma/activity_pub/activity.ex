@@ -92,7 +92,12 @@ defmodule Kazarma.ActivityPub.Activity do
     message_content = Map.get(object_data, "content")
 
     message_body = message_source || message_content
-    message_formatted_body = message_content || message_source
+
+    message_formatted_body =
+      Kazarma.ActivityPub.Activity.Note.translate_activity_pub_mentions(
+        message_body,
+        Map.get(object_data, "tag")
+      )
 
     message_result =
       message_body &&
