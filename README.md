@@ -1,9 +1,11 @@
 # Kazarma
 
-[![REUSE status](https://api.reuse.software/badge/gitlab.com/kazarma/kazarma)](https://api.reuse.software/info/gitlab.com/kazarma/kazarma)
+[![Latest Release](https://gitlab.com/kazarma/kazarma/-/badges/release.svg)](https://gitlab.com/kazarma/kazarma/-/releases)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/kazarma)](https://artifacthub.io/packages/helm/kazarma/kazarma)
-[![Gitlab pipeline status](https://img.shields.io/gitlab/pipeline-status/kazarma/kazarma?branch=main)](https://gitlab.com/kazarma/kazarma/-/pipelines)
 [![Matrix room](https://img.shields.io/matrix/kazarma:matrix.org)](https://matrix.to/#/#kazarma:matrix.org?via=matrix.org)
+[![REUSE status](https://api.reuse.software/badge/gitlab.com/kazarma/kazarma)](https://api.reuse.software/info/gitlab.com/kazarma/kazarma)
+[![Gitlab pipeline status](https://img.shields.io/gitlab/pipeline-status/kazarma/kazarma?branch=main)](https://gitlab.com/kazarma/kazarma/-/pipelines)
+[![coverage report](https://gitlab.com/kazarma/kazarma/badges/main/coverage.svg)](https://gitlab.com/kazarma/kazarma/-/commits/main)
 
 A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://github.com/commonspub/ActivityPub) and [those](https://gitlab.com/kazarma/matrix_app_service.ex) Matrix [libraries](https://gitlab.com/uhoreg/polyjuice_client).
 
