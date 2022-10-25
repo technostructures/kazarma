@@ -669,6 +669,128 @@ defmodule Kazarma.Matrix.TransactionTest do
     end
   end
 
+  describe "Message reception with reply in multiuser room" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, _room} =
+        Kazarma.Matrix.Bridge.create_room(%{
+          local_id: "!room:kazarma",
+          remote_id: "http://pleroma/contexts/context",
+          data: %{
+            "to" => [@pleroma_puppet_address],
+            "type" => "note"
+          }
+        })
+
+      {:ok, _event} =
+        Kazarma.Matrix.Bridge.create_event(%{
+          local_id: "reply_to_id",
+          remote_id: "http://pleroma/objects/reply_to",
+          room_id: "!room:kazarma"
+        })
+
+      :ok
+    end
+
+    def message_with_reply_fixture do
+      %Event{
+        event_id: "event_id",
+        sender: "@bob:kazarma",
+        room_id: "!room:kazarma",
+        type: "m.room.message",
+        content: %{
+          "msgtype" => "m.text",
+          "body" => "hello",
+          "formatted_body" => "hello",
+          "m.relates_to" => %{
+            "m.in_reply_to" => %{
+              "event_id" => "reply_to_id"
+            }
+          }
+        }
+      }
+    end
+
+    test "when receiving a message with reply it forwards it as Note activity with reply" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:register, fn
+        [
+          username: @pleroma_puppet_username,
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => @pleroma_puppet_address}}
+      end)
+      |> expect(:put_displayname, fn
+        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
+          :ok
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:create, fn
+        %{
+          actor: %ActivityPub.Actor{
+            ap_id: "http://kazarma/pub/actors/bob",
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/pub/actors/bob/followers",
+              "followings" => "http://kazarma/pub/actors/bob/following",
+              "id" => "http://kazarma/pub/actors/bob",
+              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Bob",
+              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            deactivated: false,
+            id: nil,
+            keys: _,
+            local: true,
+            pointer_id: nil,
+            username: "bob@kazarma"
+          },
+          context: "http://pleroma/contexts/context",
+          object: %{
+            "actor" => "http://kazarma/pub/actors/bob",
+            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "content" => "hello",
+            "context" => "http://pleroma/contexts/context",
+            "conversation" => "http://pleroma/contexts/context",
+            "to" => ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"],
+            "type" => "Note",
+            "inReplyTo" => "http://pleroma/objects/reply_to"
+          },
+          to: ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"]
+        },
+        nil ->
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
+      end)
+
+      assert :ok == new_event(message_with_reply_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "reply_to_id",
+                 remote_id: "http://pleroma/objects/reply_to",
+                 room_id: "!room:kazarma"
+               },
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "object_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
+    end
+  end
+
   describe "Message deletion" do
     setup :set_mox_from_context
     setup :verify_on_exit!
