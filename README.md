@@ -9,9 +9,9 @@
 
 A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://github.com/commonspub/ActivityPub) and [those](https://gitlab.com/kazarma/matrix_app_service.ex) Matrix [libraries](https://gitlab.com/uhoreg/polyjuice_client).
 
-![overview](doc_diagrams/overview.png)
-
 ## [User guide](https://docs.kazar.ma/category/user-guide)
+
+![overview](doc_diagrams/overview.png)
 
 ## Installation
 
