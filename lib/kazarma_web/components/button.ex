@@ -1,4 +1,8 @@
+# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
+
 defmodule KazarmaWeb.Button do
+  @moduledoc false
   use Phoenix.Component
   import KazarmaWeb.Gettext
   use Phoenix.HTML

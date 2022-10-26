@@ -4,7 +4,7 @@
 %>
 
 <!DOCTYPE html>
-<html lang="en" data-theme="night">
+<html lang="en" data-theme="winter">
   <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -13,12 +13,12 @@
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </head>
-  <body>
+  <body class="bg-gray-100 min-h-screen">
     <a class="sr-only" href="#main"><%= gettext("Skip to content") %></a>
     <a class="sr-only" href="#search_address"><%= gettext("Skip to search") %></a>
-    <div class="flex flex-col h-screen">
+    <div class="flex flex-col">
       <header class="">
-        <div class="navbar mb-2 shadow-lg justify-between flex-wrap space-y-4 lg:space-y-0">
+        <div class="navbar mb-2 shadow-lg justify-between flex-wrap space-y-4 lg:space-y-0 bg-base-300">
           <div class="flex-none px-2 mx-2 lg:flex order-1">
             <%= link [to: Routes.index_path(@conn, :index), class: "text-2xl font-bold"], do: "Kazarma" %>
           </div>
