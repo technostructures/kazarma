@@ -10,7 +10,7 @@
         <div class="avatar">
           <div class="rounded-full w-16 h-16 shadow">
             <%= unless is_nil(avatar_url(@actor)) do %>
-              <img src="<%= avatar_url(@actor) %>" alt="<%= gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"]) %>">
+              <img src={avatar_url(@actor)} alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])}>
             <% end %>
           </div>
         </div>
@@ -37,26 +37,26 @@
           <span class="label-text"><%= gettext("Username") %></span>
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
-          <input type="text" id="matrix-username" aria-label="<%= gettext("Matrix username") %>" class="flex-grow input input-bordered border-opacity-80" value="<%= matrix_username(@actor) %>" readonly="readonly">
-          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" data-copy-id="matrix-username" class="btn btn-copy btn-primary">
-            <%= KazarmaWeb.IconView.copy_icon() %>
-          </button>
-          <%= link [to: "https://matrix.to/#/" <> matrix_username(@actor), target: "_blank", class: "btn btn-secondary"] do %>
-            matrix.to
-          <% end %>
-          <%= link [to: matrix_scheme_user(@actor), target: "_blank", class: "btn btn-secondary"] do %>
-            matrix:
-          <% end %>
+          <input type="text" id="matrix-username" aria-label={gettext("Matrix username")} class="flex-grow input input-bordered border-opacity-80" value={matrix_username(@actor)} readonly="readonly">
+          <KazarmaWeb.Button.copy copy_id="matrix-username" />
+          <KazarmaWeb.Button.secondary to={"https://matrix.to/#/" <> matrix_username(@actor)} link_text="matrix.to" />
+          <KazarmaWeb.Button.secondary to={"https://matrix.to/#/" <> matrix_username(@actor)} link_text="matrix:" />
         </div>
       </div>
+      <KazarmaWeb.Address.row id="matrix-username" label={gettext("Username")} value={matrix_username(@actor)}>
+        <:buttons>
+          <KazarmaWeb.Button.secondary to={"https://matrix.to/#/" <> matrix_username(@actor)} link_text="matrix.to" />
+          <KazarmaWeb.Button.secondary to={"https://matrix.to/#/" <> matrix_username(@actor)} link_text="matrix:" />
+        </:buttons>
+      </KazarmaWeb.Address.row>
 
       <div class="form-control">
         <label for="matrix-outbox-room" class="label">
           <span class="label-text"><%= gettext("Outbox room") %></span>
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
-          <input type="text" id="matrix-outbox-room" aria-label="<%= gettext("Outbox room") %>" class="flex-grow input input-bordered border-opacity-80" value="<%= matrix_outbox_room(@actor) %>" readonly="readonly">
-          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" data-copy-id="matrix-username" class="btn btn-copy btn-primary">
+          <input type="text" id="matrix-outbox-room" aria-label={gettext("Outbox room")} class="flex-grow input input-bordered border-opacity-80" value={matrix_outbox_room(@actor)} readonly="readonly">
+          <button aria-label={gettext("Copy")} title={gettext("Copy")} data-copy-id="matrix-username" class="btn btn-copy btn-primary">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
           <%= link [to: "https://matrix.to/#/" <> matrix_outbox_room(@actor), target: "_blank", class: "btn btn-secondary"] do %>
@@ -78,8 +78,8 @@
           <span class="label-text"><%= gettext("ID") %></span>
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
-          <input type="text" id="activitypub-id" aria-label="<%= gettext("ActivityPub ID") %>" class="flex-grow input input-bordered border-opacity-80" value="<%= ap_id(@actor) %>" readonly="readonly">
-          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" data-copy-id="activitypub-id" class="btn btn-copy btn-primary">
+          <input type="text" id="activitypub-id" aria-label={gettext("ActivityPub ID")} class="flex-grow input input-bordered border-opacity-80" value={ap_id(@actor)} readonly="readonly">
+          <button aria-label={gettext("Copy")} title={gettext("Copy")} data-copy-id="activitypub-id" class="btn btn-copy btn-primary">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
           <%= link [to: ap_id(@actor), target: "_blank", aria_label: gettext("Open"), title: gettext("Open"), class: "btn btn-secondary"], do: KazarmaWeb.IconView.external_link_icon() %>
@@ -91,8 +91,8 @@
           <span class="label-text"><%= gettext("Username") %></span>
         </label> 
         <div class="flex flex-wrap gap-2 content-center">
-          <input type="text" id="activitypub-username" aria-label="<%= gettext("ActivityPub username") %>" class="flex-grow input input-bordered border-opacity-80" value="<%= ap_username(@actor) %>" readonly="readonly">
-          <button aria-label="<%= gettext("Copy") %>" title="<%= gettext("Copy") %>" data-copy-id="activitypub-username" class="btn btn-copy btn-primary">
+          <input type="text" id="activitypub-username" aria-label={gettext("ActivityPub username")} class="flex-grow input input-bordered border-opacity-80" value={ap_username(@actor)} readonly="readonly">
+          <button aria-label={gettext("Copy")} title={gettext("Copy")} data-copy-id="activitypub-username" class="btn btn-copy btn-primary">
             <%= KazarmaWeb.IconView.copy_icon() %>
           </button>
         </div>
