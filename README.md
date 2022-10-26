@@ -63,7 +63,6 @@ git submodule update --init --recursive
 docker compose run --rm synapse generate
 docker compose run --rm kazarma mix do deps.get, ecto.setup
 docker compose run --rm kazarma npm --prefix assets install
-docker compose exec pleroma sh -c 'echo local >> /pleroma/lib/linkify-0.5.1/priv/tlds.txt'
 docker compose up
 ```
 
