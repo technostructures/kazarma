@@ -92,14 +92,15 @@ defmodule Kazarma.ActivityPub.Activity do
     message_source = Map.get(object_data, "source")
     message_content = Map.get(object_data, "content")
 
+    # message_body = message_source || remove_html(message_content)
     message_body = message_source || message_content
 
     # @TODO easy refacto here
     message_formatted_body =
       convert_mentions(
-        message_body,
+        message_content,
         Map.get(object_data, "tag")
-      )
+      ) || message_source
 
     message_result =
       message_body &&
@@ -148,17 +149,47 @@ defmodule Kazarma.ActivityPub.Activity do
     {body, formatted_body}
   end
 
-  defp convert_mentions(content, tags) do
-    Enum.reduce(tags, content, fn tag, content ->
-      {:ok, actor} = ActivityPub.Actor.get_cached_by_ap_id(tag["href"])
-      {:ok, matrix_id} = Address.ap_username_to_matrix_id(actor.username)
-      display_name = actor.data["name"]
-      mention_link = ~s(<a href="https://matrix.to/\#/#{matrix_id}">#{display_name}</a>)
+  defp convert_mentions(content, nil), do: content
 
-      content
-      |> String.replace(tag["name"], mention_link)
-      |> String.replace("@" <> actor.username, mention_link)
+  defp convert_mentions(content, tags) do
+    Enum.reduce(tags, content, fn
+      %{"type" => "Mention", "href" => ap_id, "name" => username}, content ->
+        with {:ok, actor} <- ActivityPub.Actor.get_cached_by_ap_id(ap_id),
+             {:ok, matrix_id} <- Address.ap_username_to_matrix_id(actor.username) do
+          display_name = actor.data["name"]
+          "@" <> username_without_at = username
+          parse_and_update_content(content, username_without_at, ap_id, matrix_id, display_name)
+        else
+          _ -> content
+        end
+
+      _, content ->
+        content
     end)
+  end
+
+  defp parse_and_update_content(content, username_without_at, ap_id, matrix_id, display_name) do
+    case Floki.parse_document(content) do
+      {:ok, html} ->
+        html
+        |> Floki.traverse_and_update(fn
+          {"span", span_attrs, [{"a", a_attrs, ["@", {"span", _, [^username_without_at]}]}]} =
+              elem ->
+            if {"class", "h-card"} in span_attrs && {"href", ap_id} in a_attrs &&
+                 {"class", "u-url mention"} in a_attrs do
+              {"a", [{"href", "https://matrix.to/#/" <> matrix_id}], [display_name]}
+            else
+              elem
+            end
+
+          other ->
+            other
+        end)
+        |> Floki.raw_html()
+
+      _ ->
+        content
+    end
   end
 
   defp get_result([{:error, error} | _rest]), do: {:error, error}

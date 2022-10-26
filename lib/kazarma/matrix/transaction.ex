@@ -217,9 +217,7 @@ defmodule Kazarma.Matrix.Transaction do
          "format" => "org.matrix.custom.html",
          "formatted_body" => formatted_body
        }) do
-    formatted_body
-    |> remove_mx_reply
-    |> convert_mentions
+    formatted_body |> remove_mx_reply |> convert_mentions
   end
 
   defp build_text_content(%{"msgtype" => "m.text", "body" => body}), do: body
@@ -231,13 +229,24 @@ defmodule Kazarma.Matrix.Transaction do
       ~r/<a href="https:\/\/matrix\.to\/#\/(?<matrix_id>.+?)">(?<display_name>.*?)<\/a>/
 
     Regex.replace(ap_mention_regex, content, fn _, matrix_id, _display_name ->
-      {:ok, actor} = Address.matrix_id_to_actor(matrix_id)
+      case Address.matrix_id_to_actor(matrix_id) do
+        {:ok, actor} ->
+          ~s(<span class="h-card"><a href="#{actor.ap_id}" class="u-url mention">@<span>#{actor.username}</span></a></span>)
 
-      ~s(<span class="h-card"><a href="#{actor.ap_id}" class="u-url mention">@<span>#{actor.username}</span></a></span>)
+        _ ->
+          case Address.matrix_id_to_ap_username(matrix_id) do
+            {:ok, username} ->
+              ~s(<span class="h-card">@<span>#{username}</span></span>)
+
+            _ ->
+              "@" <> matrix_id_without_at = matrix_id
+              ~s(<span class="h-card">@<span>#{matrix_id_without_at}</span></span>)
+          end
+      end
     end)
   end
 
   defp remove_mx_reply(content) do
-    Regex.replace(~r/\<mx\-reply\>.*\<\/mx\-reply\>/, content, "")
+    Regex.replace(~r/\<mx\-reply\>.*\<\/mx\-reply\>/s, content, "")
   end
 end

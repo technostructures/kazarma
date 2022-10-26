@@ -472,7 +472,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               ]
             },
             "attributedTo" => "http://kazarma/pub/actors/bob",
-            "content" => "hello.jpg",
+            "content" => "",
             "to" => ["alice@pleroma"],
             "type" => "ChatMessage"
           },
@@ -645,7 +645,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               ]
             },
             "attributedTo" => "http://kazarma/pub/actors/bob",
-            "content" => "hello.jpg",
+            "content" => "",
             "context" => "http://pleroma/contexts/context",
             "conversation" => "http://pleroma/contexts/context",
             "to" => ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"],
