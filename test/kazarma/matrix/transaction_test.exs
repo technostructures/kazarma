@@ -877,4 +877,178 @@ defmodule Kazarma.Matrix.TransactionTest do
              ] = Kazarma.Matrix.Bridge.list_events()
     end
   end
+
+  def formatted_message_fixture do
+    %Event{
+      event_id: "event_id",
+      sender: "@bob:kazarma",
+      room_id: "!room:kazarma",
+      type: "m.room.message",
+      content: %{
+        "msgtype" => "m.text",
+        "format" => "org.matrix.custom.html",
+        "body" => """
+        > This is a reply
+        of 2 lines
+        Hello @alice:kazarma
+        """,
+        "formatted_body" => """
+        <mx-reply>> This is a reply
+        of 2 lines</mx-reply>Hello <a href="https://matrix.to/#/@alice:kazarma">Alice</a>!
+        """
+      }
+    }
+  end
+
+  describe "Text body conversion" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, _room} =
+        Kazarma.Matrix.Bridge.create_room(%{
+          local_id: "!room:kazarma",
+          remote_id: nil,
+          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
+        })
+
+      :ok
+    end
+
+    test "it removes mx-reply tags and convert mentions" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, 2, fn "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      "@alice:kazarma" ->
+        {:ok, %{"displayname" => "Alice"}}
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:create, fn
+        %{
+          actor: %ActivityPub.Actor{
+            ap_id: "http://kazarma/pub/actors/bob",
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/pub/actors/bob/followers",
+              "followings" => "http://kazarma/pub/actors/bob/following",
+              "id" => "http://kazarma/pub/actors/bob",
+              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Bob",
+              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            deactivated: false,
+            id: nil,
+            keys: _,
+            local: true,
+            pointer_id: nil,
+            username: "bob@kazarma"
+          },
+          context: nil,
+          object: %{
+            "actor" => "http://kazarma/pub/actors/bob",
+            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "content" => """
+            Hello <span class="h-card"><a href="http://kazarma/pub/actors/alice" class="u-url mention">@<span>alice@kazarma</span></a></span>!
+            """,
+            "to" => ["alice@pleroma"],
+            "type" => "ChatMessage"
+          },
+          to: ["alice@pleroma"]
+        },
+        nil ->
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
+      end)
+
+      assert :ok == new_event(formatted_message_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "object_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
+    end
+  end
+
+  describe "Text body conversion when mentioned user is not found" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, _room} =
+        Kazarma.Matrix.Bridge.create_room(%{
+          local_id: "!room:kazarma",
+          remote_id: nil,
+          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
+        })
+
+      :ok
+    end
+
+    test "it removes mx-reply tags and convert mentions" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, 2, fn "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      "@alice:kazarma" ->
+        {:error, :not_found}
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:create, fn
+        %{
+          actor: %ActivityPub.Actor{
+            ap_id: "http://kazarma/pub/actors/bob",
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/pub/actors/bob/followers",
+              "followings" => "http://kazarma/pub/actors/bob/following",
+              "id" => "http://kazarma/pub/actors/bob",
+              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Bob",
+              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            deactivated: false,
+            id: nil,
+            keys: _,
+            local: true,
+            pointer_id: nil,
+            username: "bob@kazarma"
+          },
+          context: nil,
+          object: %{
+            "actor" => "http://kazarma/pub/actors/bob",
+            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "content" => """
+            Hello <span class="h-card">@<span>alice@kazarma</span></span>!
+            """,
+            "to" => ["alice@pleroma"],
+            "type" => "ChatMessage"
+          },
+          to: ["alice@pleroma"]
+        },
+        nil ->
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
+      end)
+
+      assert :ok == new_event(formatted_message_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "object_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Kazarma.Matrix.Bridge.list_events()
+    end
+  end
 end
