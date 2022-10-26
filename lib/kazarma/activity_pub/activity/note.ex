@@ -107,7 +107,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     }
   end
 
-  def forward(event, %Room{data: %{"type" => "note"}} = room) do
+  def forward(event, %Room{data: %{"type" => "note"}} = room, content) do
     with {:ok, actor} <- Address.matrix_id_to_actor(event.sender),
          replying_to =
            get_replied_activity_if_exists(event) || Bridge.get_last_event_in_room(room.local_id),
@@ -126,7 +126,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
              receivers_id: to_ap_id,
              context: room.remote_id,
              in_reply_to: in_reply_to,
-             content: event.content["body"],
+             content: content,
              attachment: attachment,
              tags: tags
            ) do
@@ -140,7 +140,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     end
   end
 
-  def forward(event, %Room{data: %{"type" => "outbox"}} = room) do
+  def forward(event, %Room{data: %{"type" => "outbox"}} = room, content) do
     with {:ok, sender_actor} <- Address.matrix_id_to_actor(event.sender),
          {:ok, receiver_actor} <- Address.matrix_id_to_actor(room.data["matrix_id"]),
          to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id],
@@ -148,7 +148,6 @@ defmodule Kazarma.ActivityPub.Activity.Note do
          context = make_context(replied_activity),
          in_reply_to = make_in_reply_to(replied_activity),
          attachment = Activity.attachment_from_matrix_event_content(event.content),
-         content = make_ap_content_from_matrix(event),
          tags = [
            %{
              "href" => receiver_actor.ap_id,
@@ -227,41 +226,4 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   defp make_in_reply_to(%BridgeEvent{remote_id: ap_id}), do: ap_id
 
   defp make_in_reply_to(_), do: nil
-
-  defp make_ap_content_from_matrix(event) do
-    body = event.content["formatted_body"] || event.content["body"] || ""
-
-    body
-    |> remove_mx_reply
-    |> translate_matrix_mentions
-  end
-
-  def translate_matrix_mentions(content) do
-    regex = ~r/<a href="https:\/\/matrix\.to\/#\/(?<matrix_id>.+?)">(?<display_name>.*?)<\/a>/
-
-    replace_function = fn _, matrix_id, _display_name ->
-      {:ok, actor} = Address.matrix_id_to_actor(matrix_id)
-
-      ~s(<span class="h-card"><a href="#{actor.ap_id}" class="u-url mention">@<span>#{actor.username}</span></a></span>)
-    end
-
-    Regex.replace(regex, content, replace_function)
-  end
-
-  def translate_activity_pub_mentions(content, tags) do
-    Enum.reduce(tags, content, fn tag, content ->
-      {:ok, actor} = ActivityPub.Actor.get_cached_by_ap_id(tag["href"])
-      {:ok, matrix_id} = Address.ap_username_to_matrix_id(actor.username)
-      display_name = actor.data["name"]
-      mention_link = ~s(<a href="https://matrix.to/\#/#{matrix_id}">#{display_name}</a>)
-
-      content
-      |> String.replace(tag["name"], mention_link)
-      |> String.replace("@" <> actor.username, mention_link)
-    end)
-  end
-
-  defp remove_mx_reply(content) do
-    Regex.replace(~r/\<mx\-reply\>.*\<\/mx\-reply\>/, content, "")
-  end
 end

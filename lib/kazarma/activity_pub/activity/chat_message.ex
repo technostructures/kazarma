@@ -49,24 +49,23 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
           room_id: room_id,
           sender: sender,
           type: "m.room.message",
-          content:
-            %{
-              "body" => body
-            } = content
+          content: event_content
         },
-        %Room{data: %{"type" => "chat_message", "to_ap_id" => remote_id}}
+        %Room{data: %{"type" => "chat_message", "to_ap_id" => remote_id}},
+        text_content
       ) do
     Logger.debug("Forwarding ChatMessage creation")
 
     with {:ok, username} <- Kazarma.Address.matrix_id_to_ap_username(sender),
          {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_username(username),
-         attachment = Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(content),
+         attachment =
+           Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event_content),
          {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
            Activity.create(
              type: "ChatMessage",
              sender: actor,
              receivers_id: [remote_id],
-             content: body,
+             content: text_content,
              attachment: attachment
            ) do
       Kazarma.Matrix.Bridge.create_event(%{

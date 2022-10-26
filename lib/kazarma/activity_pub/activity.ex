@@ -5,6 +5,7 @@ defmodule Kazarma.ActivityPub.Activity do
   Activity-related functions.
   """
   alias ActivityPub.Object
+  alias Kazarma.Address
   alias Kazarma.Logger
   alias Kazarma.Matrix.Bridge
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
@@ -93,8 +94,9 @@ defmodule Kazarma.ActivityPub.Activity do
 
     message_body = message_source || message_content
 
+    # @TODO easy refacto here
     message_formatted_body =
-      Kazarma.ActivityPub.Activity.Note.translate_activity_pub_mentions(
+      convert_mentions(
         message_body,
         Map.get(object_data, "tag")
       )
@@ -144,6 +146,19 @@ defmodule Kazarma.ActivityPub.Activity do
 
   defp event_for_activity_data(_, body, formatted_body) do
     {body, formatted_body}
+  end
+
+  defp convert_mentions(content, tags) do
+    Enum.reduce(tags, content, fn tag, content ->
+      {:ok, actor} = ActivityPub.Actor.get_cached_by_ap_id(tag["href"])
+      {:ok, matrix_id} = Address.ap_username_to_matrix_id(actor.username)
+      display_name = actor.data["name"]
+      mention_link = ~s(<a href="https://matrix.to/\#/#{matrix_id}">#{display_name}</a>)
+
+      content
+      |> String.replace(tag["name"], mention_link)
+      |> String.replace("@" <> actor.username, mention_link)
+    end)
   end
 
   defp get_result([{:error, error} | _rest]), do: {:error, error}

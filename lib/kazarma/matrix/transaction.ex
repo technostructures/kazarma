@@ -5,6 +5,7 @@ defmodule Kazarma.Matrix.Transaction do
   Implementation of `MatrixAppService.Adapter.Transaction`.
   """
   @behaviour MatrixAppService.Adapter.Transaction
+  alias Kazarma.Address
   alias Kazarma.Logger
   alias Kazarma.Matrix.Bridge
   alias MatrixAppService.Bridge.Room
@@ -43,16 +44,21 @@ defmodule Kazarma.Matrix.Transaction do
     Logger.matrix_input(event)
 
     if !is_tagged_message(event) do
-      # room = Bridge.get_room_by_local_id(room_id) || Bridge.create_room(local_id: room_id, )
+      text_content = build_text_content(event.content)
+
       case Bridge.get_room_by_local_id(room_id) do
         %Room{data: %{"type" => "chat_message"}} = room ->
-          Kazarma.ActivityPub.Activity.ChatMessage.forward_create_to_activitypub(event, room)
+          Kazarma.ActivityPub.Activity.ChatMessage.forward_create_to_activitypub(
+            event,
+            room,
+            text_content
+          )
 
         %Room{data: %{"type" => "note"}} = room ->
-          Kazarma.ActivityPub.Activity.Note.forward(event, room)
+          Kazarma.ActivityPub.Activity.Note.forward(event, room, text_content)
 
         %Room{data: %{"type" => "outbox"}} = room ->
-          Kazarma.ActivityPub.Activity.Note.forward(event, room)
+          Kazarma.ActivityPub.Activity.Note.forward(event, room, text_content)
 
         nil ->
           :ok
@@ -205,4 +211,33 @@ defmodule Kazarma.Matrix.Transaction do
   end
 
   defp is_tagged_redact(_), do: false
+
+  defp build_text_content(%{
+         "msgtype" => "m.text",
+         "format" => "org.matrix.custom.html",
+         "formatted_body" => formatted_body
+       }) do
+    formatted_body
+    |> remove_mx_reply
+    |> convert_mentions
+  end
+
+  defp build_text_content(%{"msgtype" => "m.text", "body" => body}), do: body
+
+  defp build_text_content(_), do: ""
+
+  def convert_mentions(content) do
+    ap_mention_regex =
+      ~r/<a href="https:\/\/matrix\.to\/#\/(?<matrix_id>.+?)">(?<display_name>.*?)<\/a>/
+
+    Regex.replace(ap_mention_regex, content, fn _, matrix_id, _display_name ->
+      {:ok, actor} = Address.matrix_id_to_actor(matrix_id)
+
+      ~s(<span class="h-card"><a href="#{actor.ap_id}" class="u-url mention">@<span>#{actor.username}</span></a></span>)
+    end)
+  end
+
+  defp remove_mx_reply(content) do
+    Regex.replace(~r/\<mx\-reply\>.*\<\/mx\-reply\>/, content, "")
+  end
 end
