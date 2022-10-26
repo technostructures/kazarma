@@ -15,11 +15,11 @@ A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://githu
 
 ## Installation
 
-### [Erlang release](https://docs.kazar.ma/administrator-guide/docker-compose)
+### [Erlang release](https://docs.kazar.ma/administrator-guide/erlang-release)
 
 ### [Docker Compose](https://docs.kazar.ma/administrator-guide/docker-compose)
 
-### [Helm](https://docs.kazar.ma/administrator-guide/docker-compose)
+### [Helm](https://docs.kazar.ma/administrator-guide/helm)
 
 ## Application service configuration
 
