@@ -917,10 +917,12 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "it removes mx-reply tags and convert mentions" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, 2, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      "@alice:kazarma" ->
-        {:ok, %{"displayname" => "Alice"}}
+      |> expect(:get_profile, 2, fn
+        "@bob:kazarma" ->
+          {:ok, %{"displayname" => "Bob"}}
+
+        "@alice:kazarma" ->
+          {:ok, %{"displayname" => "Alice"}}
       end)
 
       Kazarma.ActivityPub.TestServer
@@ -993,10 +995,12 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "it removes mx-reply tags and convert mentions" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, 2, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      "@alice:kazarma" ->
-        {:error, :not_found}
+      |> expect(:get_profile, 2, fn
+        "@bob:kazarma" ->
+          {:ok, %{"displayname" => "Bob"}}
+
+        "@alice:kazarma" ->
+          {:error, :not_found}
       end)
 
       Kazarma.ActivityPub.TestServer
