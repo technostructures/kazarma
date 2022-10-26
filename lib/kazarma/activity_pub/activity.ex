@@ -89,25 +89,17 @@ defmodule Kazarma.ActivityPub.Activity do
   end
 
   def send_message_and_attachment(matrix_id, room_id, object_data, attachments) do
-    message_source = Map.get(object_data, "source")
-    message_content = Map.get(object_data, "content")
-
-    # message_body = message_source || remove_html(message_content)
-    message_body = message_source || message_content
-
-    # @TODO easy refacto here
-    message_formatted_body =
-      convert_mentions(
-        message_content,
-        Map.get(object_data, "tag")
-      ) || message_source
+    text_message =
+      object_data
+      |> make_text_message()
+      |> add_reply(object_data)
 
     message_result =
-      message_body &&
+      text_message &&
         Kazarma.Matrix.Client.send_tagged_message(
           room_id,
           matrix_id,
-          event_for_activity_data(object_data, message_body, message_formatted_body)
+          text_message
         )
 
     attachments_results = send_attachments(matrix_id, room_id, attachments)
@@ -135,7 +127,39 @@ defmodule Kazarma.ActivityPub.Activity do
     %{mimetype: mediatype, url: url}
   end
 
-  defp event_for_activity_data(%{"inReplyTo" => reply_to_ap_id}, body, formatted_body) do
+  defp make_text_message(%{"source" => nil, "content" => nil}), do: nil
+  defp make_text_message(%{"source" => "", "content" => ""}), do: nil
+
+  defp make_text_message(%{"source" => source, "content" => content} = data) do
+    {strip_tags(source), process_html(content, Map.get(data, "tag"))}
+  end
+
+  defp make_text_message(%{"source" => nil}), do: nil
+  defp make_text_message(%{"source" => ""}), do: nil
+
+  defp make_text_message(%{"source" => source}) do
+    source
+  end
+
+  defp make_text_message(%{"content" => nil}), do: nil
+  defp make_text_message(%{"content" => ""}), do: nil
+
+  defp make_text_message(%{"content" => content} = data) do
+    formatted_body = process_html(content, Map.get(data, "tag"))
+    {strip_tags(formatted_body), formatted_body}
+  end
+
+  defp process_html(content, tags) do
+    content |> convert_mentions(tags) |> HtmlSanitizeEx.Scrubber.scrub(Kazarma.Matrix.Scrubber)
+  end
+
+  defp strip_tags(content) do
+    HtmlSanitizeEx.strip_tags(content)
+  end
+
+  defp add_reply(body, object_data) when is_binary(body), do: add_reply({body, body}, object_data)
+
+  defp add_reply({body, formatted_body}, %{"inReplyTo" => reply_to_ap_id}) do
     case Bridge.get_event_by_remote_id(reply_to_ap_id) do
       %BridgeEvent{local_id: event_id} ->
         Client.reply_event(event_id, body, formatted_body)
@@ -145,9 +169,7 @@ defmodule Kazarma.ActivityPub.Activity do
     end
   end
 
-  defp event_for_activity_data(_, body, formatted_body) do
-    {body, formatted_body}
-  end
+  defp add_reply(text_message, _), do: text_message
 
   defp convert_mentions(content, nil), do: content
 
@@ -169,22 +191,23 @@ defmodule Kazarma.ActivityPub.Activity do
   end
 
   defp parse_and_update_content(content, username_without_at, ap_id, matrix_id, display_name) do
+    update_fun = fn
+      {"span", span_attrs, [{"a", a_attrs, ["@", {"span", _, [^username_without_at]}]}]} = elem ->
+        if {"class", "h-card"} in span_attrs && {"href", ap_id} in a_attrs &&
+             {"class", "u-url mention"} in a_attrs do
+          {"a", [{"href", "https://matrix.to/#/" <> matrix_id}], [display_name]}
+        else
+          elem
+        end
+
+      other ->
+        other
+    end
+
     case Floki.parse_document(content) do
       {:ok, html} ->
         html
-        |> Floki.traverse_and_update(fn
-          {"span", span_attrs, [{"a", a_attrs, ["@", {"span", _, [^username_without_at]}]}]} =
-              elem ->
-            if {"class", "h-card"} in span_attrs && {"href", ap_id} in a_attrs &&
-                 {"class", "u-url mention"} in a_attrs do
-              {"a", [{"href", "https://matrix.to/#/" <> matrix_id}], [display_name]}
-            else
-              elem
-            end
-
-          other ->
-            other
-        end)
+        |> Floki.traverse_and_update(update_fun)
         |> Floki.raw_html()
 
       _ ->

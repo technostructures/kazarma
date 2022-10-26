@@ -147,7 +147,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       }
       |> Kazarma.Matrix.Bridge.create_room()
 
-      assert :ok = handle_activity(public_note_fixture_with_mention)
+      assert :ok = handle_activity(public_note_fixture_with_mention())
     end
   end
 end
