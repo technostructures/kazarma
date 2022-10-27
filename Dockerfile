@@ -1,20 +1,19 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
 
-FROM bitwalker/alpine-elixir-phoenix:1.13
+FROM registry.gitlab.com/kazarma/alpine-elixir-phoenix:1.14
 
 ENV HEX_HTTP_CONCURRENCY=1
 ENV HEX_HTTP_TIMEOUT=240
 ENV MIX_ENV=dev
-ENV AP_BASE_PATH=/
 
 # Cache elixir deps
-COPY ./mix.exs ./mix.lock /opt/app/
-COPY ./config /opt/app/config/
-COPY ./activity_pub /opt/app/activity_pub/
-COPY ./matrix_app_service /opt/app/matrix_app_service
-COPY ./polyjuice_client /opt/app/polyjuice_client
-RUN mix do deps.get, deps.compile
+# COPY ./mix.exs ./mix.lock /opt/app/
+# COPY ./config /opt/app/config/
+# COPY ./activity_pub /opt/app/activity_pub/
+# COPY ./matrix_app_service /opt/app/matrix_app_service
+# COPY ./polyjuice_client /opt/app/polyjuice_client
+# RUN mix do deps.get, deps.compile
 
 # Same with npm deps
 # COPY ./assets /opt/app/assets/
@@ -30,9 +29,9 @@ RUN mix do deps.get, deps.compile
 #     cd - && \
 #     mix do compile, phx.digest
 
-COPY ./lib /opt/app/lib/
-COPY ./priv /opt/app/priv/
-RUN mix compile
+# COPY ./lib /opt/app/lib/
+# COPY ./priv /opt/app/priv/
+# RUN mix compile
 
 # VOLUME ["/opt/app/lib"]
 # VOLUME ["/opt/app/assets"]

@@ -19,7 +19,7 @@
 #   docker image, with a development
 #   toolset.
 # -----------------------------------
-FROM bitwalker/alpine-elixir-phoenix:1.13 AS elixir-builder
+FROM registry.gitlab.com/kazarma/alpine-elixir-phoenix:1.14 AS elixir-builder
 
 ENV MIX_ENV=prod
 ENV AP_BASE_PATH=/
@@ -33,7 +33,7 @@ RUN mix local.rebar --force
 RUN mkdir -p .config/rebar3 && \
   echo '{plugins, [rebar3_hex]}.' > .config/rebar3/rebar.config
 
-RUN /opt/mix/rebar3 plugins upgrade rebar3_hex
+RUN /opt/mix/elixir/1-14/rebar3 plugins upgrade rebar3_hex
 
 # -----------------------------------
 # Base Image #2: Elixir Runner
