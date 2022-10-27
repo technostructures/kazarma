@@ -5,6 +5,7 @@ defmodule Kazarma.ActivityPub.Activity do
   Activity-related functions.
   """
   alias ActivityPub.Object
+  alias Kazarma.Address
   alias Kazarma.Logger
   alias Kazarma.Matrix.Bridge
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
@@ -88,18 +89,17 @@ defmodule Kazarma.ActivityPub.Activity do
   end
 
   def send_message_and_attachment(matrix_id, room_id, object_data, attachments) do
-    message_source = Map.get(object_data, "source")
-    message_content = Map.get(object_data, "content")
-
-    message_body = message_source || message_content
-    message_formatted_body = message_content || message_source
+    text_message =
+      object_data
+      |> make_text_message()
+      |> add_reply(object_data)
 
     message_result =
-      message_body &&
+      text_message &&
         Kazarma.Matrix.Client.send_tagged_message(
           room_id,
           matrix_id,
-          event_for_activity_data(object_data, message_body, message_formatted_body)
+          text_message
         )
 
     attachments_results = send_attachments(matrix_id, room_id, attachments)
@@ -127,7 +127,39 @@ defmodule Kazarma.ActivityPub.Activity do
     %{mimetype: mediatype, url: url}
   end
 
-  defp event_for_activity_data(%{"inReplyTo" => reply_to_ap_id}, body, formatted_body) do
+  defp make_text_message(%{"source" => nil, "content" => nil}), do: nil
+  defp make_text_message(%{"source" => "", "content" => ""}), do: nil
+
+  defp make_text_message(%{"source" => source, "content" => content} = data) do
+    {strip_tags(source), process_html(content, Map.get(data, "tag"))}
+  end
+
+  defp make_text_message(%{"source" => nil}), do: nil
+  defp make_text_message(%{"source" => ""}), do: nil
+
+  defp make_text_message(%{"source" => source}) do
+    source
+  end
+
+  defp make_text_message(%{"content" => nil}), do: nil
+  defp make_text_message(%{"content" => ""}), do: nil
+
+  defp make_text_message(%{"content" => content} = data) do
+    formatted_body = process_html(content, Map.get(data, "tag"))
+    {strip_tags(formatted_body), formatted_body}
+  end
+
+  defp process_html(content, tags) do
+    content |> convert_mentions(tags) |> HtmlSanitizeEx.Scrubber.scrub(Kazarma.Matrix.Scrubber)
+  end
+
+  defp strip_tags(content) do
+    HtmlSanitizeEx.strip_tags(content)
+  end
+
+  defp add_reply(body, object_data) when is_binary(body), do: add_reply({body, body}, object_data)
+
+  defp add_reply({body, formatted_body}, %{"inReplyTo" => reply_to_ap_id}) do
     case Bridge.get_event_by_remote_id(reply_to_ap_id) do
       %BridgeEvent{local_id: event_id} ->
         Client.reply_event(event_id, body, formatted_body)
@@ -137,8 +169,50 @@ defmodule Kazarma.ActivityPub.Activity do
     end
   end
 
-  defp event_for_activity_data(_, body, formatted_body) do
-    {body, formatted_body}
+  defp add_reply(text_message, _), do: text_message
+
+  defp convert_mentions(content, nil), do: content
+
+  defp convert_mentions(content, tags) do
+    Enum.reduce(tags, content, fn
+      %{"type" => "Mention", "href" => ap_id, "name" => username}, content ->
+        with {:ok, actor} <- ActivityPub.Actor.get_cached_by_ap_id(ap_id),
+             {:ok, matrix_id} <- Address.ap_username_to_matrix_id(actor.username) do
+          display_name = actor.data["name"]
+          "@" <> username_without_at = username
+          parse_and_update_content(content, username_without_at, ap_id, matrix_id, display_name)
+        else
+          _ -> content
+        end
+
+      _, content ->
+        content
+    end)
+  end
+
+  defp parse_and_update_content(content, username_without_at, ap_id, matrix_id, display_name) do
+    update_fun = fn
+      {"span", span_attrs, [{"a", a_attrs, ["@", {"span", _, [^username_without_at]}]}]} = elem ->
+        if {"class", "h-card"} in span_attrs && {"href", ap_id} in a_attrs &&
+             {"class", "u-url mention"} in a_attrs do
+          {"a", [{"href", "https://matrix.to/#/" <> matrix_id}], [display_name]}
+        else
+          elem
+        end
+
+      other ->
+        other
+    end
+
+    case Floki.parse_document(content) do
+      {:ok, html} ->
+        html
+        |> Floki.traverse_and_update(update_fun)
+        |> Floki.raw_html()
+
+      _ ->
+        content
+    end
   end
 
   defp get_result([{:error, error} | _rest]), do: {:error, error}

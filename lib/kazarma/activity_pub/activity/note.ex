@@ -107,7 +107,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     }
   end
 
-  def forward(event, %Room{data: %{"type" => "note"}} = room) do
+  def forward(event, %Room{data: %{"type" => "note"}} = room, content) do
     with {:ok, actor} <- Address.matrix_id_to_actor(event.sender),
          replying_to =
            get_replied_activity_if_exists(event) || Bridge.get_last_event_in_room(room.local_id),
@@ -126,7 +126,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
              receivers_id: to_ap_id,
              context: room.remote_id,
              in_reply_to: in_reply_to,
-             content: event.content["body"],
+             content: content,
              attachment: attachment,
              tags: tags
            ) do
@@ -140,7 +140,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     end
   end
 
-  def forward(event, %Room{data: %{"type" => "outbox"}} = room) do
+  def forward(event, %Room{data: %{"type" => "outbox"}} = room, content) do
     with {:ok, sender_actor} <- Address.matrix_id_to_actor(event.sender),
          {:ok, receiver_actor} <- Address.matrix_id_to_actor(room.data["matrix_id"]),
          to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id],
@@ -162,7 +162,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
              receivers_id: to,
              context: context,
              in_reply_to: in_reply_to,
-             content: event.content["body"],
+             content: content,
              attachment: attachment,
              tags: tags
            ) do

@@ -58,4 +58,96 @@ defmodule Kazarma.ActivityPub.ActivityTest do
              ] = Kazarma.Matrix.Bridge.list_events()
     end
   end
+
+  describe "Content conversion" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, actor} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://pleroma/pub/actors/alice",
+            "id" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, actor: actor}
+    end
+
+    def public_note_fixture_with_mention do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://kazarma/pub/actors/bob",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Note",
+            "content" =>
+              ~S(<p><span class="h-card"><a href="http://kazarma/pub/actors/bob" class="u-url mention">@<span>bob@kazarma.kazarma.local</span></a></span> hello</p>),
+            "source" => "@bob@kazarma.kazarma.local hello",
+            "id" => "note_id",
+            "actor" => "http://pleroma/pub/actors/alice",
+            "conversation" => "http://pleroma/pub/contexts/context",
+            "attachment" => nil,
+            "tag" => [
+              %{
+                "type" => "Mention",
+                "href" => "http://kazarma/pub/actors/bob",
+                "name" => "@bob@kazarma.kazarma.local"
+              }
+            ]
+          }
+        }
+      }
+    end
+
+    test "it converts mentions" do
+      Kazarma.Matrix.TestClient
+      |> expect(:register, fn [
+                                username: "_ap_alice___pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
+                              ] ->
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
+        :ok
+      end)
+      |> expect(:get_profile, fn "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:send_message, fn
+        "!room:kazarma",
+        {"@bob@kazarma.kazarma.local hello \uFEFF",
+         ~s(<p><a href="https://matrix.to/#/@bob:kazarma">Bob</a> hello</p>)},
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, "event_id"}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma/pub/actors/alice",
+        data: %{
+          "type" => "outbox",
+          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+        }
+      }
+      |> Kazarma.Matrix.Bridge.create_room()
+
+      assert :ok = handle_activity(public_note_fixture_with_mention())
+    end
+  end
 end

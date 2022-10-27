@@ -69,7 +69,9 @@ defmodule Kazarma.MixProject do
       {:oban, "~> 2.13"},
       {:logger_file_backend, "~> 0.0.13"},
       {:sentry, "~> 8.0"},
-      {:prom_ex, "~> 1.7"}
+      {:prom_ex, "~> 1.7"},
+      {:floki, ">= 0.30.0"},
+      {:html_sanitize_ex, "~> 1.4"}
     ]
   end
 
