@@ -207,8 +207,8 @@ defmodule Kazarma.ActivityPub.Activity.Note do
   defp get_replied_activity_if_exists(%Event{
          content: %{"m.relates_to" => %{"m.in_reply_to" => %{"event_id" => event_id}}}
        }) do
-    case Bridge.get_event_by_local_id(event_id) do
-      %BridgeEvent{remote_id: ap_id} ->
+    case Bridge.get_events_by_local_id(event_id) do
+      [%BridgeEvent{remote_id: ap_id} | _] ->
         Object.get_cached_by_ap_id(ap_id)
 
       _ ->

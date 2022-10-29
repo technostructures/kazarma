@@ -184,6 +184,16 @@ defmodule Kazarma.Address do
     end
   end
 
+  def matrix_mention_tag(matrix_id, display_name) do
+    """
+    <a href="https://matrix.to/#/<%= matrix_id %>"><%= display_name %></a>
+    """
+    |> EEx.eval_string(
+      matrix_id: matrix_id,
+      display_name: display_name
+    )
+  end
+
   defp filter_types({type, _} = t, types) do
     if type in types, do: t, else: {:error, :not_found}
   end

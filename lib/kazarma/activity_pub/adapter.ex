@@ -187,6 +187,22 @@ defmodule Kazarma.ActivityPub.Adapter do
     end
   end
 
+  # Video
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Create"
+          },
+          object: %Object{
+            data: %{
+              "type" => "Video"
+            }
+          }
+        } = activity
+      ) do
+    Kazarma.ActivityPub.Activity.Video.forward_create_to_matrix(activity)
+  end
+
   def handle_activity(%Object{} = object) do
     Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (other activity)")
     Logger.ap_input(object)
