@@ -72,6 +72,7 @@ defmodule Kazarma.MixProject do
       {:prom_ex, "~> 1.7"},
       {:floki, ">= 0.30.0"},
       {:phoenix_live_view, "~> 0.18"},
+      {:phoenix_live_reload, "~> 1.3"},
       {:html_sanitize_ex, "~> 1.4"},
       {:ex_cldr_dates_times, "~> 2.0"}
     ]
