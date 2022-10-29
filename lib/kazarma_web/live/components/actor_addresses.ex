@@ -1,38 +1,11 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-
-defmodule KazarmaWeb.Actor do
+defmodule KazarmaWeb.Components.ActorAddresses do
   @moduledoc false
   use Phoenix.Component
   use Phoenix.HTML
   import KazarmaWeb.ActorView
   import KazarmaWeb.Gettext
-
-  def header(assigns) do
-    ~H"""
-      <div class="flex flex-row items-center space-x-4">
-        <div>
-          <%= unless is_nil(avatar_url(@actor)) do %>
-            <div class="avatar">
-              <div class="rounded-full w-12 h-12 shadow">
-                <img src={avatar_url(@actor)} alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])}>
-              </div>
-            </div>
-          <% end %>
-        </div>
-        <div class="">
-          <h1 class="card-title text-xl">
-            <%= display_name(@actor) %>
-          </h1>
-        </div>
-        <div class="">
-          <div class="badge badge-lg">
-            <%= type(@actor) %>
-          </div>
-        </div>
-      </div>
-    """
-  end
 
   def matrix_rows(assigns) do
     ~H"""
@@ -56,7 +29,6 @@ defmodule KazarmaWeb.Actor do
 
   def ap_rows(assigns) do
     ~H"""
-
       <div class="card card-body bg-base-300 base-100 mt-10">
         <h2 class="text-2xl text-center pt-5">ActivityPub</h2>
         <div class="flex flex-col space-y-2">
@@ -73,32 +45,15 @@ defmodule KazarmaWeb.Actor do
     """
   end
 
-  def timeline(assigns) do
-    ~H"""
-      <h2 class="text-2xl text-center pt-5">Timeline</h2>
-      <%= for object <- @objects do %>
-        <KazarmaWeb.Object.show
-          actor={@actor} object={object} />
-      <% end %>
-    """
-  end
-
   def show(assigns) do
     ~H"""
-    <div class="">
-      <div>
-        <.header actor={@actor} />
-        <div class="divider"></div> 
-        <%= if type(@actor) === "Matrix" do %>
-        <.matrix_rows actor={@actor} />
-        <.ap_rows actor={@actor} />
-        <%= else %>
-        <.ap_rows actor={@actor} />
-        <.matrix_rows actor={@actor} />
-        <% end %>
-        <.timeline actor={@actor} objects={@objects} />
-      </div>
-    </div>
+    <%= if type(@actor) === "Matrix" do %>
+    <.matrix_rows actor={@actor} />
+    <.ap_rows actor={@actor} />
+    <%= else %>
+    <.ap_rows actor={@actor} />
+    <.matrix_rows actor={@actor} />
+    <% end %>
     """
   end
 end

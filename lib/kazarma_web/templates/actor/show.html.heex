@@ -3,4 +3,7 @@
 <%# SPDX-License-Identifier: AGPL-3.0-only
 %>
 
-<KazarmaWeb.Actor.show actor={@actor} objects={@objects} />
+<div class="grid grid-cols-1"> <!-- lg:grid-cols-3 -->
+  <KazarmaWeb.Components.Profile.show actor={@actor} conn={@conn} />
+  <%= live_render @conn, KazarmaWeb.Timeline, session: %{"actor_id" => @actor.ap_id}, container: {:div, class: "container mx-auto col-span-2 lg:max-w-3xl px-4"} %>
+</div>

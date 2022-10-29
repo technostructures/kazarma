@@ -3,4 +3,9 @@
 <%# SPDX-License-Identifier: AGPL-3.0-only
 %>
 
-<KazarmaWeb.Object.show object={@object} actor={@actor} />
+<div class="grid grid-cols-1"> <!-- lg:grid-cols-3 -->
+  <KazarmaWeb.Components.Profile.show actor={@actor} conn={@conn} />
+  <div class="container mx-auto col-span-2 lg:max-w-3xl px-4">
+    <KazarmaWeb.Object.show object={@object} actor={@actor} conn={@conn} />
+  </div>
+</div>

@@ -26,7 +26,7 @@ defmodule KazarmaWeb.Object do
 
   def header(assigns) do
     ~H"""
-      <div class="flex flex-row items-center space-x-4">
+      <div class="flex flex-row items-center">
         <div>
           <%= unless is_nil(avatar_url(@actor)) do %>
             <div class="avatar">
@@ -38,18 +38,15 @@ defmodule KazarmaWeb.Object do
         </div>
         <div class="">
           <h1 class="card-title text-xl">
-            <a href={ap_id(@actor)}>
+            <.link navigate={KazarmaWeb.Router.Helpers.activity_pub_path(@conn, :actor, @actor.username)}>
               <%= display_name(@actor) %>
-            </a>
+            </.link>
           </h1>
         </div>
-        <div class="">
-          <div class="badge badge-lg">
-            <%= type(@actor) %>
-          </div>
-        </div>
-        <div style="margin-left: auto;">
-          <%= datetime(@object) %>
+        <div class="text-sm ml-auto">
+            <.link navigate={KazarmaWeb.Router.Helpers.activity_pub_path(@conn, :object, @object.id)}>
+              <%= datetime(@object) %>
+            </.link>
         </div>
       </div>
     """
@@ -57,9 +54,9 @@ defmodule KazarmaWeb.Object do
 
   def show(assigns) do
     ~H"""
-    <div class="card shadow-lg side bg-base-100 mt-10">
+    <div id={@object.data["id"]} class="card shadow-lg side bg-base-100 mt-4">
       <div class="card-body">
-        <.header actor={@actor} object={@object} />
+        <.header actor={@actor} object={@object} conn={@conn} />
         <div class="mt-0 mb-0 divider"></div>
         <div class="flex flex-col space-y-2 ">
           <p class="text-lg font-medium"><.display_body object={@object} /></p>

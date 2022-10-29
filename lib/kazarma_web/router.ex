@@ -29,7 +29,7 @@ defmodule KazarmaWeb.Router do
     plug :fetch_live_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug :put_root_layout, {KazarmaWeb.LayoutView, :app}
+    # plug :put_root_layout, {KazarmaWeb.LayoutView, :app}
   end
 
   scope "/", KazarmaWeb do

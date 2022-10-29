@@ -12,13 +12,9 @@ defmodule KazarmaWeb.ActorController do
     end
   end
 
-  def get_objects(actor) do
-    ActivityPub.Object |> Kazarma.Repo.all()
-  end
-
   def show(conn, %{"username" => username}) do
     with {:ok, actor} <- get_actor(username),
-         objects <- get_objects(actor) do
+         objects <- [] do
       conn
       |> fetch_session()
       |> fetch_flash()

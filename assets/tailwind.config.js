@@ -8,6 +8,7 @@ module.exports = {
     "./js/**/*.ts",
     "../lib/**/*.ex",
     "../lib/**/*.leex",
+    "../lib/**/*.heex",
     "../lib/**/*.eex",
     "../lib/**/*.sface",
   ],
