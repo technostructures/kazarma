@@ -89,10 +89,10 @@ defmodule Kazarma.ActivityPub.Activity do
   end
 
   def send_message_and_attachment(matrix_id, room_id, object_data, attachments) do
-    text_message =
+    {text_message, room_id} =
       object_data
       |> make_text_message()
-      |> add_reply(object_data)
+      |> add_reply(object_data, room_id)
 
     message_result =
       text_message &&
@@ -131,7 +131,11 @@ defmodule Kazarma.ActivityPub.Activity do
   defp make_text_message(%{"source" => "", "content" => ""}), do: nil
 
   defp make_text_message(%{"source" => source, "content" => content} = data) do
-    {strip_tags(source), process_html(content, Map.get(data, "tag"))}
+    tags = Map.get(data, "tag")
+    body = process_message_text(source, tags)
+    formatted_body = process_message_html(content, tags)
+
+    {body, formatted_body}
   end
 
   defp make_text_message(%{"source" => nil}), do: nil
@@ -145,42 +149,88 @@ defmodule Kazarma.ActivityPub.Activity do
   defp make_text_message(%{"content" => ""}), do: nil
 
   defp make_text_message(%{"content" => content} = data) do
-    formatted_body = process_html(content, Map.get(data, "tag"))
-    {strip_tags(formatted_body), formatted_body}
+    tags = Map.get(data, "tag")
+    body = process_message_text(content, tags)
+    formatted_body = process_message_html(content, tags)
+
+    {body, formatted_body}
   end
 
-  defp process_html(content, tags) do
-    content |> convert_mentions(tags) |> HtmlSanitizeEx.Scrubber.scrub(Kazarma.Matrix.Scrubber)
+  defp process_message_text(content, tags) do
+    content
+    |> strip_tags()
+    |> convert_mentions_text_to_text(tags)
+  end
+
+  defp process_message_html(content, tags) do
+    content
+    |> convert_mentions_html(tags)
+    |> convert_mentions_text_to_html(tags)
+    |> scrub()
+  end
+
+  defp scrub(content) do
+    HtmlSanitizeEx.Scrubber.scrub(content, Kazarma.Matrix.Scrubber)
   end
 
   defp strip_tags(content) do
     HtmlSanitizeEx.strip_tags(content)
   end
 
-  defp add_reply(body, object_data) when is_binary(body), do: add_reply({body, body}, object_data)
+  defp add_reply(body, object_data, room_id) when is_binary(body),
+    do: add_reply({body, body}, object_data, room_id)
 
-  defp add_reply({body, formatted_body}, %{"inReplyTo" => reply_to_ap_id}) do
-    case Bridge.get_event_by_remote_id(reply_to_ap_id) do
-      %BridgeEvent{local_id: event_id} ->
-        Client.reply_event(event_id, body, formatted_body)
+  defp add_reply({body, formatted_body}, %{"inReplyTo" => reply_to_ap_id}, room_id) do
+    case Bridge.get_events_by_remote_id(reply_to_ap_id) do
+      [%BridgeEvent{local_id: event_id, room_id: replied_to_room_id} | _] ->
+        {Client.reply_event(event_id, body, formatted_body), replied_to_room_id}
 
-      nil ->
-        {body, formatted_body}
+      _ ->
+        {{body, formatted_body}, room_id}
     end
   end
 
-  defp add_reply(text_message, _), do: text_message
+  defp add_reply(text_message, _, room_id), do: {text_message, room_id}
 
-  defp convert_mentions(content, nil), do: content
+  defp convert_mentions_html(content, tags) do
+    convert_mentions(content, tags, fn current_content, actor, ap_id, username, matrix_id ->
+      display_name = actor.data["name"]
+      "@" <> username_without_at = username
 
-  defp convert_mentions(content, tags) do
+      parse_and_update_content(
+        current_content,
+        username_without_at,
+        ap_id,
+        matrix_id,
+        display_name
+      )
+    end)
+  end
+
+  defp convert_mentions_text_to_html(content, tags) do
+    convert_mentions(content, tags, fn current_content, actor, _ap_id, username, matrix_id ->
+      String.replace(
+        current_content,
+        username,
+        Address.matrix_mention_tag(matrix_id, actor.data["name"])
+      )
+    end)
+  end
+
+  defp convert_mentions_text_to_text(content, tags) do
+    convert_mentions(content, tags, fn current_content, _actor, _ap_id, username, matrix_id ->
+      String.replace(current_content, username, matrix_id)
+    end)
+  end
+
+  defp convert_mentions(content, nil, _), do: content
+
+  defp convert_mentions(content, tags, convert_fun) do
     Enum.reduce(tags, content, fn
       %{"type" => "Mention", "href" => ap_id, "name" => username}, content ->
         with {:ok, actor} <- ActivityPub.Actor.get_cached_by_ap_id(ap_id),
              {:ok, matrix_id} <- Address.ap_username_to_matrix_id(actor.username) do
-          display_name = actor.data["name"]
-          "@" <> username_without_at = username
-          parse_and_update_content(content, username_without_at, ap_id, matrix_id, display_name)
+          convert_fun.(content, actor, ap_id, username, matrix_id)
         else
           _ -> content
         end

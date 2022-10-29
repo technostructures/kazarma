@@ -254,6 +254,7 @@ defmodule Kazarma.Matrix.Client do
       "msgtype" => "m.text",
       "body" => body,
       "formatted_body" => formatted_body,
+      "format" => "org.matrix.custom.html",
       "m.relates_to" => %{
         "m.in_reply_to" => %{
           "event_id" => reply_to
