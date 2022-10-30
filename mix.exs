@@ -47,7 +47,7 @@ defmodule Kazarma.MixProject do
       {:ecto, "~> 3.8.4"},
       {:ecto_sql, "~> 3.8.3"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_live_dashboard, "~> 0.6"},
+      {:phoenix_live_dashboard, "~> 0.7.1"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
@@ -71,7 +71,10 @@ defmodule Kazarma.MixProject do
       {:sentry, "~> 8.0"},
       {:prom_ex, "~> 1.7"},
       {:floki, ">= 0.30.0"},
-      {:html_sanitize_ex, "~> 1.4"}
+      {:phoenix_live_view, "~> 0.18"},
+      {:phoenix_live_reload, "~> 1.3"},
+      {:html_sanitize_ex, "~> 1.4"},
+      {:ex_cldr_dates_times, "~> 2.0"}
     ]
   end
 

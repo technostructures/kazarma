@@ -1,0 +1,14 @@
+<%# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+%>
+<%# SPDX-License-Identifier: AGPL-3.0-only
+%>
+
+<div id="activity_list" phx-update="append" class="my-4">
+  <%= for object <- @activities do %>
+    <KazarmaWeb.Object.show
+      actor={@actor} object={object} conn={@conn} />
+  <% end %>
+</div>
+<div class="flex flex-row justify-center" :if={!@last_page}>
+  <button phx-click="load_more" class="btn btn-secondary btn-wide">...</button>
+</div>

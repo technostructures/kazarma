@@ -9,6 +9,8 @@ defmodule Kazarma.ActivityPub.Actor do
   alias KazarmaWeb.Router.Helpers, as: Routes
   alias Kazarma.Logger
 
+  import Ecto.Query
+
   def build_actor_from_data(
         %{"id" => ap_id, "preferredUsername" => local_username} = ap_data,
         keys
@@ -155,5 +157,18 @@ defmodule Kazarma.ActivityPub.Actor do
       _ ->
         {:error, :not_found}
     end
+  end
+
+  def public_activites_for_actor(actor, offset \\ 0, limit \\ 10) do
+    from(object in ActivityPub.Object,
+      where: fragment("(?)->>'actor' = ?", object.data, ^actor.ap_id),
+      where: fragment("(?)->>'type' = ?", object.data, ^"Note"),
+      where:
+        fragment("(?)->'to' \\? ?", object.data, ^"https://www.w3.org/ns/activitystreams#Public"),
+      offset: ^offset,
+      limit: ^limit,
+      order_by: [desc: object.inserted_at]
+    )
+    |> Kazarma.Repo.all()
   end
 end

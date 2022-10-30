@@ -50,6 +50,8 @@ defmodule KazarmaWeb do
       use Phoenix.Router
 
       import Plug.Conn
+      import Phoenix.Component
+      import Phoenix.LiveView.Router
       import Phoenix.Controller
     end
   end
@@ -61,10 +63,20 @@ defmodule KazarmaWeb do
     end
   end
 
+  def live_view do
+    quote do
+      use Phoenix.LiveView
+
+      unquote(view_helpers())
+    end
+  end
+
   defp view_helpers do
     quote do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
+
+      import Phoenix.Component
 
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View

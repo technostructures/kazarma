@@ -4,25 +4,26 @@
 defmodule KazarmaWeb.ActorController do
   use KazarmaWeb, :controller
 
+  def get_actor(username) do
+    if Application.get_env(:kazarma, :html_actor_view_include_remote, false) do
+      ActivityPub.Actor.get_or_fetch_by_username(username)
+    else
+      ActivityPub.Actor.get_cached_by_username(username)
+    end
+  end
+
   def show(conn, %{"username" => username}) do
-    get_actor_function =
-      if Application.get_env(:kazarma, :html_actor_view_include_remote, false) do
-        :get_or_fetch_by_username
-      else
-        :get_cached_by_username
-      end
-
-    case apply(ActivityPub.Actor, get_actor_function, [username]) do
-      {:ok, actor} ->
-        conn
-        |> fetch_session()
-        |> fetch_flash()
-        |> protect_from_forgery()
-        |> put_layout({KazarmaWeb.LayoutView, "app.html"})
-        |> put_view(KazarmaWeb.ActorView)
-        |> render("show.html", actor: actor, title: actor.data["name"])
-
-      _ ->
+    with {:ok, actor} <- get_actor(username),
+         objects <- [] do
+      conn
+      |> fetch_session()
+      |> fetch_flash()
+      |> protect_from_forgery()
+      |> put_layout({KazarmaWeb.LayoutView, "app.html"})
+      |> put_view(KazarmaWeb.ActorView)
+      |> render("show.html", actor: actor, objects: objects, title: actor.data["name"])
+    else
+      {error, _} ->
         conn
         |> fetch_session()
         |> fetch_flash()
