@@ -21,7 +21,7 @@ defmodule KazarmaWeb.Object do
   end
 
   def display_body(assigns) do
-    ~H(<div class=""><%= raw text_content @object %></div>)
+    ~H(<%= raw text_content @object %>)
   end
 
   def header(assigns) do
@@ -52,15 +52,24 @@ defmodule KazarmaWeb.Object do
     """
   end
 
+  attr :object, :map
+  attr :actor, :map
+  attr :conn, :map
+  attr :reply, :boolean, default: false
+  attr :classes, :string, default: ""
+
   def show(assigns) do
     ~H"""
-    <div id={@object.data["id"]} class="card shadow-lg side bg-base-100 mt-4">
+    <div id={@object.data["id"]} class={"card shadow-lg side bg-base-100 mt-4 flex flex-row #{@classes}"}>
       <div class="card-body">
         <.header actor={@actor} object={@object} conn={@conn} />
         <div class="mt-0 mb-0 divider"></div>
-        <div class="flex flex-col space-y-2 ">
-          <p class="text-lg font-medium"><.display_body object={@object} /></p>
-        </div>
+          <p class="">
+            <.display_body object={@object} />
+          </p>
+      </div>
+      <div :if={@reply} class="align-center">
+        <%= KazarmaWeb.IconView.reply_icon() %>
       </div>
     </div>
     """
