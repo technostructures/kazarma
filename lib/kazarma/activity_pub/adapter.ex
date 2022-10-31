@@ -147,7 +147,7 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Logger.ap_input(activity)
     Logger.ap_input(object)
-    Kazarma.ActivityPub.Activity.ChatMessage.forward_create_to_matrix(activity)
+    Kazarma.RoomType.Chat.create_from_ap(activity)
   end
 
   # Delete activity

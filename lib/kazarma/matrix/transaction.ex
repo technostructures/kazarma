@@ -49,7 +49,7 @@ defmodule Kazarma.Matrix.Transaction do
 
       case Bridge.get_room_by_local_id(room_id) do
         %Room{data: %{"type" => "chat_message"}} = room ->
-          Kazarma.ActivityPub.Activity.ChatMessage.forward_create_to_activitypub(
+          Kazarma.RoomType.Chat.create_from_matrix(
             event,
             room,
             text_content
@@ -142,8 +142,7 @@ defmodule Kazarma.Matrix.Transaction do
          "membership" => "invite",
          "is_direct" => true
        }) do
-    Kazarma.ActivityPub.Activity.ChatMessage.accept_puppet_invitation(user_id, room_id)
-    Kazarma.Matrix.Client.put_new_direct_room_data(user_id, sender_id, room_id)
+         Kazarma.RoomType.Chat.handle_puppet_invite(user_id, sender_id, room_id)
   end
 
   defp accept_puppet_invitation(user_id, _sender_id, room_id, %{"membership" => "invite"}) do
