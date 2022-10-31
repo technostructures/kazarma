@@ -21,39 +21,6 @@ A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://githu
 
 ### [Helm](https://docs.kazar.ma/administrator-guide/helm)
 
-## Application service configuration
-
-The application service configuration file for your Matrix server should look like this (`url` points to your Kazarma instance, with the `/matrix` route):
-
-```yaml
-id: "Kazarma"
-url: "https://kazarma.domain/matrix/"
-as_token: "change_this"
-hs_token: "change_this"
-sender_localpart: "_kazarma"
-namespaces:
-  aliases:
-    - exclusive: true
-      regex: "#_ap_.+=.+:matrix_domain"
-  users:
-    - exclusive: true
-      regex: "@_ap_.+=.+:matrix_domain"
-```
-
-## Configuration
-
-- `DATABASE_URL`: URL with `ecto://` scheme (`ecto://user:password@host:database`), as explained [here](https://hexdocs.pm/ecto/Ecto.Repo.html#module-urls)
-- `SECRET_KEY_BASE`: Phoenix's secret key base, used to sign session cookies. With Mix and Phoenix, it can be easily generated with `mix phx.gen.secret`.
-- `HOMESERVER_TOKEN`: Token defined in the application service configuration file, will be used to authenticate the Matrix server against Kazarma.
-- `ACCESS_TOKEN`: Token defined in the application service configuration file, will be used to authenticate Kazarma against the Matrix server.
-- `MATRIX_URL`: URL to the Matrix server.
-- `HOST`: Host for the Kazarma application, used to generate URLs.
-- `ACTIVITY_PUB_DOMAIN`: ActivityPub domain for actors. If different than the host, you need to serve a file at `domain/.well-known/host-meta`, containing a link to the real host, like [this](./infra/dev/delegation/host-meta)
-- `PUPPET_PREFIX`: Username prefix for Matrix puppet users that correspond to ActivityPub real actors.
-- `BRIDGE_REMOTE`: True or false, wether Kazarma should bridge Matrix users from different homeservers (than the one beside Kazarma), to the ActivityPub network.
-- `HTML_SEARCH`: True or false, wether to show the search field on Kazarma HTML pages.
-- `HTML_AP`: True or false, wether to display profiles for ActivityPub actors. It can help Matrix users to get the (puppet) Matrix ID to reach an ActivityPub actor.
-
 ## Development environment
 
 ### Using [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
