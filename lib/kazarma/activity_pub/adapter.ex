@@ -12,7 +12,8 @@ defmodule Kazarma.ActivityPub.Adapter do
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias ActivityPub.Actor
   alias ActivityPub.Object
-  # alias KazarmaWeb.Router.Helpers, as: Routes
+  alias KazarmaWeb.Endpoint
+  alias KazarmaWeb.Router.Helpers, as: Routes
 
   @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
@@ -201,6 +202,77 @@ defmodule Kazarma.ActivityPub.Adapter do
         } = activity
       ) do
     Kazarma.ActivityPub.Activity.Video.forward_create_to_matrix(activity)
+  end
+
+  # Event
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Create",
+            "object" => %{
+              "type" => "Event"
+            }
+          }
+        } = activity
+      ) do
+    Logger.debug("received Create Event activity")
+    Kazarma.ActivityPub.Activity.Event.forward_create_to_matrix(activity)
+  end
+
+  # @TODO check if user can invite (same origin)
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Invite",
+            "id" => invite_id,
+            "object" => group_ap_id,
+            "actor" => _inviter,
+            "target" => invitee
+          }
+        } = _activity
+      ) do
+    with {:ok, invitee_matrix_id} <- Address.ap_id_to_matrix(invitee),
+         {:ok,
+          %{
+            username: group_username,
+            data: %{"name" => group_name, "endpoints" => %{"members" => group_members}}
+          }} <- ActivityPub.Actor.get_cached_by_ap_id(group_ap_id),
+         {:ok, group_matrix_id} <-
+           Address.ap_username_to_matrix_id(group_username),
+         {:ok, room_id} <-
+           Kazarma.ActivityPub.Activity.Note.get_or_create_collection_room(
+             group_members,
+             group_matrix_id,
+             group_name
+           ),
+         {:ok, event_id} <-
+           Kazarma.Matrix.Client.invite(room_id, group_matrix_id, invitee_matrix_id) do
+      Kazarma.Matrix.Bridge.create_event(%{
+        local_id: event_id,
+        remote_id: invite_id,
+        room_id: room_id
+      })
+    end
+  end
+
+  # Instance following (Mobilizon style)
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Follow",
+            "actor" => remote_relay_ap_id,
+            "object" => local_relay_ap_id
+          }
+        } = activity
+      ) do
+    Logger.debug("try following back remote relay")
+
+    if local_relay_ap_id ==
+         Routes.activity_pub_url(Endpoint, :actor, "relay") do
+      {:ok, local_relay} = ActivityPub.Actor.get_cached_by_ap_id(local_relay_ap_id)
+      {:ok, remote_relay} = ActivityPub.Actor.get_cached_by_ap_id(remote_relay_ap_id)
+      ActivityPub.follow(local_relay, remote_relay)
+    end
   end
 
   def handle_activity(%Object{} = object) do

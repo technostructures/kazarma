@@ -8,6 +8,7 @@ defmodule Kazarma.Matrix.Transaction do
   alias Kazarma.Address
   alias Kazarma.Logger
   alias Kazarma.Matrix.Bridge
+  alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
 
@@ -60,6 +61,9 @@ defmodule Kazarma.Matrix.Transaction do
         %Room{data: %{"type" => "outbox"}} = room ->
           Kazarma.ActivityPub.Activity.Note.forward(event, room, text_content)
 
+        %Room{data: %{"type" => "collection"}} = room ->
+          Kazarma.ActivityPub.Activity.Note.forward(event, room, text_content)
+
         nil ->
           :ok
       end
@@ -105,17 +109,19 @@ defmodule Kazarma.Matrix.Transaction do
     end
   end
 
-  def new_event(%Event{
-        type: "m.room.member",
-        content: content,
-        room_id: room_id,
-        sender: sender_id,
-        state_key: user_id
-      }) do
+  def new_event(
+        %Event{
+          type: "m.room.member",
+          content: content,
+          room_id: room_id,
+          sender: sender_id,
+          state_key: user_id
+        } = event
+      ) do
     case Kazarma.Address.matrix_id_to_actor(user_id) do
       {:ok, %ActivityPub.Actor{local: true} = actor} ->
         bridge_profile_change(user_id, actor, content)
-        maybe_follow(room_id, actor, content)
+        maybe_follow_or_accept(room_id, actor, event)
 
       {:ok, %ActivityPub.Actor{local: false}} ->
         accept_puppet_invitation(user_id, sender_id, room_id, content)
@@ -146,18 +152,35 @@ defmodule Kazarma.Matrix.Transaction do
 
   defp accept_puppet_invitation(_user_id, _sender_id, _room_id, _event_content), do: :ok
 
-  defp maybe_follow(room_id, follower, %{"membership" => "join"}) do
+  # @TODO separate in 2 functions
+  defp maybe_follow_or_accept(room_id, joiner, %{content: %{"membership" => "join"}} = event) do
     case Bridge.get_room_by_local_id(room_id) do
       %Room{data: %{"type" => "outbox"}, remote_id: followed_ap_id} ->
         {:ok, followed} = ActivityPub.Actor.get_or_fetch_by_ap_id(followed_ap_id)
-        Kazarma.ActivityPub.follow(follower, followed)
+        Kazarma.ActivityPub.follow(joiner, followed)
+
+      %Room{data: %{"type" => "collection"}, remote_id: group_ap_id} ->
+        with %{
+               unsigned: %{
+                 "prev_content" => %{"membership" => "invite"},
+                 "replaces_state" => invite_event_id
+               }
+             } <- event,
+             %BridgeEvent{remote_id: invite_ap_id} <-
+               Kazarma.Matrix.Bridge.get_event_by_local_id(invite_event_id) do
+          Kazarma.ActivityPub.accept(%{
+            to: [group_ap_id],
+            object: invite_ap_id,
+            actor: joiner
+          })
+        end
 
       _ ->
         nil
     end
   end
 
-  defp maybe_follow(_room_id, _follower, _content), do: nil
+  defp maybe_follow_or_accept(_room_id, _follower, _content), do: nil
 
   defp bridge_profile_change(matrix_id, actor, content) do
     Logger.debug("bridge profile change")

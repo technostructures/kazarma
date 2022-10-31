@@ -25,20 +25,22 @@ defmodule Kazarma.ActivityPub.Activity.Note do
 
   def forward_create_to_matrix(_), do: :ok
 
-  def forward_public_create_to_matrix(%{
-        object: %Object{
-          data:
-            %{
-              "id" => object_id,
-              "actor" => from_id
-            } = object_data
-        }
-      }) do
+  def forward_public_create_to_matrix(
+        %{
+          object: %Object{
+            data:
+              %{
+                "id" => object_id,
+                "actor" => from_id
+              } = object_data
+          }
+        } = _activity
+      ) do
     Logger.debug("Received public Note activity")
 
     with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
-         {:ok, %MatrixAppService.Bridge.Room{local_id: room_id}} <-
-           Collection.get_or_create_outbox({:ap_id, from_id}),
+         %MatrixAppService.Bridge.Room{local_id: room_id} <-
+           get_room_for_public_create(object_data),
          Client.join(from_matrix_id, room_id),
          attachments = Map.get(object_data, "attachment"),
          {:ok, event_id} <-
@@ -64,7 +66,7 @@ defmodule Kazarma.ActivityPub.Activity.Note do
             } = object_data
         }
       }) do
-    Logger.debug("Received private Note activity")
+    Logger.debug("Received private Note activity (direct message)")
 
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
          to =
@@ -89,6 +91,56 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     else
       {:error, _code, %{"error" => error}} -> Logger.error(error)
       {:error, error} -> Logger.error(inspect(error))
+    end
+  end
+
+  def forward_private_create_to_matrix(%{
+        data: %{"actor" => from},
+        object: %Object{
+          data:
+            %{
+              "id" => object_id,
+              "attributedTo" => group_ap_id,
+              "to" => [group_members]
+            } = object_data
+        }
+      }) do
+    Logger.debug("Received private Note activity (Mobilizon style)")
+
+    with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
+         {:ok, %{username: group_username, data: %{"name" => group_name}}} <-
+           ActivityPub.Actor.get_cached_by_ap_id(group_ap_id),
+         {:ok, group_matrix_id} <- Address.ap_username_to_matrix_id(group_username),
+         {:ok, room_id} <-
+           get_or_create_collection_room(group_members, group_matrix_id, group_name),
+         :ok <- Client.invite_and_accept(room_id, group_matrix_id, matrix_id),
+         attachments = Map.get(object_data, "attachment"),
+         {:ok, event_id} <-
+           Activity.send_message_and_attachment(matrix_id, room_id, object_data, attachments),
+         {:ok, _} <-
+           Bridge.create_event(%{
+             local_id: event_id,
+             remote_id: object_id,
+             room_id: room_id
+           }) do
+      :ok
+    else
+      {:error, _code, %{"error" => error}} -> Logger.error(error)
+      {:error, error} -> Logger.error(inspect(error))
+    end
+  end
+
+  def get_or_create_collection_room(members_ap_id, matrix_id, name) do
+    with nil <- Bridge.get_room_by_remote_id(members_ap_id),
+         {:ok, %{"room_id" => room_id}} <-
+           Client.create_multiuser_room(matrix_id, [], name: name),
+         {:ok, _} <-
+           Bridge.insert_collection_bridge_room(room_id, members_ap_id) do
+      {:ok, room_id}
+    else
+      %Room{local_id: local_id} -> {:ok, local_id}
+      {:error, error} -> {:error, error}
+      _ -> {:error, :unknown_error}
     end
   end
 
@@ -176,6 +228,35 @@ defmodule Kazarma.ActivityPub.Activity.Note do
     end
   end
 
+  def forward(event, %Room{data: %{"type" => "collection"}, remote_id: group_ap_id}, content) do
+    with {:ok, sender_actor} <- Address.matrix_id_to_actor(event.sender),
+         to = [group_ap_id],
+         replied_activity = get_replied_activity_if_exists(event),
+         context = make_context(replied_activity),
+         in_reply_to = make_in_reply_to(replied_activity),
+         attachment = Activity.attachment_from_matrix_event_content(event.content),
+         tags = [],
+         {:ok, %{object: %Object{data: %{"id" => remote_id}}}} <-
+           Activity.create(
+             type: "Note",
+             sender: sender_actor,
+             receivers_id: to,
+             context: context,
+             in_reply_to: in_reply_to,
+             content: content,
+             attachment: attachment,
+             tags: tags
+           ) do
+      Bridge.create_event(%{
+        local_id: event.event_id,
+        remote_id: remote_id,
+        room_id: event.room_id
+      })
+
+      :ok
+    end
+  end
+
   def forward(_), do: :ok
 
   def accept_puppet_invitation(user_id, room_id) do
@@ -184,6 +265,29 @@ defmodule Kazarma.ActivityPub.Activity.Note do
            Bridge.join_or_create_note_bridge_room(room_id, user_id),
          _ <- Client.join(user_id, room_id) do
       :ok
+    end
+  end
+
+  defp get_room_for_public_create(%{"inReplyTo" => reply_to_ap_id} = object_data) do
+    case Bridge.get_events_by_remote_id(reply_to_ap_id) do
+      [%BridgeEvent{room_id: replied_to_room_id} | _] ->
+        case Bridge.get_room_by_local_id(replied_to_room_id) do
+          %Room{data: %{"type" => "outbox"}} = room -> room
+          _ -> get_room_for_public_create(Map.delete(object_data, "inReplyTo"))
+        end
+
+      _ ->
+        get_room_for_public_create(Map.delete(object_data, "inReplyTo"))
+    end
+  end
+
+  defp get_room_for_public_create(%{"actor" => from_id}) do
+    case Collection.get_or_create_outbox({:ap_id, from_id}) do
+      {:ok, room} ->
+        room
+
+      _ ->
+        nil
     end
   end
 

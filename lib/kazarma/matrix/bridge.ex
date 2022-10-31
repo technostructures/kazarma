@@ -21,6 +21,14 @@ defmodule Kazarma.Matrix.Bridge do
     })
   end
 
+  def insert_collection_bridge_room(room_id, group) do
+    create_room(%{
+      local_id: room_id,
+      remote_id: group,
+      data: %{type: :collection}
+    })
+  end
+
   def insert_outbox_room(room_id, ap_id, matrix_id) do
     create_room(%{
       local_id: room_id,

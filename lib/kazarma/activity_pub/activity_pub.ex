@@ -10,4 +10,5 @@ defmodule Kazarma.ActivityPub do
   defdelegate follow(follower, followed), to: @activitypub_server
   defdelegate unfollow(follower, followed), to: @activitypub_server
   defdelegate delete(object, local, delete_actor), to: @activitypub_server
+  defdelegate accept(params), to: @activitypub_server
 end

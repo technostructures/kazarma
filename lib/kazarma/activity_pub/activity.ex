@@ -225,6 +225,7 @@ defmodule Kazarma.ActivityPub.Activity do
 
   defp convert_mentions(content, nil, _), do: content
 
+  # @TODO stop using tags since Mobilizon does mentions without tags
   defp convert_mentions(content, tags, convert_fun) do
     Enum.reduce(tags, content, fn
       %{"type" => "Mention", "href" => ap_id, "name" => username}, content ->

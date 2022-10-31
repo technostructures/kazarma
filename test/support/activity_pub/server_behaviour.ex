@@ -10,4 +10,5 @@ defmodule Kazarma.ActivityPub.ServerBehaviour do
   @callback follow(map(), map()) :: {:ok, any()} | {:error, any()}
   @callback unfollow(map(), map()) :: {:ok, any()} | {:error, any()}
   @callback delete(map(), bool, map()) :: {:ok, any()} | {:error, any()}
+  @callback accept(map()) :: {:ok, any()} | {:error, any()}
 end
