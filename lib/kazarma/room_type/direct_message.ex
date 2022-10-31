@@ -1,4 +1,12 @@
+# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
 defmodule Kazarma.RoomType.DirectMessage do
+  @moduledoc """
+  This room type represents "direct messages", in microblogging terminology.
+
+  - on ActivityPub, they are `Post`s that are only visibile for actors mentioned in it (and in every post in the chain of replies);
+  - on Matrix, they are messages in a private room.
+  """
   alias ActivityPub.Object
   alias Kazarma.Address
   alias Kazarma.Logger

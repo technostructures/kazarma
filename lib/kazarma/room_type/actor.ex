@@ -1,4 +1,14 @@
+# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
 defmodule Kazarma.RoomType.Actor do
+  @moduledoc """
+  This room type represents "inboxes and outboxes", in ActivityPub terminology, for ActivityPub actors.
+
+  - on ActivityPub, they are `Post`s sent to the `#Public` AP ID;
+  - on Matrix, they are messages in a public room, created by the AP puppet, with alias `#user:server`.
+    Public activities sent by the actor are forwarded by their puppet.
+    Messages sent by Matrix users are either replies to public activities, or public activities mentioning the actor.
+  """
   alias ActivityPub.Object
   alias Kazarma.ActivityPub.Collection
   alias Kazarma.Address

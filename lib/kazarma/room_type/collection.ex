@@ -1,4 +1,13 @@
+# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
 defmodule Kazarma.RoomType.Collection do
+  @moduledoc """
+  This room type represents activities sent to "collections", in ActivityPub terminology, for instance members of a Group actor (in Mobilizon).
+
+  - on ActivityPub, they are `Post`s sent to the collection AP ID;
+  - on Matrix, they are messages in a private room, created by the Group actor puppet. Other members are invited by this puppet.
+    If an AP puppet receives an Invite activity, its corresponding Matrix user is invited in the room. If they join the room, the Invite is accepted.
+  """
   alias ActivityPub.Object
   alias Kazarma.Address
   alias Kazarma.Logger
