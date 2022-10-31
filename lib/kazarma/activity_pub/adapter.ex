@@ -199,37 +199,6 @@ defmodule Kazarma.ActivityPub.Adapter do
     end
   end
 
-  # Video
-  def handle_activity(
-        %{
-          data: %{
-            "type" => "Create"
-          },
-          object: %Object{
-            data: %{
-              "type" => "Video"
-            }
-          }
-        } = activity
-      ) do
-    Kazarma.ActivityPub.Activity.Video.forward_create_to_matrix(activity)
-  end
-
-  # Event
-  def handle_activity(
-        %{
-          data: %{
-            "type" => "Create",
-            "object" => %{
-              "type" => "Event"
-            }
-          }
-        } = activity
-      ) do
-    Logger.debug("received Create Event activity")
-    Kazarma.ActivityPub.Activity.Event.forward_create_to_matrix(activity)
-  end
-
   # @TODO check if user can invite (same origin)
   def handle_activity(
         %{

@@ -39,6 +39,70 @@ defmodule Kazarma.RoomType.Actor do
     end
   end
 
+  def create_from_ap(%{
+        data: %{"to" => to_list, "actor" => from_id},
+        object: %Object{
+          data: %{"id" => object_id, "attributedTo" => attributed_to} = object_data
+        }
+      }) do
+    Logger.debug("Received public Video activity")
+
+    with %{"id" => person_sender} <-
+           Enum.find(attributed_to, fn
+             %{"type" => "Person"} -> true
+             _ -> false
+           end),
+         %{"id" => channel_sender} <-
+           Enum.find(attributed_to, fn
+             %{"type" => "Group"} -> true
+             _ -> false
+           end),
+         attributed_list = [channel_sender, person_sender],
+         {:ok, from_matrix_id} <- Address.ap_id_to_matrix(channel_sender) do
+      for attributed <- attributed_list do
+        with {:ok, %Room{local_id: room_id}} <-
+               Collection.get_or_create_outbox({:ap_id, attributed}),
+             Client.join(from_matrix_id, room_id),
+             {:ok, event_id} =
+               Client.send_message_for_video_object(room_id, from_matrix_id, object_data),
+             {:ok, _} <-
+               Bridge.create_event(%{
+                 local_id: event_id,
+                 remote_id: object_id,
+                 room_id: room_id
+               }) do
+          :ok
+        end
+      end
+    end
+  end
+
+  def create_from_ap(
+        %{
+          data: %{
+            "to" => to,
+            "object" => %{"id" => object_id, "attributedTo" => attributed_to_id} = object_data
+          }
+        } = _activity
+      ) do
+    Logger.debug("Received public Event activity")
+
+    with {:ok, attributed_to_matrix_id} <- Kazarma.Address.ap_id_to_matrix(attributed_to_id),
+         {:ok, %MatrixAppService.Bridge.Room{local_id: room_id}} <-
+           Kazarma.ActivityPub.Collection.get_or_create_outbox({:ap_id, attributed_to_id}),
+         Kazarma.Matrix.Client.join(attributed_to_matrix_id, room_id),
+         {:ok, event_id} <-
+           Client.send_message_for_event_object(room_id, attributed_to_matrix_id, object_data),
+         {:ok, _} <-
+           Bridge.create_event(%{
+             local_id: event_id,
+             remote_id: object_id,
+             room_id: room_id
+           }) do
+      :ok
+    end
+  end
+
   defp get_room_for_public_create(%{"inReplyTo" => reply_to_ap_id} = object_data) do
     case Bridge.get_events_by_remote_id(reply_to_ap_id) do
       [%BridgeEvent{room_id: replied_to_room_id} | _] ->

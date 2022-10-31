@@ -263,6 +263,69 @@ defmodule Kazarma.Matrix.Client do
     }
   end
 
+  def send_message_for_event_object(room_id, user_id, %{
+        "id" => ap_id,
+        "content" => description,
+        "name" => name,
+        "category" => category,
+        "startTime" => start_time
+      }) do
+    {:ok, dt, _} = DateTime.from_iso8601(start_time)
+    formatted_start_time = DateTime.to_string(dt)
+
+    body = """
+    ### #{name}
+
+    #{ap_id}
+
+    > #{description}
+    """
+
+    formatted_body = """
+    <a href="#{ap_id}">
+      <h3>#{name}</h3>
+    </a>
+    [#{category}] #{formatted_start_time}
+    <p>
+      #{description}
+    </p>
+    """
+
+    send_tagged_message(room_id, user_id, {body, formatted_body})
+  end
+
+  def send_message_for_video_object(room_id, user_id, %{
+        "id" => ap_id,
+        "content" => description,
+        "name" => name,
+        "duration" => _duration,
+        "url" => _links,
+        "icon" => icons
+      }) do
+    thumbnail_url = icons |> Enum.sort_by(& &1["width"]) |> List.first() |> Map.get("url")
+    {:ok, thumbnail_matrix_url} = upload_media(user_id, thumbnail_url)
+
+    body = """
+    ### #{name}
+
+    #{ap_id}
+
+    > #{description}
+    """
+
+    formatted_body = """
+    <h3>#{name}</h3>
+    <a href="#{ap_id}">
+      <img src="#{thumbnail_matrix_url}">
+    </a>
+    <p>
+      #{description}
+    </p>
+    """
+
+    send_tagged_message(room_id, user_id, {body, formatted_body})
+  end
+
   def invite(room_id, inviter, invitee) do
     @matrix_client.client(user_id: inviter)
     |> Polyjuice.Client.Room.send_state_event(room_id, "m.room.member", invitee, %{
