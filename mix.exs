@@ -65,7 +65,7 @@ defmodule Kazarma.MixProject do
       {:covertool, "~> 2.0"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.2.0", only: [:dev, :test], runtime: false},
-      {:hackney, "~> 1.17.0", override: true},
+      {:hackney, "~> 1.18.0", override: true},
       {:oban, "~> 2.13"},
       {:logger_file_backend, "~> 0.0.13"},
       {:sentry, "~> 8.0"},
