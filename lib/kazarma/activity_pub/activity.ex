@@ -66,6 +66,37 @@ defmodule Kazarma.ActivityPub.Activity do
     end
   end
 
+  def get_replied_activity_if_exists(%Event{
+        content: %{"m.relates_to" => %{"m.in_reply_to" => %{"event_id" => event_id}}}
+      }) do
+    case Bridge.get_events_by_local_id(event_id) do
+      [%BridgeEvent{remote_id: ap_id} | _] ->
+        Object.get_cached_by_ap_id(ap_id)
+
+      _ ->
+        nil
+    end
+  end
+
+  def get_replied_activity_if_exists(_), do: nil
+
+  def make_in_reply_to(%Object{data: %{"id" => ap_id}}), do: ap_id
+  def make_in_reply_to(%BridgeEvent{remote_id: ap_id}), do: ap_id
+
+  def make_in_reply_to(_), do: nil
+
+  def make_context(%Object{data: %{"context" => context}}), do: context
+
+  def make_context(_), do: ActivityPub.Utils.generate_context_id()
+
+  def mention_tag_for_actor(actor) do
+    %{
+      "href" => actor.ap_id,
+      "name" => "@#{actor.data["preferredUsername"]}",
+      "type" => "Mention"
+    }
+  end
+
   def attachment_from_matrix_event_content(%{"msgtype" => "m.text"}), do: nil
 
   def attachment_from_matrix_event_content(%{

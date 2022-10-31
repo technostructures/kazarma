@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule Kazarma.ActivityPub.Activity.ChatMessage do
+defmodule Kazarma.RoomType.Chat do
   @moduledoc """
   Functions for ChatMessage activities, used by Pleroma for its chat system.
   """
@@ -12,7 +12,7 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
 
-  def forward_create_to_matrix(%{
+  def create_from_ap(%{
         data: %{
           "actor" => from_id,
           "to" => [to_id]
@@ -43,7 +43,7 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
     end
   end
 
-  def forward_create_to_activitypub(
+  def create_from_matrix(
         %Event{
           event_id: event_id,
           room_id: room_id,
@@ -78,16 +78,21 @@ defmodule Kazarma.ActivityPub.Activity.ChatMessage do
     end
   end
 
-  def forward_create_to_activitypub(_), do: :ok
+  def create_from_matrix(_), do: :ok
 
-  def accept_puppet_invitation(user_id, room_id) do
+  def handle_puppet_invite(user_id, sender_id, room_id) do
+    Kazarma.Matrix.Client.join(user_id, room_id)
+    create_bridge_room(user_id, room_id)
+    Kazarma.Matrix.Client.put_new_direct_room_data(user_id, sender_id, room_id)
+  end
+
+  defp create_bridge_room(user_id, room_id) do
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),
          {:ok, _room} <-
            Bridge.create_room(%{
              local_id: room_id,
              data: %{"type" => "chat_message", "to_ap_id" => actor.ap_id}
-           }),
-         _ <- Kazarma.Matrix.Client.join(user_id, room_id) do
+           }) do
       :ok
     else
       _ -> :error

@@ -193,6 +193,13 @@ defmodule Kazarma.Address do
     )
   end
 
+  def unchecked_matrix_id_to_actor(matrix_id) do
+    case matrix_id_to_actor(matrix_id) do
+      {:ok, actor} -> actor
+      _ -> nil
+    end
+  end
+
   defp filter_types({type, _} = t, types) do
     if type in types, do: t, else: {:error, :not_found}
   end

@@ -100,22 +100,52 @@ defmodule Kazarma.ActivityPub.Adapter do
   def update_remote_actor(_), do: :ok
 
   @impl ActivityPub.Adapter
-  # Mastodon style message
   def handle_activity(
         %{
-          data: %{"type" => "Create"},
-          object:
-            %Object{
-              data: %{
-                "type" => "Note"
-              }
-            } = object
+          data: %{"type" => "Create", "to" => to}
         } = activity
       ) do
-    Logger.ap_input(activity)
-    Logger.ap_input(object)
+    result =
+      if "https://www.w3.org/ns/activitystreams#Public" in to do
+        Kazarma.RoomType.Actor.create_from_ap(activity)
+      else
+        case activity do
+          %{
+            object: %Object{
+              data: %{
+                "type" => "ChatMessage"
+              }
+            }
+          } ->
+            Kazarma.RoomType.Chat.create_from_ap(activity)
 
-    case Kazarma.ActivityPub.Activity.Note.forward_create_to_matrix(activity) do
+          %{
+            data: %{"to" => _},
+            object: %Object{
+              data: %{
+                "id" => _,
+                "actor" => _,
+                "conversation" => _
+              }
+            }
+          } ->
+            Kazarma.RoomType.DirectMessage.create_from_ap(activity)
+
+          %{
+            data: %{"actor" => _},
+            object: %Object{
+              data: %{
+                "id" => _,
+                "attributedTo" => _,
+                "to" => [_]
+              }
+            }
+          } ->
+            Kazarma.RoomType.Collection.create_from_ap(activity)
+        end
+      end
+
+    case result do
       {:error, error} ->
         Logger.error(error)
 
@@ -129,25 +159,6 @@ defmodule Kazarma.ActivityPub.Adapter do
         Logger.debug(inspect(other))
         :ok
     end
-  end
-
-  # Pleroma style message
-  def handle_activity(
-        %{
-          data: %{
-            "type" => "Create"
-          },
-          object:
-            %Object{
-              data: %{
-                "type" => "ChatMessage"
-              }
-            } = object
-        } = activity
-      ) do
-    Logger.ap_input(activity)
-    Logger.ap_input(object)
-    Kazarma.ActivityPub.Activity.ChatMessage.forward_create_to_matrix(activity)
   end
 
   # Delete activity
@@ -188,37 +199,6 @@ defmodule Kazarma.ActivityPub.Adapter do
     end
   end
 
-  # Video
-  def handle_activity(
-        %{
-          data: %{
-            "type" => "Create"
-          },
-          object: %Object{
-            data: %{
-              "type" => "Video"
-            }
-          }
-        } = activity
-      ) do
-    Kazarma.ActivityPub.Activity.Video.forward_create_to_matrix(activity)
-  end
-
-  # Event
-  def handle_activity(
-        %{
-          data: %{
-            "type" => "Create",
-            "object" => %{
-              "type" => "Event"
-            }
-          }
-        } = activity
-      ) do
-    Logger.debug("received Create Event activity")
-    Kazarma.ActivityPub.Activity.Event.forward_create_to_matrix(activity)
-  end
-
   # @TODO check if user can invite (same origin)
   def handle_activity(
         %{
@@ -240,7 +220,7 @@ defmodule Kazarma.ActivityPub.Adapter do
          {:ok, group_matrix_id} <-
            Address.ap_username_to_matrix_id(group_username),
          {:ok, room_id} <-
-           Kazarma.ActivityPub.Activity.Note.get_or_create_collection_room(
+           Kazarma.RoomType.Collection.get_or_create_collection_room(
              group_members,
              group_matrix_id,
              group_name
