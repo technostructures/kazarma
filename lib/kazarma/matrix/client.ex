@@ -263,6 +263,42 @@ defmodule Kazarma.Matrix.Client do
     }
   end
 
+  def invite(room_id, inviter, invitee) do
+    @matrix_client.client(user_id: inviter)
+    |> Polyjuice.Client.Room.send_state_event(room_id, "m.room.member", invitee, %{
+      "membership" => "invite"
+    })
+  end
+
+  def get_membership(room_id, inviter, invitee) do
+    case @matrix_client.client(user_id: inviter)
+         |> Polyjuice.Client.Room.get_state(room_id, "m.room.member", invitee) do
+      %{"membership" => membership} ->
+        membership
+
+      _ ->
+        "external"
+    end
+  end
+
+  def invite_and_accept(room_id, inviter, invitee) do
+    case get_membership(room_id, inviter, invitee) do
+      "join" ->
+        :ok
+
+      "invite" ->
+        :ok
+
+      "ban" ->
+        {:error, :wont_invite_banned_user}
+
+      _ ->
+        invite(room_id, inviter, invitee)
+        join(invitee, room_id)
+        :ok
+    end
+  end
+
   defp msgtype_for_mimetype("image" <> _), do: "m.image"
   defp msgtype_for_mimetype("audio" <> _), do: "m.audio"
   defp msgtype_for_mimetype("location" <> _), do: "m.location"
