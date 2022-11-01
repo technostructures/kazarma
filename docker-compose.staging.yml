@@ -125,7 +125,7 @@ services:
 
 
   postgres_kazarma:
-    image: postgres:12-alpine
+    image: postgres:15-alpine
     restart: unless-stopped
     domainname: postgres_kazarma
     labels:
