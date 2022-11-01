@@ -31,7 +31,7 @@ services:
     env_file: .env.staging
 
   synapse:
-    image: matrixdotorg/synapse:v1.52.0
+    image: matrixdotorg/synapse:v1.70.1
     # domainname: matrix.local
     # Since synapse does not retry to connect to the database, restart upon
     # failure
@@ -71,7 +71,7 @@ services:
     #   - 8008:8008/tcp
 
   delegation:
-    image: nginx:1.19
+    image: nginx:1.23
     restart: unless-stopped
     hostname: kazarma.local
     volumes:
@@ -91,7 +91,7 @@ services:
       - traefik.http.routers.delegations.tls.certresolver=myresolver
 
   traefik:
-    image: traefik:v2.2.0
+    image: traefik:v2.9.4
     restart: unless-stopped
     ports:
       - 80:80
