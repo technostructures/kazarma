@@ -45,6 +45,19 @@ defmodule KazarmaWeb do
     end
   end
 
+  defmodule RouterHelpers do
+    @moduledoc false
+
+    defmacro live_or_json(path, live_view, action \\ nil, opts \\ []) do
+      quote bind_quoted: binding() do
+        {action, router_options} =
+          Phoenix.LiveView.Router.__live__(__MODULE__, live_view, action, opts)
+
+        Phoenix.Router.get(path, KazarmaWeb.LiveOrJsonPlug, action, router_options)
+      end
+    end
+  end
+
   def router do
     quote do
       use Phoenix.Router
@@ -53,6 +66,9 @@ defmodule KazarmaWeb do
       import Phoenix.Component
       import Phoenix.LiveView.Router
       import Phoenix.Controller
+
+      require KazarmaWeb.RouterHelpers
+      import KazarmaWeb.RouterHelpers
     end
   end
 
@@ -65,7 +81,7 @@ defmodule KazarmaWeb do
 
   def live_view do
     quote do
-      use Phoenix.LiveView
+      use Phoenix.LiveView, layout: {KazarmaWeb.LayoutView, "live.html"}
 
       unquote(view_helpers())
     end

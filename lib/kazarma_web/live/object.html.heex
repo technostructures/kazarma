@@ -4,8 +4,8 @@
 %>
 
 <div class="grid grid-cols-1"> <!-- lg:grid-cols-3 -->
-  <KazarmaWeb.Components.Profile.show actor={@actor} conn={@conn} />
+  <KazarmaWeb.Components.Profile.show actor={@actor} />
   <div class="container mx-auto col-span-2 lg:max-w-3xl px-4">
-    <KazarmaWeb.Components.ActivityList.show object={@object} previous_objects={@previous_objects} actor={@actor} conn={@conn} />
+    <KazarmaWeb.Components.ActivityList.show object={@object} previous_objects={@previous_objects} actor={@actor} socket={@socket} />
   </div>
 </div>

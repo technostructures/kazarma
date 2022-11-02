@@ -295,13 +295,15 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl ActivityPub.Adapter
-  def actor_html(conn, username) do
-    KazarmaWeb.ActorController.show(conn, %{"username" => username})
+  def actor_html(conn, _username) do
+    # KazarmaWeb.ActorController.show(conn, %{"username" => username})
+    conn
   end
 
   @impl ActivityPub.Adapter
-  def object_html(conn, uuid) do
-    KazarmaWeb.ObjectController.show(conn, %{"uuid" => uuid})
+  def object_html(conn, _uuid) do
+    # KazarmaWeb.ObjectController.show(conn, %{"uuid" => uuid})
+    conn
   end
 
   defp set_if_changed(previous_value, new_value, _update_fun)

@@ -1,7 +1,9 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
 
-defmodule KazarmaWeb.ActorView do
+defmodule KazarmaWeb.Helpers do
+  @moduledoc false
+
   use KazarmaWeb, :view
 
   def display_name(%ActivityPub.Actor{data: %{"name" => name}}), do: name
@@ -32,4 +34,20 @@ defmodule KazarmaWeb.ActorView do
   def type(%ActivityPub.Actor{data: %{"type" => type}}), do: "ActivityPub (#{type})"
 
   def avatar_url(%ActivityPub.Actor{data: data}), do: data["icon"]["url"]
+
+  def text_content(%ActivityPub.Object{
+        data: %{"content" => content}
+      }) do
+    HtmlSanitizeEx.markdown_html(content)
+  end
+
+  def text_content(%ActivityPub.Object{
+        data: %{"source" => source}
+      }) do
+    HtmlSanitizeEx.markdown_html(source)
+  end
+
+  def text_content(_) do
+    ""
+  end
 end

@@ -4,7 +4,7 @@ defmodule KazarmaWeb.Components.ActorAddresses do
   @moduledoc false
   use Phoenix.Component
   use Phoenix.HTML
-  import KazarmaWeb.ActorView
+  import KazarmaWeb.Helpers
   import KazarmaWeb.Gettext
 
   def matrix_rows(assigns) do

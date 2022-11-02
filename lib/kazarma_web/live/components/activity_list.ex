@@ -4,14 +4,11 @@ defmodule KazarmaWeb.Components.ActivityList do
   @moduledoc false
   use Phoenix.Component
   use Phoenix.HTML
-  import KazarmaWeb.ActorView
-  import KazarmaWeb.Gettext
-  alias KazarmaWeb.Components.ActorLinks
 
   def show(assigns) do
     ~H"""
-    <KazarmaWeb.Object.show :for={object <- @previous_objects} object={object} actor={actor_for_object(object)} conn={@conn} reply={true} />
-    <KazarmaWeb.Object.show object={@object} actor={@actor} conn={@conn} reply={false} classes="" />
+    <KazarmaWeb.Components.Object.show :for={object <- @previous_objects} object={object} actor={actor_for_object(object)} socket={@socket} reply={true} />
+    <KazarmaWeb.Components.Object.show object={@object} actor={@actor} socket={@socket} reply={false} classes="" />
     """
   end
 

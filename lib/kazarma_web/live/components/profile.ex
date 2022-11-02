@@ -4,7 +4,7 @@ defmodule KazarmaWeb.Components.Profile do
   @moduledoc false
   use Phoenix.Component
   use Phoenix.HTML
-  import KazarmaWeb.ActorView
+  import KazarmaWeb.Helpers
   import KazarmaWeb.Gettext
   alias KazarmaWeb.Components.ActorLinks
 

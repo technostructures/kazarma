@@ -1,14 +1,23 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
 
-defmodule KazarmaWeb.Timeline do
+defmodule KazarmaWeb.Actor do
   @moduledoc false
   use KazarmaWeb, :live_view
 
+  def get_actor(username) do
+    if Application.get_env(:kazarma, :html_actor_view_include_remote, false) do
+      ActivityPub.Actor.get_or_fetch_by_username(username)
+    else
+      ActivityPub.Actor.get_cached_by_username(username)
+    end
+  end
+
   @impl true
-  def mount(_params, %{"actor_id" => actor_id}, socket) do
-    with {:ok, actor} <- ActivityPub.Actor.get_cached_by_ap_id(actor_id) do
+  def mount(%{"username" => username}, _session, socket) do
+    with {:ok, actor} <- get_actor(username) do
       public_activities = Kazarma.ActivityPub.Actor.public_activites_for_actor(actor)
+      page_title = String.replace(actor.data["name"], ~r/(?<=.{20})(.+)/s, "...")
 
       {
         :ok,
@@ -16,7 +25,8 @@ defmodule KazarmaWeb.Timeline do
         |> assign(conn: socket)
         |> assign(offset: 0)
         |> assign(actor: actor)
-        |> assign(last_page: length(public_activities) < 10),
+        |> assign(last_page: length(public_activities) < 10)
+        |> assign(page_title: page_title),
         temporary_assigns: [activities: public_activities]
       }
     end

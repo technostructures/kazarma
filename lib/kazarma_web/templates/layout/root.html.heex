@@ -9,10 +9,12 @@
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title><%= if @title && @title != "", do: "#{@title} - Kazarma", else: "Kazarma" %></title>
-    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
+    <Phoenix.Component.live_title suffix=" – Kazarma">
+      <%= assigns[:page_title] || "Bridge Matrix and ActivityPub" %>
+    </Phoenix.Component.live_title>
+    <link rel="stylesheet" href={Routes.static_path(@conn, "/css/app.css")}/>
     <%= csrf_meta_tag() %>
-    <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
+    <script defer type="text/javascript" src={Routes.static_path(@conn, "/js/app.js")}></script>
   </head>
   <body class="bg-gray-100 min-h-screen">
     <a class="sr-only" href="#main"><%= gettext("Skip to content") %></a>
@@ -45,16 +47,7 @@
       </header>
       <main role="main" id="main" class="w-full py-6">
       <!-- <main role="main" id="main" class="w-full container mx-auto py-6 flex flex-col lg:flex-row"> -->
-        <p class="alert alert-info mb-2" role="alert"><%= get_flash(@conn, :info) %></p>
-        <%= if get_flash(@conn, :error) do %>
-          <div class="alert alert-error shadow-lg mb-2" role="alert">
-            <div>
-              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              <span><%= get_flash(@conn, :error) %></span>
-            </div>
-          </div>
-        <% end %>
-        <%= @inner_content %>
+      <%= @inner_content %>
       </main>
     </div>
   </body>
