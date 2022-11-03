@@ -66,18 +66,18 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
       Kazarma.ActivityPub.TestServer
       |> expect(:follow, fn
         %ActivityPub.Actor{
-          ap_id: "http://kazarma/pub/actors/alice",
+          ap_id: "http://kazarma/actors/alice",
           data: %{
-            :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+            :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
             "capabilities" => %{"acceptsChatMessages" => true},
-            "followers" => "http://kazarma/pub/actors/alice/followers",
-            "followings" => "http://kazarma/pub/actors/alice/following",
+            "followers" => "http://kazarma/actors/alice/followers",
+            "followings" => "http://kazarma/actors/alice/following",
             "icon" => nil,
-            "id" => "http://kazarma/pub/actors/alice",
-            "inbox" => "http://kazarma/pub/actors/alice/inbox",
+            "id" => "http://kazarma/actors/alice",
+            "inbox" => "http://kazarma/actors/alice/inbox",
             "manuallyApprovesFollowers" => false,
             "name" => "Alice",
-            "outbox" => "http://kazarma/pub/actors/alice/outbox",
+            "outbox" => "http://kazarma/actors/alice/outbox",
             "preferredUsername" => "alice",
             "type" => "Person"
           },
@@ -189,18 +189,18 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/pub/actors/bob",
+            ap_id: "http://kazarma/actors/bob",
             data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/pub/actors/bob/followers",
-              "followings" => "http://kazarma/pub/actors/bob/following",
+              "followers" => "http://kazarma/actors/bob/followers",
+              "followings" => "http://kazarma/actors/bob/following",
               "icon" => nil,
-              "id" => "http://kazarma/pub/actors/bob",
-              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "id" => "http://kazarma/actors/bob",
+              "inbox" => "http://kazarma/actors/bob/inbox",
               "manuallyApprovesFollowers" => false,
               "name" => "Bob",
-              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "outbox" => "http://kazarma/actors/bob/outbox",
               "preferredUsername" => "bob",
               "type" => "Person"
             },
@@ -213,8 +213,8 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
           },
           context: _,
           object: %{
-            "actor" => "http://kazarma/pub/actors/bob",
-            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "actor" => "http://kazarma/actors/bob",
+            "attributedTo" => "http://kazarma/actors/bob",
             "content" => "hello",
             "context" => _,
             "conversation" => _,
