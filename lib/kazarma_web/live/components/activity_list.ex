@@ -7,8 +7,20 @@ defmodule KazarmaWeb.Components.ActivityList do
 
   def show(assigns) do
     ~H"""
-    <KazarmaWeb.Components.Object.show :for={object <- @previous_objects} object={object} actor={actor_for_object(object)} socket={@socket} reply={true} />
-    <KazarmaWeb.Components.Object.show object={@object} actor={@actor} socket={@socket} reply={false} classes="" />
+    <KazarmaWeb.Components.Object.show
+      :for={object <- @previous_objects}
+      object={object}
+      actor={actor_for_object(object)}
+      socket={@socket}
+      reply={true}
+    />
+    <KazarmaWeb.Components.Object.show
+      object={@object}
+      actor={@actor}
+      socket={@socket}
+      reply={false}
+      classes=""
+    />
     """
   end
 

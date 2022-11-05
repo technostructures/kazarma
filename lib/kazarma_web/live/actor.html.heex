@@ -1,18 +1,13 @@
-<%# SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
-%>
-<%# SPDX-License-Identifier: AGPL-3.0-only
-%>
-
-<div class="grid grid-cols-1"> <!-- lg:grid-cols-3 -->
+<div class="grid grid-cols-1">
+  <!-- lg:grid-cols-3 -->
   <KazarmaWeb.Components.Profile.show actor={@actor} socket={@socket} />
   <div class="container mx-auto col-span-2 lg:max-w-3xl px-4">
     <div id="activity_list" phx-update="append" class="my-4">
       <%= for object <- @activities do %>
-        <KazarmaWeb.Components.Object.show
-          actor={@actor} object={object} socket={@socket} />
+        <KazarmaWeb.Components.Object.show actor={@actor} object={object} socket={@socket} />
       <% end %>
     </div>
-    <div class="flex flex-row justify-center" :if={!@last_page}>
+    <div :if={!@last_page} class="flex flex-row justify-center">
       <button phx-click="load_more" class="btn btn-secondary btn-wide">...</button>
     </div>
   </div>
