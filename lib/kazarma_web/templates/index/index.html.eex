@@ -3,9 +3,11 @@
 <%# SPDX-License-Identifier: AGPL-3.0-only
 %>
 
-<div class="card shadow-lg side bg-base-100">
-  <div class="card-body">
-    <%= gettext("This a public Kazarma instance.") %>
+<div class="container mx-auto lg:max-w-3xl">
+  <div class="card shadow-lg side bg-base-100 container mx-auto">
+    <div class="card-body">
+      <%= gettext("This a public Kazarma instance.") %>
+    </div>
   </div>
 </div>
 
