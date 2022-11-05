@@ -33,6 +33,11 @@ defmodule KazarmaWeb.Helpers do
   def type(%ActivityPub.Actor{local: true}), do: "Matrix"
   def type(%ActivityPub.Actor{data: %{"type" => type}}), do: "ActivityPub (#{type})"
 
+  def puppet_type(%ActivityPub.Actor{local: true, data: %{"type" => type}}),
+    do: "Kazarma/ActivityPub (#{type})"
+
+  def puppet_type(%ActivityPub.Actor{local: false}), do: "Kazarma/Matrix"
+
   def avatar_url(%ActivityPub.Actor{data: data}), do: data["icon"]["url"]
 
   def text_content(%ActivityPub.Object{

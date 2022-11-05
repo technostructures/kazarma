@@ -23,20 +23,34 @@ defmodule KazarmaWeb.Components.Profile do
     """
   end
 
+  defp type_prefix(assigns) do
+    ~H"""
+    <span>
+      <%= type(@actor) %>:
+    </span>
+    """
+  end
+
   defp type_badge(assigns) do
     ~H"""
-    <div class="">
-      <div class="badge badge-lg">
-        <%= type(@actor) %>
-      </div>
+    <div class="badge">
+      <%= type(@actor) %>
     </div>
     """
   end
 
-  defp profile_links(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
+  defp puppet_type_badge(assigns) do
+    ~H"""
+    <div class="badge">
+      <%= puppet_type(@actor) %>
+    </div>
+    """
+  end
+
+  defp external_link(assigns) do
     ~H"""
     <%= link [
-        to: "https://matrix.to/#/" <> matrix_id(@actor),
+        to: @to,
         target: "_blank",
         aria_label: gettext("Open"),
         title: gettext("Open"),
@@ -44,23 +58,32 @@ defmodule KazarmaWeb.Components.Profile do
       ] do %>
       <.external_link_icon />
     <% end %>
+    """
+  end
+
+  defp matrix_links(assigns) do
+    ~H"""
+    <.external_link to={"https://matrix.to/#/" <> matrix_id(@actor)} />
     <KazarmaWeb.Button.ghost to={matrix_scheme_user(@actor)} link_text="[m]" />
     """
   end
 
-  defp profile_links(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns) do
+  defp ap_links(assigns) do
     ~H"""
-    <%= link [
-        to: ap_id(@actor),
-        target: "_blank",
-        aria_label: gettext("Open"),
-        title: gettext("Open"),
-        class: "btn btn-ghost btn-sm"
-      ] do %>
-      <.external_link_icon />
-    <% end %>
+    <.external_link to={ap_id(@actor)} />
     """
   end
+
+  defp profile_links(%{actor: %ActivityPub.Actor{local: true}} = assigns),
+    do: matrix_links(assigns)
+
+  defp profile_links(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns),
+    do: ap_links(assigns)
+
+  defp puppet_profile_links(%{actor: %ActivityPub.Actor{local: true}} = assigns), do: ~H()
+
+  defp puppet_profile_links(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns),
+    do: matrix_links(assigns)
 
   defp address_and_link(assigns) do
     ~H"""
@@ -69,7 +92,7 @@ defmodule KazarmaWeb.Components.Profile do
         aria_label: gettext("Copy"),
       title: gettext("Copy"),
       data: [copy: @address],
-      class: "link link-secondary link-hover"
+      class: "link link-secondary link-hover link-neutral font-mono"
     ]
     do %>
       <%= @address %>
@@ -90,104 +113,52 @@ defmodule KazarmaWeb.Components.Profile do
     """
   end
 
+  defp puppet_address(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
+    ~H"""
+    <.address_and_link address={ap_username(@actor)} />
+    """
+  end
+
+  defp puppet_address(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns) do
+    ~H"""
+    <.address_and_link address={matrix_id(@actor)} />
+    """
+  end
+
   def original_profile(assigns) do
     ~H"""
-    <div class="flex flex-row items-center space-x-4">
-      <div>
-        <.avatar actor={@actor} />
-      </div>
-      <div>
+    <div class="card shadow-lg bg-base-100 base-100">
+      <div class="card-body">
         <h1 class="card-title text-2xl">
           <%= display_name(@actor) %>
           <.profile_links actor={@actor} />
+          <.type_badge actor={@actor} />
         </h1>
-        <.main_address actor={@actor} />
-      </div>
-      <div>
-        <.type_badge actor={@actor} />
-      </div>
-    </div>
-    """
-  end
-
-  slot(:buttons)
-
-  def row(assigns) do
-    ~H"""
-    <div class="form-control">
-      <label for={@id} class="label">
-        <span class="label-text"><%= @label %></span>
-      </label>
-      <div class="flex flex-wrap gap-2 content-center">
-        <input
-          type="text"
-          id={@id}
-          aria-label={@label}
-          class="flex-grow input input-bordered border-opacity-80"
-          value={@value}
-          readonly="readonly"
-        />
-        <KazarmaWeb.Button.copy copy_id={@id} />
-        <%= render_slot(@buttons) %>
+        <div>
+          <.avatar actor={@actor} />
+        </div>
+        <div>
+          <!-- <.type_prefix actor={@actor} /> -->
+          <.main_address actor={@actor} />
+        </div>
       </div>
     </div>
     """
   end
 
-  def puppet_profile(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
+  def puppet_profile(assigns) do
     ~H"""
-    <div class="card card-body bg-base-300 base-100 mt-10">
-      <h2 class="text-2xl text-center pt-5">ActivityPub</h2>
-      <div class="flex flex-col space-y-2">
-        <.row id="activitypub-id" label={gettext("ActivityPub ID")} value={ap_id(@actor)}>
-          <:buttons>
-            <%= link [
-                to: ap_id(@actor),
-                target: "_blank",
-                aria_label: gettext("Open"),
-                title: gettext("Open"),
-                class: "btn btn-secondary"
-              ] do %>
-              <.external_link_icon />
-            <% end %>
-          </:buttons>
-        </.row>
-        <.row
-          id="activitypub-username"
-          label={gettext("ActivityPub username")}
-          value={ap_username(@actor)}
-        >
-          <:buttons></:buttons>
-        </.row>
+    <div class="card shadow-lg bg-base-300 base-100 mt-4">
+      <div class="card-body">
+        <h2 class="card-title">
+          <%= display_name(@actor) %>
+          <.puppet_profile_links actor={@actor} />
+          <.puppet_type_badge actor={@actor} />
+        </h2>
+        <.puppet_address actor={@actor} />
         <!-- <KazarmaWeb.Button.secondary to={"https://matrix.to/#/" <> matrix_outbox_room(@actor)} link_text="matrix.to" /> -->
         <!-- <KazarmaWeb.Button.secondary to={matrix_scheme_room(@actor)} link_text="matrix:" /> -->
       </div>
-    </div>
-    """
-  end
-
-  def puppet_profile(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns) do
-    ~H"""
-    <div class="card card-body bg-base-300 base-100 mt-10">
-      <h2 class="text-2xl text-center">Matrix</h2>
-      <.row id="matrix-username" label={gettext("Username")} value={matrix_id(@actor)}>
-        <:buttons>
-          <KazarmaWeb.Button.secondary
-            to={"https://matrix.to/#/" <> matrix_id(@actor)}
-            link_text="matrix.to"
-          />
-          <KazarmaWeb.Button.secondary to={matrix_scheme_user(@actor)} link_text="matrix:" />
-        </:buttons>
-      </.row>
-      <.row id="matrix-outbox-room" label={gettext("Outbox room")} value={matrix_outbox_room(@actor)}>
-        <:buttons>
-          <KazarmaWeb.Button.secondary
-            to={"https://matrix.to/#/" <> matrix_outbox_room(@actor)}
-            link_text="matrix.to"
-          />
-          <KazarmaWeb.Button.secondary to={matrix_scheme_room(@actor)} link_text="matrix:" />
-        </:buttons>
-      </.row>
     </div>
     """
   end
@@ -196,7 +167,7 @@ defmodule KazarmaWeb.Components.Profile do
     ~H"""
     <div class="container mx-auto flex flex-col lg:max-w-3xl px-4">
       <.original_profile actor={@actor} />
-      <div class="divider"></div>
+      <!-- <div class="divider"></div> -->
       <.puppet_profile actor={@actor} />
     </div>
     """
