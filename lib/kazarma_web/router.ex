@@ -33,7 +33,7 @@ defmodule KazarmaWeb.Router do
   end
 
   scope "/", KazarmaWeb do
-    pipe_through :html
+    pipe_through :accepts_html
     pipe_through :browser
 
     get "/", IndexController, :index
