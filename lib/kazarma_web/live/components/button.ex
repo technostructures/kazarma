@@ -30,7 +30,7 @@ defmodule KazarmaWeb.Button do
 
   def ghost(assigns) do
     ~H"""
-    <%= link [to: @to, target: "_blank", class: "btn btn-ghost lowercase"] do %>
+    <%= link [to: @to, target: "_blank", class: "btn btn-ghost btn-sm lowercase"] do %>
       <%= @link_text %>
     <% end %>
     """

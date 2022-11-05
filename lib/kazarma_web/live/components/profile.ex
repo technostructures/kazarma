@@ -40,7 +40,7 @@ defmodule KazarmaWeb.Components.Profile do
         target: "_blank",
         aria_label: gettext("Open"),
         title: gettext("Open"),
-        class: "btn btn-ghost"
+        class: "btn btn-ghost btn-sm"
       ],
       do: KazarmaWeb.IconView.external_link_icon()
     ) %>
@@ -56,42 +56,38 @@ defmodule KazarmaWeb.Components.Profile do
         target: "_blank",
         aria_label: gettext("Open"),
         title: gettext("Open"),
-        class: "btn btn-ghost"
+        class: "btn btn-ghost btn-sm"
       ],
       do: KazarmaWeb.IconView.external_link_icon()
     ) %>
     """
   end
 
-  defp main_address(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
+  defp address_and_link(assigns) do
     ~H"""
     <%= link [
         to: "#",
         aria_label: gettext("Copy"),
       title: gettext("Copy"),
-      data: [copy: "asfd"],
-      class: "link link-secondary"
+      data: [copy: @address],
+      class: "link link-secondary link-hover"
     ]
     do %>
-      <%= matrix_id(@actor) %>
+      <%= @address %>
       <%= KazarmaWeb.IconView.copy_icon() %>
     <% end %>
     """
   end
 
+  defp main_address(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
+    ~H"""
+    <.address_and_link address={matrix_id(@actor)} />
+    """
+  end
+
   defp main_address(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns) do
     ~H"""
-    <%= link [
-        to: "#",
-        aria_label: gettext("Copy"),
-      title: gettext("Copy"),
-      data: [copy: "asfd"],
-      class: "link link-secondary"
-    ]
-    do %>
-      <%= ap_username(@actor) %>
-      <%= KazarmaWeb.IconView.copy_icon() %>
-    <% end %>
+    <.address_and_link address={ap_username(@actor)} />
     """
   end
 
