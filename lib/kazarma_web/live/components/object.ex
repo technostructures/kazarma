@@ -5,6 +5,7 @@ defmodule KazarmaWeb.Components.Object do
   @moduledoc false
   use Phoenix.Component
   use Phoenix.HTML
+  import KazarmaWeb.Components.Icon
   import KazarmaWeb.Helpers
   import KazarmaWeb.Gettext
 
@@ -76,7 +77,7 @@ defmodule KazarmaWeb.Components.Object do
         </p>
       </div>
       <div :if={@reply} class="align-center">
-        <%= KazarmaWeb.IconView.reply_icon() %>
+        <.reply_icon />
       </div>
     </div>
     """

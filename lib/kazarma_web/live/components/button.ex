@@ -4,6 +4,7 @@
 defmodule KazarmaWeb.Button do
   @moduledoc false
   use Phoenix.Component
+  import KazarmaWeb.Components.Icon
   import KazarmaWeb.Gettext
   use Phoenix.HTML
 
@@ -15,7 +16,7 @@ defmodule KazarmaWeb.Button do
       data-copy-id={@copy_id}
       class="btn btn-copy btn-primary"
     >
-      <%= KazarmaWeb.IconView.copy_icon() %>
+      <.copy_icon />
     </button>
     """
   end

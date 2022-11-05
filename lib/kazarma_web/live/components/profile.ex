@@ -4,6 +4,7 @@ defmodule KazarmaWeb.Components.Profile do
   @moduledoc false
   use Phoenix.Component
   use Phoenix.HTML
+  import KazarmaWeb.Components.Icon
   import KazarmaWeb.Helpers
   import KazarmaWeb.Gettext
 
@@ -34,32 +35,30 @@ defmodule KazarmaWeb.Components.Profile do
 
   defp profile_links(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
     ~H"""
-    <%= link(
-      [
+    <%= link [
         to: "https://matrix.to/#/" <> matrix_id(@actor),
         target: "_blank",
         aria_label: gettext("Open"),
         title: gettext("Open"),
         class: "btn btn-ghost btn-sm"
-      ],
-      do: KazarmaWeb.IconView.external_link_icon()
-    ) %>
+      ] do %>
+      <.external_link_icon />
+    <% end %>
     <KazarmaWeb.Button.ghost to={matrix_scheme_user(@actor)} link_text="[m]" />
     """
   end
 
   defp profile_links(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns) do
     ~H"""
-    <%= link(
-      [
+    <%= link [
         to: ap_id(@actor),
         target: "_blank",
         aria_label: gettext("Open"),
         title: gettext("Open"),
         class: "btn btn-ghost btn-sm"
-      ],
-      do: KazarmaWeb.IconView.external_link_icon()
-    ) %>
+      ] do %>
+      <.external_link_icon />
+    <% end %>
     """
   end
 
@@ -74,7 +73,7 @@ defmodule KazarmaWeb.Components.Profile do
     ]
     do %>
       <%= @address %>
-      <%= KazarmaWeb.IconView.copy_icon() %>
+      <.copy_icon />
     <% end %>
     """
   end
@@ -142,16 +141,15 @@ defmodule KazarmaWeb.Components.Profile do
       <div class="flex flex-col space-y-2">
         <.row id="activitypub-id" label={gettext("ActivityPub ID")} value={ap_id(@actor)}>
           <:buttons>
-            <%= link(
-              [
+            <%= link [
                 to: ap_id(@actor),
                 target: "_blank",
                 aria_label: gettext("Open"),
                 title: gettext("Open"),
                 class: "btn btn-secondary"
-              ],
-              do: KazarmaWeb.IconView.external_link_icon()
-            ) %>
+              ] do %>
+              <.external_link_icon />
+            <% end %>
           </:buttons>
         </.row>
         <.row
