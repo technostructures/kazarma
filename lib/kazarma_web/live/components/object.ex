@@ -41,15 +41,19 @@ defmodule KazarmaWeb.Components.Object do
       </div>
       <div class="">
         <h1 class="card-title text-xl">
-          <.link navigate={
-            KazarmaWeb.Router.Helpers.activity_pub_path(@socket, :actor, @actor.username)
-          }>
+          <.link
+            navigate={KazarmaWeb.Router.Helpers.activity_pub_path(@socket, :actor, @actor.username)}
+            class="link link-hover"
+          >
             <%= display_name(@actor) %>
           </.link>
         </h1>
       </div>
       <div class="text-sm ml-auto">
-        <.link navigate={KazarmaWeb.Router.Helpers.activity_pub_path(@socket, :object, @object.id)}>
+        <.link
+          navigate={KazarmaWeb.Router.Helpers.activity_pub_path(@socket, :object, @object.id)}
+          class="link link-hover"
+        >
           <%= datetime(@object) %>
         </.link>
       </div>
