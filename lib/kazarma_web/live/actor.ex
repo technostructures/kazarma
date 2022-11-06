@@ -49,10 +49,17 @@ defmodule KazarmaWeb.Actor do
     case Kazarma.search_user(address) do
       {:ok, actor} ->
         actor_path = Routes.activity_pub_path(socket, :actor, actor.username)
-        {:noreply, push_navigate(socket, to: actor_path)}
+        # dirty fix because LiveView does not re-enable the form when redirecting
+        send(self(), {:redirect, actor_path})
+        {:noreply, socket}
 
       _ ->
         {:noreply, put_flash(socket, :error, gettext("User not found"))}
     end
+  end
+
+  @impl true
+  def handle_info({:redirect, to}, socket) do
+    {:noreply, push_navigate(socket, to: to)}
   end
 end
