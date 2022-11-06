@@ -81,6 +81,7 @@ defmodule KazarmaWeb do
 
   def live_view do
     quote do
+      alias KazarmaWeb.Router.Helpers, as: Routes
       use Phoenix.LiveView, layout: {KazarmaWeb.LayoutView, "live.html"}
 
       unquote(view_helpers())

@@ -1,9 +1,13 @@
-<p class="alert alert-info mb-2" role="alert"><%= get_flash(@conn, :info) %></p>
+<p class="alert alert-info mb-2" role="alert">
+  <%= get_flash(@conn, :info) %>
+</p>
 <%= if get_flash(@conn, :error) do %>
   <div class="alert alert-error shadow-lg mb-2" role="alert">
     <div>
       <KazarmaWeb.Components.Icon.alert_icon />
-      <span><%= get_flash(@conn, :error) %></span>
+      <span>
+        <%= get_flash(@conn, :error) %>
+      </span>
     </div>
   </div>
 <% end %>

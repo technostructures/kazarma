@@ -31,6 +31,18 @@ defmodule KazarmaWeb.Object do
     end
   end
 
+  @impl true
+  def handle_event("search", %{"search" => %{"address" => address}}, socket) do
+    case Kazarma.search_user(address) do
+      {:ok, actor} ->
+        actor_path = Routes.activity_pub_path(socket, :actor, actor.username)
+        {:noreply, push_navigate(socket, to: actor_path)}
+
+      _ ->
+        {:noreply, put_flash(socket, :error, gettext("User not found"))}
+    end
+  end
+
   defp traverse_replies_to(%{data: %{"inReplyTo" => reply_to_id}}) do
     case ActivityPub.Object.get_cached_by_ap_id(reply_to_id) do
       %{data: %{"type" => "Note"}} = reply_to ->

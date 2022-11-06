@@ -43,4 +43,16 @@ defmodule KazarmaWeb.Actor do
      |> assign(activities: activities)
      |> assign(last_page: length(activities) < 10)}
   end
+
+  @impl true
+  def handle_event("search", %{"search" => %{"address" => address}}, socket) do
+    case Kazarma.search_user(address) do
+      {:ok, actor} ->
+        actor_path = Routes.activity_pub_path(socket, :actor, actor.username)
+        {:noreply, push_navigate(socket, to: actor_path)}
+
+      _ ->
+        {:noreply, put_flash(socket, :error, gettext("User not found"))}
+    end
+  end
 end

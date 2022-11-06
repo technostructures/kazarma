@@ -1,1 +1,30 @@
+<div
+  :if={live_flash(@flash, :info)}
+  class="alert alert-info mb-2 shadow-lg container mx-auto lg:max-w-3xl"
+  role="alert"
+  phx-click="lv:clear-flash"
+  phx-value-key="info"
+>
+  <div>
+    <span>
+      <%= live_flash(@flash, :info) %>
+    </span>
+  </div>
+</div>
+
+<div
+  :if={live_flash(@flash, :error)}
+  class="alert alert-danger mb-2 shadow-lg container mx-auto lg:max-w-3xl"
+  role="alert"
+  phx-click="lv:clear-flash"
+  phx-value-key="error"
+>
+  <div>
+    <KazarmaWeb.Components.Icon.alert_icon />
+    <span>
+      <%= live_flash(@flash, :error) %>
+    </span>
+  </div>
+</div>
+
 <%= @inner_content %>
