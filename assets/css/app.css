@@ -16,3 +16,11 @@
   display: block;
   margin: -1rem 0 2rem;
 }
+
+.overflow-y-unset {
+  overflow-y: unset !important
+}
+
+.max-h-unset {
+  max-height: unset !important
+}

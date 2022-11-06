@@ -15,32 +15,30 @@
   <body class="bg-gray-100 min-h-screen">
     <a class="sr-only" href="#main"><%= gettext("Skip to content") %></a>
     <a class="sr-only" href="#search_address"><%= gettext("Skip to search") %></a>
-    <div class="">
-      <header class="navbar sticky top-0 z-50 mb-2 shadow-lg justify-between flex-wrap bg-base-300">
-        <div class="flex-none px-2 mx-2 lg:flex order-1">
-          <%= link([to: Routes.index_path(@conn, :index), class: "text-2xl font-bold"],
-            do: "Kazarma"
-          ) %>
-        </div>
-        <div class="flex-grow lg:max-w-3xl mt-0 lg:mx-auto lg:inset-x-0 order-3 lg:order-2">
-          <%= render("_search.html", conn: @conn) %>
-        </div>
-        <div class="flex-none px-2 mx-2 lg:flex order-3 lg:order-3">
-          <%= link [
+    <header class="navbar sticky top-0 z-50 shadow-lg justify-between flex-wrap bg-base-300">
+      <div class="flex-none px-2 mx-2 lg:flex order-1">
+        <%= link([to: Routes.index_path(@conn, :index), class: "text-2xl font-bold"],
+          do: "Kazarma"
+        ) %>
+      </div>
+      <div class="flex-grow lg:max-w-3xl mt-0 lg:mx-auto lg:inset-x-0 order-3 lg:order-2">
+        <%= render("_search.html", conn: @conn) %>
+      </div>
+      <div class="flex-none px-2 mx-2 lg:flex order-2 lg:order-3">
+        <%= link [
               to: "https://gitlab.com/kazarma/kazarma",
               target: "_blank",
               aria_label: gettext("GitLab repository"),
               title: gettext("GitLab repository"),
               class: "text-2xl font-bold"
 ] do %>
-            <KazarmaWeb.Components.Icon.gitlab_icon />
-          <% end %>
-        </div>
-      </header>
-      <main role="main" id="main" class="w-full py-6">
-        <!-- <main role="main" id="main" class="w-full container mx-auto py-6 flex flex-col lg:flex-row"> -->
-        <%= @inner_content %>
-      </main>
-    </div>
+          <KazarmaWeb.Components.Icon.gitlab_icon />
+        <% end %>
+      </div>
+    </header>
+    <main role="main" id="main" class="w-full">
+      <!-- <main role="main" id="main" class="w-full container mx-auto py-6 flex flex-col lg:flex-row"> -->
+      <%= @inner_content %>
+    </main>
   </body>
 </html>

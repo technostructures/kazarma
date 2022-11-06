@@ -4,7 +4,7 @@
 defmodule KazarmaWeb.Helpers do
   @moduledoc false
 
-  use KazarmaWeb, :view
+  # use KazarmaWeb, :view
 
   def display_name(%ActivityPub.Actor{data: %{"name" => name}}), do: name
 

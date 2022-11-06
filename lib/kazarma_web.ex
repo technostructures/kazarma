@@ -98,6 +98,7 @@ defmodule KazarmaWeb do
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
 
+      import KazarmaWeb.Helpers
       import KazarmaWeb.ErrorHelpers
       import KazarmaWeb.Gettext
       alias KazarmaWeb.Router.Helpers, as: Routes

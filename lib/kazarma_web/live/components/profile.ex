@@ -33,7 +33,7 @@ defmodule KazarmaWeb.Components.Profile do
 
   defp type_badge(assigns) do
     ~H"""
-    <div class="badge">
+    <div class="badge h-auto">
       <%= type(@actor) %>
     </div>
     """
@@ -41,7 +41,7 @@ defmodule KazarmaWeb.Components.Profile do
 
   defp puppet_type_badge(assigns) do
     ~H"""
-    <div class="badge">
+    <div class="badge h-auto">
       <%= puppet_type(@actor) %>
     </div>
     """
@@ -87,7 +87,18 @@ defmodule KazarmaWeb.Components.Profile do
 
   defp address_and_link(assigns) do
     ~H"""
-    <%= link [
+    <div class="flex space-x-6">
+      <%= link [
+        to: "#",
+        aria_label: gettext("Copy"),
+      title: gettext("Copy"),
+      data: [copy: @address],
+      class: "link link-secondary link-hover link-neutral font-mono overflow-x-auto"
+    ]
+    do %>
+        <%= @address %>
+      <% end %>
+      <%= link [
         to: "#",
         aria_label: gettext("Copy"),
       title: gettext("Copy"),
@@ -95,9 +106,9 @@ defmodule KazarmaWeb.Components.Profile do
       class: "link link-secondary link-hover link-neutral font-mono"
     ]
     do %>
-      <%= @address %>
-      <.copy_icon />
-    <% end %>
+        <.copy_icon />
+      <% end %>
+    </div>
     """
   end
 
@@ -128,8 +139,8 @@ defmodule KazarmaWeb.Components.Profile do
   def original_profile(assigns) do
     ~H"""
     <div class="card shadow-lg bg-base-100 base-100">
-      <div class="card-body">
-        <h1 class="card-title text-2xl">
+      <div class="card-body p-6">
+        <h1 class="card-title flex-wrap text-2xl">
           <%= display_name(@actor) %>
           <.profile_links actor={@actor} />
           <.type_badge actor={@actor} />
@@ -149,8 +160,8 @@ defmodule KazarmaWeb.Components.Profile do
   def puppet_profile(assigns) do
     ~H"""
     <div class="card shadow-lg bg-base-300 base-100 mt-4">
-      <div class="card-body">
-        <h2 class="card-title">
+      <div class="card-body p-6">
+        <h2 class="card-title flex-wrap">
           <%= display_name(@actor) %>
           <.puppet_profile_links actor={@actor} />
           <.puppet_type_badge actor={@actor} />
@@ -165,11 +176,9 @@ defmodule KazarmaWeb.Components.Profile do
 
   def show(assigns) do
     ~H"""
-    <div class="container mx-auto flex flex-col lg:max-w-3xl px-4">
-      <.original_profile actor={@actor} />
-      <!-- <div class="divider"></div> -->
-      <.puppet_profile actor={@actor} />
-    </div>
+    <.original_profile actor={@actor} />
+    <!-- <div class="divider"></div> -->
+    <.puppet_profile actor={@actor} />
     """
   end
 end
