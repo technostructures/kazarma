@@ -36,7 +36,7 @@ defmodule KazarmaWeb.Router do
     pipe_through :accepts_html
     pipe_through :browser
 
-    get "/", IndexController, :index
+    live "/", Index, :index, as: :index
 
     post "/search", SearchController, :search
   end
