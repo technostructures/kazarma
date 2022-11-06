@@ -20,14 +20,32 @@ import "phoenix_html"
 
 // copy buttons in actor view
 
-const copyButtons = document.getElementsByClassName("btn-copy")
+// const copyButtons = document.getElementsByClassName("btn-copy")
+//
+// Array.from(copyButtons).forEach(function (button) {
+//   const textField = document.getElementById(button.dataset.copyId)
+//
+//   button.addEventListener("click", function () {
+//     textField.select()
+//     document.execCommand("copy")
+//   })
+// })
+
+// copy buttons in profile component
+
+const copyButtons = document.querySelectorAll('[data-copy]')
 
 Array.from(copyButtons).forEach(function (button) {
-  const textField = document.getElementById(button.dataset.copyId)
+  const text = button.dataset.copy
 
   button.addEventListener("click", function () {
-    textField.select()
+    let tempInput = document.createElement("input")
+    tempInput.value = text
+    document.body.appendChild(tempInput)
+    tempInput.select()
+    
     document.execCommand("copy")
+    document.body.removeChild(tempInput)
   })
 })
 
