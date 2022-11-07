@@ -10,39 +10,20 @@
 msgid ""
 msgstr ""
 
-#: lib/kazarma_web/templates/layout/_search.html.heex:15
-#: lib/kazarma_web/templates/layout/_search.html.heex:24
-#, elixir-autogen, elixir-format
-msgid "@alice:matrix.org / bob@mastodon.social / https://mastodon.social/users/bob"
-msgstr ""
-
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:57
 #: lib/kazarma_web/live/index.ex:28
-#: lib/kazarma_web/live/object.ex:44
+#: lib/kazarma_web/live/object.ex:46
 #, elixir-autogen, elixir-format
 msgid "User not found"
 msgstr ""
 
 #: lib/kazarma_web/live/components/button.ex:14
 #: lib/kazarma_web/live/components/button.ex:15
-#: lib/kazarma_web/live/components/profile.ex:93
 #: lib/kazarma_web/live/components/profile.ex:94
-#: lib/kazarma_web/live/components/profile.ex:103
-#: lib/kazarma_web/live/components/profile.ex:104
+#: lib/kazarma_web/live/components/profile.ex:95
 #, elixir-autogen, elixir-format
 msgid "Copy"
-msgstr ""
-
-#: lib/kazarma_web/templates/layout/root.html.heex:31
-#: lib/kazarma_web/templates/layout/root.html.heex:32
-#, elixir-autogen, elixir-format
-msgid "GitLab repository"
-msgstr ""
-
-#: lib/kazarma_web/templates/layout/_search.html.heex:13
-#, elixir-autogen, elixir-format
-msgid "Matrix or ActivityPub username, or ActivityPub ID"
 msgstr ""
 
 #: lib/kazarma_web/live/components/profile.ex:55
@@ -51,8 +32,8 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: lib/kazarma_web/templates/layout/_search.html.heex:32
-#: lib/kazarma_web/templates/layout/_search.html.heex:33
+#: lib/kazarma_web/templates/layout/_search.html.heex:29
+#: lib/kazarma_web/templates/layout/_search.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr ""
@@ -111,4 +92,17 @@ msgstr ""
 #: lib/kazarma_web/live/index.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "their ActivityPub username, in the form user@server;"
+msgstr ""
+
+#: lib/kazarma_web/templates/layout/root.html.heex:34
+#: lib/kazarma_web/templates/layout/root.html.heex:35
+#, elixir-autogen, elixir-format
+msgid "Help"
+msgstr ""
+
+#: lib/kazarma_web/templates/layout/_search.html.heex:13
+#: lib/kazarma_web/templates/layout/_search.html.heex:14
+#: lib/kazarma_web/templates/layout/_search.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "Matrix or ActivityPub identifier"
 msgstr ""
