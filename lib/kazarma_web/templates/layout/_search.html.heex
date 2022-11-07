@@ -7,24 +7,24 @@
   class="w-full"
 >
   <div class="flex flex-row items-center justify-between">
-    <div class="flex-1 m-2">
-      <div class="form-control relative">
+    <div class="flex-1 self-stretch">
+      <div class="form-control relative h-full">
         <%= text_input(f, :address,
           aria_label: gettext("Matrix or ActivityPub identifier"),
           placeholder: gettext("Matrix or ActivityPub identifier"),
           required: true,
           class:
-            "peer text-base transition-all w-full placeholder-shown:h-10 focus:h-16 h-16 placeholder-shown:pt-4 focus:pt-8 pt-8 lg:placeholder-shown:pt-2 lg:focus:pt-4 lg:pt-4 input input-bordered border-opacity-80 placeholder-transparent"
+            "peer h-full text-base transition-all w-full h-16 placeholder-shown:pt-2 focus:pt-4 pt-4 input input-bordered border-opacity-80 placeholder-transparent"
         ) %>
         <label
           for="search_address"
-          class="absolute transition-all left-4 top-1.5 peer-focus:top-1.5 text-xs peer-focus:text-xs peer-placeholder-shown:cursor-text peer-placeholder-shown:top-2 peer-placeholder-shown:text-base"
+          class="absolute transition-all left-4 top-1.5 peer-focus:top-1.5 text-xs peer-focus:text-xs peer-placeholder-shown:cursor-text peer-placeholder-shown:top-3 peer-placeholder-shown:text-base"
         >
           <%= gettext("Matrix or ActivityPub identifier") %>
         </label>
       </div>
     </div>
-    <div class="flex-none">
+    <div class="flex-none ml-2">
       <%= submit [
           aria_label: gettext("Search"),
           title: gettext("Search"),

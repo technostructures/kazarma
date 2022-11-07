@@ -165,7 +165,7 @@ defmodule KazarmaWeb.Components.Icon do
       width="1em"
       height="1em"
       preserveAspectRatio="xMidYMid meet"
-      viewBox="0 0 450 450"
+      viewBox="0 0 512 512"
     >
       <path
         fill="none"

@@ -15,16 +15,19 @@
   <body class="bg-gray-100 min-h-screen">
     <a class="sr-only" href="#main"><%= gettext("Skip to content") %></a>
     <a class="sr-only" href="#search_address"><%= gettext("Skip to search") %></a>
-    <header class="navbar sticky top-0 z-50 shadow-lg justify-between flex-wrap bg-base-300">
-      <div class="flex-none px-2 mx-2 lg:flex order-1">
-        <.link navigate={Routes.index_path(@conn, :index)} class="text-2xl font-bold">
+    <header class="navbar sticky top-0 z-50 shadow-lg justify-between flex-wrap bg-base-300 items-center p-0">
+      <div class="flex-none m-2 lg:m-4 lg:flex order-1">
+        <.link
+          navigate={Routes.index_path(@conn, :index)}
+          class="text-2xl font-bold link link-hover"
+        >
           Kazarma
         </.link>
       </div>
-      <div class="flex-grow lg:max-w-3xl mt-0 lg:mx-auto lg:inset-x-0 order-3 sm:order-2">
+      <div class="flex-grow lg:max-w-3xl m-2 mt-0 lg:mt-2 lg:mx-auto lg:inset-x-0 order-3 sm:order-2">
         <%= render("_search.html", conn: @conn) %>
       </div>
-      <div class="flex-none px-2 mx-2 lg:flex order-2 sm:order-3">
+      <div class="flex-none m-2 lg:m-4 lg:flex order-2 sm:order-3">
         <%= link [
               to: "https://docs.kazar.ma",
               target: "_blank",
