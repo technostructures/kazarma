@@ -27,6 +27,20 @@ defmodule Kazarma.Matrix.UserTest do
         ] ->
           {:ok, %{"user_id" => @ap_puppet_matrix_id}}
       end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @ap_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @ap_puppet_matrix_id] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+      end)
       |> expect(:put_displayname, fn
         @ap_puppet_matrix_id, "Bob", user_id: @ap_puppet_matrix_id ->
           :ok

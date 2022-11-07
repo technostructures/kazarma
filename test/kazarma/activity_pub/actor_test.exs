@@ -104,6 +104,20 @@ defmodule Kazarma.ActivityPub.ActorTest do
                                      user_id: "@_ap_bob___pleroma:kazarma" ->
         :ok
       end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: "_ap_bob___pleroma",
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: "@_ap_bob___pleroma:kazarma"] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+      end)
       |> expect(:upload, fn _blob, _opts, user_id: "@_ap_bob___pleroma:kazarma" ->
         {:ok, "mxc://server/media_id"}
       end)
@@ -116,6 +130,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
       assert :ok =
                maybe_create_remote_actor(%ActivityPub.Actor{
                  username: "bob@pleroma",
+                 ap_id: "http://pleroma/users/bob",
                  data: %{
                    "name" => "Bob",
                    "icon" => %{"type" => "Image", "url" => "https://via.placeholder.com/150"}

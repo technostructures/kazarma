@@ -33,11 +33,13 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl ActivityPub.Adapter
-  def maybe_create_remote_actor(%Actor{
-        username: username,
-        ap_id: ap_id,
-        data: %{"name" => name} = data
-      }) do
+  def maybe_create_remote_actor(
+        %Actor{
+          username: username,
+          ap_id: ap_id,
+          data: %{"name" => name} = data
+        } = actor
+      ) do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
@@ -56,7 +58,8 @@ defmodule Kazarma.ActivityPub.Adapter do
           data: %{}
         })
 
-      # should we always create a corresponding timeline room?
+      {:ok, _outbox_room} = Kazarma.RoomType.Actor.get_or_create_outbox(actor, matrix_id)
+
       :ok
     else
       {:error, _code, %{"error" => error}} ->

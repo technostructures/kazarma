@@ -71,7 +71,7 @@ defmodule Kazarma.RoomType.Actor do
          {:ok, from_matrix_id} <- Address.ap_id_to_matrix(channel_sender) do
       for attributed <- attributed_list do
         with {:ok, %Room{local_id: room_id}} <-
-               Collection.get_or_create_outbox({:ap_id, attributed}),
+               get_or_create_outbox(:ap_id),
              Client.join(from_matrix_id, room_id),
              {:ok, event_id} =
                Client.send_message_for_video_object(room_id, from_matrix_id, object_data),
@@ -99,7 +99,7 @@ defmodule Kazarma.RoomType.Actor do
 
     with {:ok, attributed_to_matrix_id} <- Kazarma.Address.ap_id_to_matrix(attributed_to_id),
          {:ok, %MatrixAppService.Bridge.Room{local_id: room_id}} <-
-           Kazarma.ActivityPub.Collection.get_or_create_outbox({:ap_id, attributed_to_id}),
+           get_or_create_outbox(attributed_to_id),
          Kazarma.Matrix.Client.join(attributed_to_matrix_id, room_id),
          {:ok, event_id} <-
            Client.send_message_for_event_object(room_id, attributed_to_matrix_id, object_data),
@@ -127,7 +127,7 @@ defmodule Kazarma.RoomType.Actor do
   end
 
   defp get_room_for_public_create(%{"actor" => from_id}) do
-    case Collection.get_or_create_outbox({:ap_id, from_id}) do
+    case get_or_create_outbox(from_id) do
       {:ok, room} ->
         room
 
@@ -169,6 +169,49 @@ defmodule Kazarma.RoomType.Actor do
       })
 
       :ok
+    end
+  end
+
+  def get_or_create_outbox(ap_id) do
+    with {:ok, %ActivityPub.Actor{username: username} = actor} <-
+           ActivityPub.Actor.get_cached_by_ap_id(ap_id),
+         {:ok, matrix_id} <-
+           Kazarma.Address.ap_username_to_matrix_id(username, [
+             :activity_pub
+           ]) do
+      get_or_create_outbox(actor, matrix_id)
+    end
+  end
+
+  def get_or_create_outbox(
+        %ActivityPub.Actor{ap_id: ap_id, data: %{"name" => name}} = actor,
+        matrix_id
+      ) do
+    alias = Kazarma.Address.get_matrix_id_localpart(matrix_id)
+
+    with nil <- Kazarma.Matrix.Bridge.get_room_by_remote_id(ap_id),
+         {:ok, %{"room_id" => room_id}} <-
+           Kazarma.Matrix.Client.create_outbox_room(
+             matrix_id,
+             [],
+             name,
+             alias
+           ),
+         {:ok, room} <- Kazarma.Matrix.Bridge.insert_outbox_room(room_id, actor.ap_id, matrix_id) do
+      {:ok, room}
+    else
+      {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}} ->
+        {:ok, {room_id, _}} =
+          Kazarma.Matrix.Client.get_alias("##{alias}:#{Kazarma.Address.domain()}")
+
+        Kazarma.Matrix.Bridge.insert_outbox_room(
+          room_id,
+          actor.ap_id,
+          matrix_id
+        )
+
+      %MatrixAppService.Bridge.Room{} = room ->
+        {:ok, room}
     end
   end
 end

@@ -98,6 +98,20 @@ defmodule Kazarma.Matrix.TransactionTest do
         @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
       end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @pleroma_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @pleroma_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+      end)
       |> expect(:get_data, fn
         @pleroma_puppet_address, "m.direct", user_id: @pleroma_puppet_address ->
           {:ok, %{}}
@@ -139,6 +153,33 @@ defmodule Kazarma.Matrix.TransactionTest do
           registration_type: "m.login.application_service"
         ] ->
           {:ok, %{"user_id" => @mastodon_puppet_address}}
+      end)
+      |> expect(:create_room, 2, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @pleroma_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @pleroma_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+
+        [
+          visibility: :public,
+          name: "Alice",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @mastodon_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @mastodon_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
       end)
       |> expect(:put_displayname, 2, fn
         @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
@@ -526,6 +567,20 @@ defmodule Kazarma.Matrix.TransactionTest do
         ] ->
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @pleroma_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @pleroma_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+      end)
       |> expect(:put_displayname, fn
         @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
@@ -597,6 +652,20 @@ defmodule Kazarma.Matrix.TransactionTest do
           registration_type: "m.login.application_service"
         ] ->
           {:ok, %{"user_id" => @pleroma_puppet_address}}
+      end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @pleroma_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @pleroma_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
       end)
       |> expect(:put_displayname, fn
         @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
@@ -726,6 +795,20 @@ defmodule Kazarma.Matrix.TransactionTest do
           registration_type: "m.login.application_service"
         ] ->
           {:ok, %{"user_id" => @pleroma_puppet_address}}
+      end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @pleroma_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @pleroma_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
       end)
       |> expect(:put_displayname, fn
         @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
