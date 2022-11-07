@@ -64,15 +64,18 @@ defmodule KazarmaWeb.Components.Object do
   attr :object, :map
   attr :actor, :map
   attr :conn, :map
-  attr :reply, :boolean, default: false
+  attr :type, :atom, default: nil
   attr :classes, :string, default: ""
 
   def show(assigns) do
     ~H"""
     <div
       id={@object.data["id"]}
-      class={"card shadow-lg side bg-base-100 mt-4 flex flex-row #{@classes}"}
+      class={"card shadow-lg side bg-base-100 mt-4 flex flex-row #{if @type == :main, do: "bg-base-200"} #{@classes}"}
     >
+      <div :if={@type == :reply} class="align-center">
+        <.reply_icon class="w-10 h-10 m-4 -mr-5" />
+      </div>
       <div class="card-body">
         <.header actor={@actor} object={@object} socket={@socket} />
         <div class="mt-0 mb-0 divider"></div>
@@ -80,8 +83,8 @@ defmodule KazarmaWeb.Components.Object do
           <.display_body object={@object} />
         </p>
       </div>
-      <div :if={@reply} class="align-center">
-        <.reply_icon />
+      <div :if={@type == :replied_to} class="align-center">
+        <.reply_icon class="w-10 h-10 m-4 -ml-5" />
       </div>
     </div>
     """

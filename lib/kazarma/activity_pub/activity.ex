@@ -12,6 +12,8 @@ defmodule Kazarma.ActivityPub.Activity do
   alias Kazarma.Matrix.Client
   alias MatrixAppService.Event
 
+  import Ecto.Query
+
   def create(params) do
     sender = Keyword.fetch!(params, :sender)
 
@@ -295,6 +297,19 @@ defmodule Kazarma.ActivityPub.Activity do
       _ ->
         content
     end
+  end
+
+  def get_replies_for(%{data: %{"id" => ap_id}}, offset \\ 0, limit \\ 10) do
+    from(object in ActivityPub.Object,
+      where: fragment("(?)->>'inReplyTo' = ?", object.data, ^ap_id),
+      where: fragment("(?)->>'type' = ?", object.data, ^"Note"),
+      where:
+        fragment("(?)->'to' \\? ?", object.data, ^"https://www.w3.org/ns/activitystreams#Public"),
+      offset: ^offset,
+      limit: ^limit,
+      order_by: [desc: object.inserted_at]
+    )
+    |> Kazarma.Repo.all()
   end
 
   defp get_result([{:error, error} | _rest]), do: {:error, error}

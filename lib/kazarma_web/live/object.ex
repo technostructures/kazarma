@@ -15,6 +15,7 @@ defmodule KazarmaWeb.Object do
            ActivityPub.Object.get_cached_by_ap_id(ap_id) || ActivityPub.Object.get_by_id(uuid),
          {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_ap_id(actor_id) do
       previous_objects = traverse_replies_to(object) |> Enum.reverse()
+      next_objects = Kazarma.ActivityPub.Activity.get_replies_for(object)
 
       page_title =
         "#{String.replace(object.data["content"], ~r/(?<=.{20})(.+)/s, "...")} – #{actor.data["name"]}"
@@ -24,6 +25,7 @@ defmodule KazarmaWeb.Object do
         socket
         |> assign(object: object)
         |> assign(previous_objects: previous_objects)
+        |> assign(next_objects: next_objects)
         |> assign(actor: actor)
         |> assign(page_title: page_title),
         temporary_assigns: []

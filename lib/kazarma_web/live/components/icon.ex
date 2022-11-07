@@ -118,7 +118,7 @@ defmodule KazarmaWeb.Components.Icon do
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid meet"
       viewBox="0 0 16 16"
-      class="w-10 h-10 m-4 -ml-5"
+      class={@class}
     >
       <path
         fill="currentColor"
