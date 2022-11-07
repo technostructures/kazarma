@@ -8,7 +8,15 @@ defmodule KazarmaWeb.Helpers do
 
   def display_name(%ActivityPub.Actor{data: %{"name" => name}}), do: name
 
-  def ap_username(%ActivityPub.Actor{username: username}), do: username
+  def ap_username(%ActivityPub.Actor{username: username}), do: "@" <> username
+
+  def main_address(%ActivityPub.Actor{local: true} = actor), do: matrix_id(actor)
+
+  def main_address(%ActivityPub.Actor{} = actor), do: ap_username(actor)
+
+  def puppet_address(%ActivityPub.Actor{local: true} = actor), do: ap_username(actor)
+
+  def puppet_address(%ActivityPub.Actor{} = actor), do: matrix_id(actor)
 
   def matrix_id(%ActivityPub.Actor{username: username}) do
     {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username)

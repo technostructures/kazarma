@@ -117,27 +117,15 @@ defmodule KazarmaWeb.Components.Profile do
     """
   end
 
-  defp main_address(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
+  defp main_address_and_link(assigns) do
     ~H"""
-    <.address_and_link address={matrix_id(@actor)} />
+    <.address_and_link address={main_address(@actor)} />
     """
   end
 
-  defp main_address(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns) do
+  defp puppet_address_and_link(assigns) do
     ~H"""
-    <.address_and_link address={ap_username(@actor)} />
-    """
-  end
-
-  defp puppet_address(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
-    ~H"""
-    <.address_and_link address={ap_username(@actor)} />
-    """
-  end
-
-  defp puppet_address(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns) do
-    ~H"""
-    <.address_and_link address={matrix_id(@actor)} />
+    <.address_and_link address={puppet_address(@actor)} />
     """
   end
 
@@ -155,7 +143,7 @@ defmodule KazarmaWeb.Components.Profile do
         </div>
         <div>
           <!-- <.type_prefix actor={@actor} /> -->
-          <.main_address actor={@actor} />
+          <.main_address_and_link actor={@actor} />
         </div>
       </div>
     </div>
@@ -171,7 +159,7 @@ defmodule KazarmaWeb.Components.Profile do
           <.puppet_profile_links actor={@actor} />
           <.puppet_type_badge actor={@actor} />
         </h2>
-        <.puppet_address actor={@actor} />
+        <.puppet_address_and_link actor={@actor} />
         <!-- <KazarmaWeb.Button.secondary to={"https://matrix.to/#/" <> matrix_outbox_room(@actor)} link_text="matrix.to" /> -->
         <!-- <KazarmaWeb.Button.secondary to={matrix_scheme_room(@actor)} link_text="matrix:" /> -->
       </div>
