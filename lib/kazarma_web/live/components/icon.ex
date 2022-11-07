@@ -6,6 +6,12 @@ defmodule KazarmaWeb.Components.Icon do
   use Phoenix.Component
   use Phoenix.HTML
 
+  @doc """
+  Search icon
+
+  Set: Feather
+  License: MIT
+  """
   def search_icon(assigns) do
     ~H"""
     <svg
@@ -26,6 +32,12 @@ defmodule KazarmaWeb.Components.Icon do
     """
   end
 
+  @doc """
+  GitLab icon
+
+  Set: Feather
+  License: MIT
+  """
   def gitlab_icon(assigns) do
     ~H"""
     <svg
@@ -46,6 +58,12 @@ defmodule KazarmaWeb.Components.Icon do
     """
   end
 
+  @doc """
+  Copy icon
+
+  Set: Feather
+  License: MIT
+  """
   def copy_icon(assigns) do
     ~H"""
     <svg
@@ -67,6 +85,12 @@ defmodule KazarmaWeb.Components.Icon do
     """
   end
 
+  @doc """
+  External link icon
+
+  Set: Feather
+  License: MIT
+  """
   def external_link_icon(assigns) do
     ~H"""
     <svg
@@ -104,6 +128,11 @@ defmodule KazarmaWeb.Components.Icon do
     """
   end
 
+  @doc """
+  Alert icon
+
+  Set: DaisyUI
+  """
   def alert_icon(assigns) do
     ~H"""
     <svg
@@ -118,6 +147,40 @@ defmodule KazarmaWeb.Components.Icon do
         stroke-width="2"
         d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
       />
+    </svg>
+    """
+  end
+
+  @doc """
+  Help icon
+
+  Set: IonIcons
+  Author: Ben Sperry
+  License: MIT
+  """
+  def help_icon(assigns) do
+    ~H"""
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="1em"
+      height="1em"
+      preserveAspectRatio="xMidYMid meet"
+      viewBox="0 0 450 450"
+    >
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-miterlimit="10"
+        stroke-width="32"
+        d="M256 80a176 176 0 1 0 176 176A176 176 0 0 0 256 80Z"
+      /><path
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-miterlimit="10"
+        stroke-width="28"
+        d="M200 202.29s.84-17.5 19.57-32.57C230.68 160.77 244 158.18 256 158c10.93-.14 20.69 1.67 26.53 4.45c10 4.76 29.47 16.38 29.47 41.09c0 26-17 37.81-36.37 50.8S251 281.43 251 296"
+      /><circle cx="250" cy="348" r="20" fill="currentColor" />
     </svg>
     """
   end
