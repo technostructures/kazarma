@@ -44,6 +44,7 @@ defmodule KazarmaWeb.Components.Object do
           <.link
             navigate={KazarmaWeb.Router.Helpers.activity_pub_path(@socket, :actor, @actor.username)}
             class="link link-hover"
+            title={main_address(@actor)}
           >
             <%= display_name(@actor) %>
           </.link>
