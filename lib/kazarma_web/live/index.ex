@@ -8,7 +8,11 @@ defmodule KazarmaWeb.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok,
+     socket
+     |> assign(help: Kazarma.Config.frontpage_help())
+     |> assign(before_text: Kazarma.Config.frontpage_before_text())
+     |> assign(after_text: Kazarma.Config.frontpage_after_text())}
   end
 
   @impl true

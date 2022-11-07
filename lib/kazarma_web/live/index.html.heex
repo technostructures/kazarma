@@ -1,7 +1,46 @@
-<div class="container mx-auto lg:max-w-3xl">
-  <div class="card shadow-lg side bg-base-100 container mx-auto">
-    <div class="card-body">
-      <%= gettext("This a public Kazarma instance.") %>
+<div class="container mx-auto p-4 lg:max-w-3xl">
+  <div class="card mx-auto shadow-lg side bg-base-100 prose">
+    <div :if={@before_text} class="card-body">
+      <%= @before_text %>
+    </div>
+    <div :if={@help} class="card-body">
+      <h2>
+        <%= gettext("Quick guide") %>
+      </h2>
+      <h3>
+        <%= gettext("Search for a Matrix user") %>
+      </h3>
+      <p>
+        <%= gettext(
+          "To search for a Matrix user, enter their Matrix username, in the form @user:server."
+        ) %>
+      </p>
+
+      <h3>
+        <%= gettext("Search for an ActivityPub user") %>
+      </h3>
+      <p>
+        <%= gettext("To search for an ActivityPub user, you can use two types of address:") %>
+      </p>
+
+      <ul>
+        <li>
+          <%= gettext("their ActivityPub username, in the form user@server;") %>
+        </li>
+        <li>
+          <%= gettext(
+            "their ActivityPub ID, which is often the URL of their profile page (https://server/@user)."
+          ) %>
+        </li>
+      </ul>
+      <p>
+        <.link href="https://docs.kazar.ma/category/user-guide" target="_blank" class="link">
+          <%= gettext("Also see the rest of the documentation.") %>
+        </.link>
+      </p>
+    </div>
+    <div :if={@after_text} class="card-body">
+      <%= @after_text %>
     </div>
   </div>
 </div>
