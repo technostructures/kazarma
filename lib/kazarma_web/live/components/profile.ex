@@ -49,15 +49,15 @@ defmodule KazarmaWeb.Components.Profile do
 
   defp external_link(assigns) do
     ~H"""
-    <%= link [
-        to: @to,
-        target: "_blank",
-        aria_label: gettext("Open"),
-        title: gettext("Open"),
-        class: "btn btn-ghost btn-sm"
-      ] do %>
+    <.link
+      href={@to}
+      target="_blank"
+      aria-label={gettext("Open")}
+      title={gettext("Open")}
+      class="btn btn-ghost btn-sm"
+    >
       <.external_link_icon />
-    <% end %>
+    </.link>
     """
   end
 
@@ -85,29 +85,34 @@ defmodule KazarmaWeb.Components.Profile do
   defp puppet_profile_links(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns),
     do: matrix_links(assigns)
 
+  slot(:inner_block, required: true)
+
+  defp copy_link(assigns) do
+    ~H"""
+    <.link
+      to="#"
+      aria_label={gettext("Copy")}
+      title={gettext("Copy")}
+      data-copy={@copy}
+      class={@class}
+    >
+      <%= render_slot(@inner_block) %>
+    </.link>
+    """
+  end
+
   defp address_and_link(assigns) do
     ~H"""
     <div class="flex space-x-6">
-      <%= link [
-        to: "#",
-        aria_label: gettext("Copy"),
-      title: gettext("Copy"),
-      data: [copy: @address],
-      class: "link link-secondary link-hover link-neutral font-mono overflow-x-auto"
-    ]
-    do %>
+      <.copy_link
+        copy={@address}
+        class="link link-secondary link-hover link-neutral font-mono overflow-x-auto"
+      >
         <%= @address %>
-      <% end %>
-      <%= link [
-        to: "#",
-        aria_label: gettext("Copy"),
-      title: gettext("Copy"),
-      data: [copy: @address],
-      class: "link link-secondary link-hover link-neutral font-mono"
-    ]
-    do %>
+      </.copy_link>
+      <.copy_link copy={@address} class="link link-secondary link-hover link-neutral font-mono">
         <.copy_icon />
-      <% end %>
+      </.copy_link>
     </div>
     """
   end

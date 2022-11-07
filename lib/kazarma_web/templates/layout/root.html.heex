@@ -17,9 +17,9 @@
     <a class="sr-only" href="#search_address"><%= gettext("Skip to search") %></a>
     <header class="navbar sticky top-0 z-50 shadow-lg justify-between flex-wrap bg-base-300">
       <div class="flex-none px-2 mx-2 lg:flex order-1">
-        <%= link([to: Routes.index_path(@conn, :index), class: "text-2xl font-bold"],
-          do: "Kazarma"
-        ) %>
+        <.link navigate={Routes.index_path(@conn, :index)} class="text-2xl font-bold">
+          Kazarma
+        </.link>
       </div>
       <div class="flex-grow lg:max-w-3xl mt-0 lg:mx-auto lg:inset-x-0 order-3 sm:order-2">
         <%= render("_search.html", conn: @conn) %>
