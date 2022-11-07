@@ -870,6 +870,7 @@ media_store_path: "/data/media_store"
 # Enable registration for new users.
 #
 enable_registration: true
+enable_registration_without_verification: true
 
 # Optional account validity configuration. This allows for accounts to be denied
 # any request after a given period.
