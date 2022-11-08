@@ -101,9 +101,11 @@ defmodule KazarmaWeb.Components.Profile do
     """
   end
 
+  slot(:inner_block, required: false)
+
   defp address_and_link(assigns) do
     ~H"""
-    <div class="flex space-x-6">
+    <div class="flex items-center space-x-6">
       <.copy_link
         copy={@address}
         class="link link-secondary link-hover link-neutral font-mono overflow-x-auto"
@@ -113,6 +115,7 @@ defmodule KazarmaWeb.Components.Profile do
       <.copy_link copy={@address} class="link link-secondary link-hover link-neutral font-mono">
         <.copy_icon />
       </.copy_link>
+      <%= render_slot(@inner_block) %>
     </div>
     """
   end
@@ -150,6 +153,26 @@ defmodule KazarmaWeb.Components.Profile do
     """
   end
 
+  defp outbox_room_and_links(assigns) do
+    ~H"""
+    <.address_and_link address={@outbox_room}>
+      <.external_link to={"https://matrix.to/#/" <> @outbox_room} />
+      <KazarmaWeb.Button.ghost to={matrix_scheme_room(@actor)} link_text="[m]" />
+    </.address_and_link>
+    """
+  end
+
+  defp maybe_outbox_room_and_links(assigns) do
+    case outbox_room(assigns.actor) do
+      nil ->
+        ~H()
+
+      outbox_room ->
+        Map.put(assigns, :outbox_room, outbox_room)
+        |> outbox_room_and_links()
+    end
+  end
+
   def puppet_profile(assigns) do
     ~H"""
     <div class="card shadow-lg bg-base-300 base-100 mt-4">
@@ -160,8 +183,7 @@ defmodule KazarmaWeb.Components.Profile do
           <.puppet_type_badge actor={@actor} />
         </h2>
         <.puppet_address_and_link actor={@actor} />
-        <!-- <KazarmaWeb.Button.secondary to={"https://matrix.to/#/" <> matrix_outbox_room(@actor)} link_text="matrix.to" /> -->
-        <!-- <KazarmaWeb.Button.secondary to={matrix_scheme_room(@actor)} link_text="matrix:" /> -->
+        <.maybe_outbox_room_and_links actor={@actor} />
       </div>
     </div>
     """

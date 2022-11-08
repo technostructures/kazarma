@@ -63,4 +63,20 @@ defmodule KazarmaWeb.Helpers do
   def text_content(_) do
     ""
   end
+
+  def outbox_room(%ActivityPub.Actor{local: true}) do
+    # @TODO change that when Matrix user rooms are done
+    nil
+  end
+
+  def outbox_room(%ActivityPub.Actor{ap_id: ap_id, username: username}) do
+    case Kazarma.Matrix.Bridge.get_room_by_remote_id(ap_id) do
+      %MatrixAppService.Bridge.Room{} ->
+        {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username)
+        String.replace_leading(matrix_id, "@", "#")
+
+      nil ->
+        nil
+    end
+  end
 end
