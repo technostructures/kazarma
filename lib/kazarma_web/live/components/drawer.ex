@@ -23,7 +23,7 @@ defmodule KazarmaWeb.Components.Drawer do
         </label>
         <%= render_slot(@page) %>
       </div>
-      <div class="drawer-side max-h-unset overflow-y-unset min-h-[80vh]">
+      <div class="drawer-side max-h-unset overflow-y-unset min-h-[calc(100vh_-_4rem]">
         <label for="actor-drawer" class="drawer-overlay"></label>
         <div class="menu p-4 w-80 lg:w-[33vw] bg-base-100 text-base-content">
           <div class="container mx-auto flex flex-col lg:max-w-3xl px-4 sticky top-28">
