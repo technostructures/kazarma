@@ -31,7 +31,7 @@ services:
     env_file: .env.staging
 
   synapse:
-    image: matrixdotorg/synapse:v1.70.1
+    image: matrixdotorg/synapse:v1.71.0
     # domainname: matrix.local
     # Since synapse does not retry to connect to the database, restart upon
     # failure
