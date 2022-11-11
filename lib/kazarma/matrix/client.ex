@@ -210,7 +210,10 @@ defmodule Kazarma.Matrix.Client do
         room_version: "5",
         room_alias_name: room_alias_name,
         # power_level_content_override: %{},
-        initial_state: [%{type: "m.room.guest_access", content: %{guest_access: :can_join}}]
+        initial_state: [
+          %{type: "m.room.guest_access", content: %{guest_access: :can_join}},
+          %{type: "m.room.history_visibility", content: %{history_visibility: :world_readable}}
+        ]
       ],
       user_id: creator
     )
