@@ -106,11 +106,18 @@ defmodule Kazarma.RoomType.Chat do
            Kazarma.Matrix.Client.get_direct_room(from_matrix_id, to_matrix_id),
          {:ok, %{"room_id" => room_id}} <-
            Kazarma.Matrix.Client.create_direct_room(from_matrix_id, to_matrix_id),
-         {:ok, _} <- Kazarma.Matrix.Bridge.insert_chat_message_bridge_room(room_id, from_ap_id) do
+         {:ok, _} <- insert_bridge_room(room_id, from_ap_id) do
       {:ok, room_id}
     else
       {:ok, room_id} -> {:ok, room_id}
       {:error, error} -> {:error, error}
     end
+  end
+
+  defp insert_bridge_room(room_id, from_ap_id) do
+    Kazarma.Matrix.Bridge.create_room(%{
+      local_id: room_id,
+      data: %{type: :chat_message, to_ap_id: from_ap_id}
+    })
   end
 end

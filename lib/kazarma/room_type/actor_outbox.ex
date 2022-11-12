@@ -197,14 +197,14 @@ defmodule Kazarma.RoomType.ActorOutbox do
              name,
              alias
            ),
-         {:ok, room} <- Kazarma.Matrix.Bridge.insert_outbox_room(room_id, actor.ap_id, matrix_id) do
+         {:ok, room} <- insert_bridge_room(room_id, actor.ap_id, matrix_id) do
       {:ok, room}
     else
       {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}} ->
         {:ok, {room_id, _}} =
           Kazarma.Matrix.Client.get_alias("##{alias}:#{Kazarma.Address.domain()}")
 
-        Kazarma.Matrix.Bridge.insert_outbox_room(
+        insert_bridge_room(
           room_id,
           actor.ap_id,
           matrix_id
@@ -213,5 +213,13 @@ defmodule Kazarma.RoomType.ActorOutbox do
       %MatrixAppService.Bridge.Room{} = room ->
         {:ok, room}
     end
+  end
+
+  defp insert_bridge_room(room_id, ap_id, matrix_id) do
+    Kazarma.Matrix.Bridge.create_room(%{
+      local_id: room_id,
+      remote_id: ap_id,
+      data: %{type: :outbox, matrix_id: matrix_id}
+    })
   end
 end

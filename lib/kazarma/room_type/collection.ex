@@ -57,7 +57,7 @@ defmodule Kazarma.RoomType.Collection do
          {:ok, %{"room_id" => room_id}} <-
            Client.create_multiuser_room(matrix_id, [], name: name),
          {:ok, _} <-
-           Bridge.insert_collection_bridge_room(room_id, members_ap_id) do
+           insert_bridge_room(room_id, members_ap_id) do
       {:ok, room_id}
     else
       %Room{local_id: local_id} -> {:ok, local_id}
@@ -97,5 +97,13 @@ defmodule Kazarma.RoomType.Collection do
 
       :ok
     end
+  end
+
+  defp insert_bridge_room(room_id, group) do
+    Kazarma.Matrix.Bridge.create_room(%{
+      local_id: room_id,
+      remote_id: group,
+      data: %{type: :collection}
+    })
   end
 end
