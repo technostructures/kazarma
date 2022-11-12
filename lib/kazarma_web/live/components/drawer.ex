@@ -17,7 +17,7 @@ defmodule KazarmaWeb.Components.Drawer do
       <div class="drawer-content lg:col-span-2">
         <label
           for="actor-drawer"
-          class="btn btn-secondary btn-block rounded-none drawer-button lg:hidden"
+          class="btn btn-secondary btn-block rounded-none drawer-button lg:hidden normal-case"
         >
           <%= render_slot(@button) %>
         </label>
