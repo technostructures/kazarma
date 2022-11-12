@@ -108,10 +108,16 @@ config :kazarma, prefix_puppet_username: puppet_prefix
 bridge_remote_matrix_users = System.get_env("BRIDGE_REMOTE") == "true"
 html_search = System.get_env("HTML_SEARCH") == "true"
 html_activity_pub = System.get_env("HTML_AP") == "true"
+frontpage_help = System.get_env("FRONTPAGE_HELP") != "false"
+frontpage_before_text = System.get_env("FRONTPAGE_BEFORE_TEXT")
+frontpage_after_text = System.get_env("FRONTPAGE_AFTER_TEXT")
 
 config :kazarma, bridge_remote_matrix_users: bridge_remote_matrix_users
 config :kazarma, html_search: html_search
 config :kazarma, html_actor_view_include_remote: html_activity_pub
+config :kazarma, frontpage_help: frontpage_help
+config :kazarma, frontpage_before_text: frontpage_before_text
+config :kazarma, frontpage_after_text: frontpage_after_text
 
 sentry_dsn = System.get_env("SENTRY_DSN")
 release_level = System.get_env("RELEASE_LEVEL") || "production"

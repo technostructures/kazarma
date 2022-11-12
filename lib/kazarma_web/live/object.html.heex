@@ -1,0 +1,19 @@
+<KazarmaWeb.Components.Drawer.drawer>
+  <:sidebar>
+    <KazarmaWeb.Components.Profile.show actor={@actor} />
+  </:sidebar>
+  <:button>
+    <%= display_name(@actor) %>
+  </:button>
+  <:page>
+    <div class="container mx-auto col-span-2 lg:max-w-3xl px-4">
+      <KazarmaWeb.Components.ActivityList.show
+        object={@object}
+        previous_objects={@previous_objects}
+        next_objects={@next_objects}
+        actor={@actor}
+        socket={@socket}
+      />
+    </div>
+  </:page>
+</KazarmaWeb.Components.Drawer.drawer>

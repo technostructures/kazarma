@@ -17,7 +17,8 @@ defmodule Kazarma do
     if String.match?(username, ~r/@[a-z0-9_.\-=]+:[a-z0-9\.-]+/) do
       Kazarma.Address.matrix_id_to_actor(username)
     else
-      ActivityPub.Actor.get_or_fetch_by_username(username)
+      String.replace_prefix(username, "@", "")
+      |> ActivityPub.Actor.get_or_fetch_by_username()
     end
   end
 end

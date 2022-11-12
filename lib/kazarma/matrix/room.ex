@@ -5,7 +5,6 @@ defmodule Kazarma.Matrix.Room do
   Implementation of `MatrixAppService.Adapter.Room`.
   """
   @behaviour MatrixAppService.Adapter.Room
-  alias Kazarma.ActivityPub.Collection
   alias Kazarma.Address
   alias Kazarma.Logger
 
@@ -20,7 +19,7 @@ defmodule Kazarma.Matrix.Room do
              :activity_pub
            ]),
          # @TODO: configure timeline bridging (from AP network) enabled
-         {:ok, _} <- Collection.get_or_create_outbox(actor, user_id) do
+         {:ok, _} <- Kazarma.RoomType.Actor.get_or_create_outbox(actor, user_id) do
       :ok
     else
       false ->

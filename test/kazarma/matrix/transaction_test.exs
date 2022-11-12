@@ -98,6 +98,20 @@ defmodule Kazarma.Matrix.TransactionTest do
         @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
       end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @pleroma_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @pleroma_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+      end)
       |> expect(:get_data, fn
         @pleroma_puppet_address, "m.direct", user_id: @pleroma_puppet_address ->
           {:ok, %{}}
@@ -139,6 +153,33 @@ defmodule Kazarma.Matrix.TransactionTest do
           registration_type: "m.login.application_service"
         ] ->
           {:ok, %{"user_id" => @mastodon_puppet_address}}
+      end)
+      |> expect(:create_room, 2, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @pleroma_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @pleroma_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+
+        [
+          visibility: :public,
+          name: "Alice",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @mastodon_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @mastodon_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
       end)
       |> expect(:put_displayname, 2, fn
         @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
@@ -377,17 +418,17 @@ defmodule Kazarma.Matrix.TransactionTest do
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/pub/actors/bob",
+            ap_id: "http://kazarma/actors/bob",
             data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/pub/actors/bob/followers",
-              "followings" => "http://kazarma/pub/actors/bob/following",
-              "id" => "http://kazarma/pub/actors/bob",
-              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "followers" => "http://kazarma/actors/bob/followers",
+              "followings" => "http://kazarma/actors/bob/following",
+              "id" => "http://kazarma/actors/bob",
+              "inbox" => "http://kazarma/actors/bob/inbox",
               "manuallyApprovesFollowers" => false,
               "name" => "Bob",
-              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "outbox" => "http://kazarma/actors/bob/outbox",
               "preferredUsername" => "bob",
               "type" => "Person"
             },
@@ -400,8 +441,8 @@ defmodule Kazarma.Matrix.TransactionTest do
           },
           context: nil,
           object: %{
-            "actor" => "http://kazarma/pub/actors/bob",
-            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "actor" => "http://kazarma/actors/bob",
+            "attributedTo" => "http://kazarma/actors/bob",
             "content" => "hello",
             "to" => ["alice@pleroma"],
             "type" => "ChatMessage"
@@ -434,18 +475,18 @@ defmodule Kazarma.Matrix.TransactionTest do
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/pub/actors/bob",
+            ap_id: "http://kazarma/actors/bob",
             data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/pub/actors/bob/followers",
-              "followings" => "http://kazarma/pub/actors/bob/following",
+              "followers" => "http://kazarma/actors/bob/followers",
+              "followings" => "http://kazarma/actors/bob/following",
               "icon" => nil,
-              "id" => "http://kazarma/pub/actors/bob",
-              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "id" => "http://kazarma/actors/bob",
+              "inbox" => "http://kazarma/actors/bob/inbox",
               "manuallyApprovesFollowers" => false,
               "name" => "Bob",
-              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "outbox" => "http://kazarma/actors/bob/outbox",
               "preferredUsername" => "bob",
               "type" => "Person"
             },
@@ -458,7 +499,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           },
           context: nil,
           object: %{
-            "actor" => "http://kazarma/pub/actors/bob",
+            "actor" => "http://kazarma/actors/bob",
             "attachment" => %{
               "mediaType" => "image/jpeg",
               "name" => nil,
@@ -471,7 +512,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                 }
               ]
             },
-            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "attributedTo" => "http://kazarma/actors/bob",
             "content" => "",
             "to" => ["alice@pleroma"],
             "type" => "ChatMessage"
@@ -526,6 +567,20 @@ defmodule Kazarma.Matrix.TransactionTest do
         ] ->
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @pleroma_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @pleroma_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+      end)
       |> expect(:put_displayname, fn
         @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
@@ -535,17 +590,17 @@ defmodule Kazarma.Matrix.TransactionTest do
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/pub/actors/bob",
+            ap_id: "http://kazarma/actors/bob",
             data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/pub/actors/bob/followers",
-              "followings" => "http://kazarma/pub/actors/bob/following",
-              "id" => "http://kazarma/pub/actors/bob",
-              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "followers" => "http://kazarma/actors/bob/followers",
+              "followings" => "http://kazarma/actors/bob/following",
+              "id" => "http://kazarma/actors/bob",
+              "inbox" => "http://kazarma/actors/bob/inbox",
               "manuallyApprovesFollowers" => false,
               "name" => "Bob",
-              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "outbox" => "http://kazarma/actors/bob/outbox",
               "preferredUsername" => "bob",
               "type" => "Person"
             },
@@ -558,8 +613,8 @@ defmodule Kazarma.Matrix.TransactionTest do
           },
           context: "http://pleroma/contexts/context",
           object: %{
-            "actor" => "http://kazarma/pub/actors/bob",
-            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "actor" => "http://kazarma/actors/bob",
+            "attributedTo" => "http://kazarma/actors/bob",
             "content" => "hello",
             "context" => "http://pleroma/contexts/context",
             "conversation" => "http://pleroma/contexts/context",
@@ -598,6 +653,20 @@ defmodule Kazarma.Matrix.TransactionTest do
         ] ->
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @pleroma_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @pleroma_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+      end)
       |> expect(:put_displayname, fn
         @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
@@ -607,18 +676,18 @@ defmodule Kazarma.Matrix.TransactionTest do
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/pub/actors/bob",
+            ap_id: "http://kazarma/actors/bob",
             data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/pub/actors/bob/followers",
-              "followings" => "http://kazarma/pub/actors/bob/following",
+              "followers" => "http://kazarma/actors/bob/followers",
+              "followings" => "http://kazarma/actors/bob/following",
               "icon" => nil,
-              "id" => "http://kazarma/pub/actors/bob",
-              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "id" => "http://kazarma/actors/bob",
+              "inbox" => "http://kazarma/actors/bob/inbox",
               "manuallyApprovesFollowers" => false,
               "name" => "Bob",
-              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "outbox" => "http://kazarma/actors/bob/outbox",
               "preferredUsername" => "bob",
               "type" => "Person"
             },
@@ -631,7 +700,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           },
           context: "http://pleroma/contexts/context",
           object: %{
-            "actor" => "http://kazarma/pub/actors/bob",
+            "actor" => "http://kazarma/actors/bob",
             "attachment" => %{
               "mediaType" => "image/jpeg",
               "name" => nil,
@@ -644,7 +713,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                 }
               ]
             },
-            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "attributedTo" => "http://kazarma/actors/bob",
             "content" => "",
             "context" => "http://pleroma/contexts/context",
             "conversation" => "http://pleroma/contexts/context",
@@ -727,6 +796,20 @@ defmodule Kazarma.Matrix.TransactionTest do
         ] ->
           {:ok, %{"user_id" => @pleroma_puppet_address}}
       end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: @pleroma_puppet_username,
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: @pleroma_puppet_address] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+      end)
       |> expect(:put_displayname, fn
         @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
           :ok
@@ -736,17 +819,17 @@ defmodule Kazarma.Matrix.TransactionTest do
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/pub/actors/bob",
+            ap_id: "http://kazarma/actors/bob",
             data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/pub/actors/bob/followers",
-              "followings" => "http://kazarma/pub/actors/bob/following",
-              "id" => "http://kazarma/pub/actors/bob",
-              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "followers" => "http://kazarma/actors/bob/followers",
+              "followings" => "http://kazarma/actors/bob/following",
+              "id" => "http://kazarma/actors/bob",
+              "inbox" => "http://kazarma/actors/bob/inbox",
               "manuallyApprovesFollowers" => false,
               "name" => "Bob",
-              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "outbox" => "http://kazarma/actors/bob/outbox",
               "preferredUsername" => "bob",
               "type" => "Person"
             },
@@ -759,8 +842,8 @@ defmodule Kazarma.Matrix.TransactionTest do
           },
           context: "http://pleroma/contexts/context",
           object: %{
-            "actor" => "http://kazarma/pub/actors/bob",
-            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "actor" => "http://kazarma/actors/bob",
+            "attributedTo" => "http://kazarma/actors/bob",
             "content" => "hello",
             "context" => "http://pleroma/contexts/context",
             "conversation" => "http://pleroma/contexts/context",
@@ -836,18 +919,18 @@ defmodule Kazarma.Matrix.TransactionTest do
         },
         true,
         %ActivityPub.Actor{
-          ap_id: "http://kazarma/pub/actors/bob",
+          ap_id: "http://kazarma/actors/bob",
           data: %{
-            :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+            :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
             "capabilities" => %{"acceptsChatMessages" => true},
-            "followers" => "http://kazarma/pub/actors/bob/followers",
-            "followings" => "http://kazarma/pub/actors/bob/following",
+            "followers" => "http://kazarma/actors/bob/followers",
+            "followings" => "http://kazarma/actors/bob/following",
             "icon" => nil,
-            "id" => "http://kazarma/pub/actors/bob",
-            "inbox" => "http://kazarma/pub/actors/bob/inbox",
+            "id" => "http://kazarma/actors/bob",
+            "inbox" => "http://kazarma/actors/bob/inbox",
             "manuallyApprovesFollowers" => false,
             "name" => "Bob",
-            "outbox" => "http://kazarma/pub/actors/bob/outbox",
+            "outbox" => "http://kazarma/actors/bob/outbox",
             "preferredUsername" => "bob",
             "type" => "Person"
           },
@@ -929,17 +1012,17 @@ defmodule Kazarma.Matrix.TransactionTest do
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/pub/actors/bob",
+            ap_id: "http://kazarma/actors/bob",
             data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/pub/actors/bob/followers",
-              "followings" => "http://kazarma/pub/actors/bob/following",
-              "id" => "http://kazarma/pub/actors/bob",
-              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "followers" => "http://kazarma/actors/bob/followers",
+              "followings" => "http://kazarma/actors/bob/following",
+              "id" => "http://kazarma/actors/bob",
+              "inbox" => "http://kazarma/actors/bob/inbox",
               "manuallyApprovesFollowers" => false,
               "name" => "Bob",
-              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "outbox" => "http://kazarma/actors/bob/outbox",
               "preferredUsername" => "bob",
               "type" => "Person"
             },
@@ -952,10 +1035,10 @@ defmodule Kazarma.Matrix.TransactionTest do
           },
           context: nil,
           object: %{
-            "actor" => "http://kazarma/pub/actors/bob",
-            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "actor" => "http://kazarma/actors/bob",
+            "attributedTo" => "http://kazarma/actors/bob",
             "content" => """
-            Hello <span class="h-card"><a href="http://kazarma/pub/actors/alice" class="u-url mention">@<span>alice@kazarma</span></a></span>!
+            Hello <span class="h-card"><a href="http://kazarma/actors/alice" class="u-url mention">@<span>alice@kazarma</span></a></span>!
             """,
             "to" => ["alice@pleroma"],
             "type" => "ChatMessage"
@@ -1007,17 +1090,17 @@ defmodule Kazarma.Matrix.TransactionTest do
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/pub/actors/bob",
+            ap_id: "http://kazarma/actors/bob",
             data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/pub/shared_inbox"},
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/pub/actors/bob/followers",
-              "followings" => "http://kazarma/pub/actors/bob/following",
-              "id" => "http://kazarma/pub/actors/bob",
-              "inbox" => "http://kazarma/pub/actors/bob/inbox",
+              "followers" => "http://kazarma/actors/bob/followers",
+              "followings" => "http://kazarma/actors/bob/following",
+              "id" => "http://kazarma/actors/bob",
+              "inbox" => "http://kazarma/actors/bob/inbox",
               "manuallyApprovesFollowers" => false,
               "name" => "Bob",
-              "outbox" => "http://kazarma/pub/actors/bob/outbox",
+              "outbox" => "http://kazarma/actors/bob/outbox",
               "preferredUsername" => "bob",
               "type" => "Person"
             },
@@ -1030,8 +1113,8 @@ defmodule Kazarma.Matrix.TransactionTest do
           },
           context: nil,
           object: %{
-            "actor" => "http://kazarma/pub/actors/bob",
-            "attributedTo" => "http://kazarma/pub/actors/bob",
+            "actor" => "http://kazarma/actors/bob",
+            "attributedTo" => "http://kazarma/actors/bob",
             "content" => """
             Hello <span class="h-card">@<span>alice@kazarma</span></span>!
             """,

@@ -14,9 +14,16 @@ defmodule KazarmaWeb.Address do
     <div class="form-control">
       <label for={@id} class="label">
         <span class="label-text"><%= @label %></span>
-      </label> 
+      </label>
       <div class="flex flex-wrap gap-2 content-center">
-        <input type="text" id={@id} aria-label={@label} class="flex-grow input input-bordered border-opacity-80" value={@value} readonly="readonly">
+        <input
+          type="text"
+          id={@id}
+          aria-label={@label}
+          class="flex-grow input input-bordered border-opacity-80"
+          value={@value}
+          readonly="readonly"
+        />
         <KazarmaWeb.Button.copy copy_id={@id} />
         <%= render_slot(@buttons) %>
       </div>

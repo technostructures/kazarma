@@ -11,93 +11,99 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2\n"
 
-#: lib/kazarma_web/templates/layout/app.html.eex:31
-#: lib/kazarma_web/templates/layout/app.html.eex:32
-#, elixir-autogen, elixir-format
-msgid "@alice:matrix.org / bob@mastodon.social / https://mastodon.social/users/bob"
-msgstr ""
-
-#: lib/kazarma_web/templates/actor/show.html.eex:59
-#, elixir-autogen, elixir-format
-msgid "ID"
-msgstr ""
-
-#: lib/kazarma_web/templates/index/index.html.eex:8
-#, elixir-autogen, elixir-format
-msgid "This a public Kazarma instance."
-msgstr "Ceci est un instance publique de Kazarma."
-
-#: lib/kazarma_web/controllers/actor_controller.ex:31
 #: lib/kazarma_web/controllers/search_controller.ex:17
+#: lib/kazarma_web/live/actor.ex:57
+#: lib/kazarma_web/live/index.ex:28
+#: lib/kazarma_web/live/object.ex:46
 #, elixir-autogen, elixir-format
 msgid "User not found"
 msgstr "Utilisateur non trouvé"
 
-#: lib/kazarma_web/templates/actor/show.html.eex:37
-#: lib/kazarma_web/templates/actor/show.html.eex:72
-#, elixir-autogen, elixir-format
-msgid "Username"
-msgstr "Nom d'utilisateur"
-
-#: lib/kazarma_web/templates/actor/show.html.eex:41
-#: lib/kazarma_web/templates/actor/show.html.eex:41
-#: lib/kazarma_web/templates/actor/show.html.eex:63
-#: lib/kazarma_web/templates/actor/show.html.eex:63
-#: lib/kazarma_web/templates/actor/show.html.eex:76
-#: lib/kazarma_web/templates/actor/show.html.eex:76
+#: lib/kazarma_web/live/components/button.ex:14
+#: lib/kazarma_web/live/components/button.ex:15
+#: lib/kazarma_web/live/components/profile.ex:94
+#: lib/kazarma_web/live/components/profile.ex:95
 #, elixir-autogen, elixir-format
 msgid "Copy"
 msgstr "Copier"
 
-#: lib/kazarma_web/templates/layout/app.html.eex:43
-#: lib/kazarma_web/templates/layout/app.html.eex:43
-#, elixir-autogen, elixir-format
-msgid "GitLab repository"
-msgstr "Dépôt GitLab"
-
-#: lib/kazarma_web/templates/layout/app.html.eex:31
-#, elixir-autogen, elixir-format
-msgid "Matrix or ActivityPub username, or ActivityPub ID"
-msgstr "Nom d'utilisateur Matrix ou ActivityPub, ou ID ActivityPub"
-
-#: lib/kazarma_web/templates/actor/show.html.eex:66
-#: lib/kazarma_web/templates/actor/show.html.eex:66
+#: lib/kazarma_web/live/components/profile.ex:55
+#: lib/kazarma_web/live/components/profile.ex:56
 #, elixir-autogen, elixir-format
 msgid "Open"
 msgstr "Ouvrir"
 
-#: lib/kazarma_web/templates/layout/app.html.eex:36
-#: lib/kazarma_web/templates/layout/app.html.eex:36
+#: lib/kazarma_web/templates/layout/_search.html.heex:29
+#: lib/kazarma_web/templates/layout/_search.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr "Rechercher"
 
-#: lib/kazarma_web/templates/actor/show.html.eex:62
-#, elixir-autogen, elixir-format
-msgid "ActivityPub ID"
-msgstr "ID ActivityPub"
-
-#: lib/kazarma_web/templates/actor/show.html.eex:75
-#, elixir-autogen, elixir-format
-msgid "ActivityPub username"
-msgstr "Nom d'utilisateur ActivityPub"
-
-#: lib/kazarma_web/templates/actor/show.html.eex:40
-#, elixir-autogen, elixir-format
-msgid "Matrix username"
-msgstr "Nom d'utilisateur Matrix"
-
-#: lib/kazarma_web/templates/actor/show.html.eex:13
+#: lib/kazarma_web/live/components/object.ex:36
+#: lib/kazarma_web/live/components/profile.ex:18
 #, elixir-autogen, elixir-format
 msgid "%{actor_name}'s avatar"
 msgstr "Avatar de %{actor_name}"
 
-#: lib/kazarma_web/templates/layout/app.html.eex:17
+#: lib/kazarma_web/templates/layout/root.html.heex:16
 #, elixir-autogen, elixir-format
 msgid "Skip to content"
 msgstr "Aller au contenu"
 
-#: lib/kazarma_web/templates/layout/app.html.eex:18
+#: lib/kazarma_web/templates/layout/root.html.heex:17
 #, elixir-autogen, elixir-format
 msgid "Skip to search"
 msgstr "Aller à la recherche"
+
+#: lib/kazarma_web/live/index.html.heex:38
+#, elixir-autogen, elixir-format
+msgid "Also see the rest of the documentation."
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "Quick guide"
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:11
+#, elixir-autogen, elixir-format
+msgid "Search for a Matrix user"
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:20
+#, elixir-autogen, elixir-format
+msgid "Search for an ActivityPub user"
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:14
+#, elixir-autogen, elixir-format
+msgid "To search for a Matrix user, enter their Matrix username, in the form @user:server."
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "To search for an ActivityPub user, you can use two types of address:"
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:31
+#, elixir-autogen, elixir-format
+msgid "their ActivityPub ID, which is often the URL of their profile page (https://server/@user)."
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "their ActivityPub username, in the form user@server;"
+msgstr ""
+
+#: lib/kazarma_web/templates/layout/root.html.heex:34
+#: lib/kazarma_web/templates/layout/root.html.heex:35
+#, elixir-autogen, elixir-format
+msgid "Help"
+msgstr ""
+
+#: lib/kazarma_web/templates/layout/_search.html.heex:13
+#: lib/kazarma_web/templates/layout/_search.html.heex:14
+#: lib/kazarma_web/templates/layout/_search.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "Matrix or ActivityPub identifier"
+msgstr ""

@@ -5,18 +5,18 @@ defmodule KazarmaWeb.Router do
   use KazarmaWeb, :router
 
   use MatrixAppServiceWeb.Routes
-  use ActivityPubWeb.Router
+  # use ActivityPubWeb.Router
 
-  # pipeline :api do
-  #   plug :accepts, ["json"]
-  # end
+  pipeline :accepts_html do
+    plug(:accepts, ["html"])
+  end
 
-  # scope "/api", KazarmaWeb do
-  #   pipe_through :api
-  # end
+  pipeline :accepts_html_and_json do
+    plug(:accepts, ["activity+json", "json", "html"])
+    plug(KazarmaWeb.LiveOrJsonPlug)
+  end
 
   pipeline :browser do
-    plug :accepts, ["html"]
     plug :fetch_session
 
     plug Cldr.Plug.PutLocale,
@@ -29,13 +29,14 @@ defmodule KazarmaWeb.Router do
     plug :fetch_live_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    # plug :put_root_layout, {KazarmaWeb.LayoutView, :app}
+    plug :put_root_layout, {KazarmaWeb.LayoutView, :root}
   end
 
   scope "/", KazarmaWeb do
+    pipe_through :accepts_html
     pipe_through :browser
 
-    get "/", IndexController, :index
+    live "/", Index, :index, as: :index
 
     post "/search", SearchController, :search
   end
@@ -64,5 +65,50 @@ defmodule KazarmaWeb.Router do
       pipe_through [:fetch_session, :protect_from_forgery]
       live_dashboard "/dashboard", metrics: KazarmaWeb.Telemetry
     end
+  end
+
+  # ActivityPub router, modified to also have live view routes
+  pipeline :well_known do
+    plug(:accepts, ["json", "jrd+json", "xml", "xrd+xml"])
+  end
+
+  pipeline :activity_pub do
+    plug(:accepts, ["activity+json", "json"])
+  end
+
+  pipeline :signed_activity_pub do
+    plug(:accepts, ["activity+json", "json"])
+    plug(ActivityPubWeb.Plugs.HTTPSignaturePlug)
+  end
+
+  scope "/.well-known", ActivityPubWeb do
+    pipe_through(:well_known)
+
+    get "/webfinger", WebFingerController, :webfinger
+  end
+
+  scope "/", ActivityPubWeb do
+    pipe_through(:activity_pub)
+
+    # get "/objects/:uuid", ActivityPubController, :object
+    # get "/actors/:username", ActivityPubController, :actor
+    get "/actors/:username/followers", ActivityPubController, :followers
+    get "/actors/:username/following", ActivityPubController, :following
+    get "/actors/:username/outbox", ActivityPubController, :noop
+  end
+
+  scope "/", KazarmaWeb do
+    pipe_through(:accepts_html_and_json)
+    pipe_through(:browser)
+
+    live("/objects/:uuid", Object, :object, as: :activity_pub)
+    live("/actors/:username", Actor, :actor, as: :activity_pub)
+  end
+
+  scope "/", ActivityPubWeb do
+    pipe_through(:signed_activity_pub)
+
+    post "/actors/:username/inbox", ActivityPubController, :inbox
+    post "/shared_inbox", ActivityPubController, :inbox
   end
 end

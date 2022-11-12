@@ -10,4 +10,16 @@ defmodule Kazarma.Config do
       @activitypub_server Application.compile_env!(:kazarma, [:activity_pub, :server])
     end
   end
+
+  def frontpage_help() do
+    Application.get_env(:kazarma, :frontpage_help)
+  end
+
+  def frontpage_before_text() do
+    Application.get_env(:kazarma, :frontpage_before_text)
+  end
+
+  def frontpage_after_text() do
+    Application.get_env(:kazarma, :frontpage_after_text)
+  end
 end

@@ -23,23 +23,23 @@ defmodule Kazarma.ActivityPub.ActorTest do
                local: true,
                deactivated: false,
                username: "alice@kazarma",
-               ap_id: "http://kazarma/pub/actors/alice",
+               ap_id: "http://kazarma/actors/alice",
                data: %{
                  "preferredUsername" => "alice",
-                 "id" => "http://kazarma/pub/actors/alice",
+                 "id" => "http://kazarma/actors/alice",
                  "type" => "Person",
                  "name" => "Alice",
                  "icon" => %{
                    "type" => "Image",
                    "url" => "http://matrix/_matrix/media/r0/download/server/image_id"
                  },
-                 "followers" => "http://kazarma/pub/actors/alice/followers",
-                 "followings" => "http://kazarma/pub/actors/alice/following",
-                 "inbox" => "http://kazarma/pub/actors/alice/inbox",
-                 "outbox" => "http://kazarma/pub/actors/alice/outbox",
+                 "followers" => "http://kazarma/actors/alice/followers",
+                 "followings" => "http://kazarma/actors/alice/following",
+                 "inbox" => "http://kazarma/actors/alice/inbox",
+                 "outbox" => "http://kazarma/actors/alice/outbox",
                  "manuallyApprovesFollowers" => false,
                  endpoints: %{
-                   "sharedInbox" => "http://kazarma/pub/shared_inbox"
+                   "sharedInbox" => "http://kazarma/shared_inbox"
                  }
                }
              } = actor
@@ -48,7 +48,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
                data: %{
                  "ap_data" => %{
                    "preferredUsername" => "alice",
-                   "id" => "http://kazarma/pub/actors/alice",
+                   "id" => "http://kazarma/actors/alice",
                    "type" => "Person",
                    "name" => "Alice",
                    "icon" => %{
@@ -64,7 +64,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
               %{
                 data: %{
                   "preferredUsername" => "alice",
-                  "id" => "http://kazarma/pub/actors/alice",
+                  "id" => "http://kazarma/actors/alice",
                   "type" => "Person",
                   "name" => "Alice",
                   "icon" => %{
@@ -104,6 +104,20 @@ defmodule Kazarma.ActivityPub.ActorTest do
                                      user_id: "@_ap_bob___pleroma:kazarma" ->
         :ok
       end)
+      |> expect(:create_room, 1, fn
+        [
+          visibility: :public,
+          name: "Bob",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: "_ap_bob___pleroma",
+          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+        ],
+        [user_id: "@_ap_bob___pleroma:kazarma"] ->
+          {:ok, %{"room_id" => "!room_id:kazarma"}}
+      end)
       |> expect(:upload, fn _blob, _opts, user_id: "@_ap_bob___pleroma:kazarma" ->
         {:ok, "mxc://server/media_id"}
       end)
@@ -116,6 +130,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
       assert :ok =
                maybe_create_remote_actor(%ActivityPub.Actor{
                  username: "bob@pleroma",
+                 ap_id: "http://pleroma/users/bob",
                  data: %{
                    "name" => "Bob",
                    "icon" => %{"type" => "Image", "url" => "https://via.placeholder.com/150"}
@@ -145,7 +160,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
       {:ok, _user} =
         Kazarma.Matrix.Bridge.create_user(%{
           local_id: "@alice:kazarma",
-          remote_id: "http://kazarma/pub/actors/alice"
+          remote_id: "http://kazarma/actors/alice"
         })
 
       assert :ok =
@@ -160,7 +175,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
                    data: %{
                      "name" => "old_name",
                      "icon" => %{"url" => "https://via.placeholder.com/300"},
-                     "id" => "http://kazarma/pub/actors/alice"
+                     "id" => "http://kazarma/actors/alice"
                    }
                  }
                })

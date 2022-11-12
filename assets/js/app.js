@@ -20,14 +20,32 @@ import "phoenix_html"
 
 // copy buttons in actor view
 
-const copyButtons = document.getElementsByClassName("btn-copy")
+// const copyButtons = document.getElementsByClassName("btn-copy")
+//
+// Array.from(copyButtons).forEach(function (button) {
+//   const textField = document.getElementById(button.dataset.copyId)
+//
+//   button.addEventListener("click", function () {
+//     textField.select()
+//     document.execCommand("copy")
+//   })
+// })
+
+// copy buttons in profile component
+
+const copyButtons = document.querySelectorAll('[data-copy]')
 
 Array.from(copyButtons).forEach(function (button) {
-  const textField = document.getElementById(button.dataset.copyId)
+  const text = button.dataset.copy
 
   button.addEventListener("click", function () {
-    textField.select()
+    let tempInput = document.createElement("input")
+    tempInput.value = text
+    document.body.appendChild(tempInput)
+    tempInput.select()
+    
     document.execCommand("copy")
+    document.body.removeChild(tempInput)
   })
 })
 
@@ -36,6 +54,12 @@ import {LiveSocket} from "phoenix_live_view"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+
+// Show progress bar on live navigation and form submits
+import topbar from "topbar"
+topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+window.addEventListener("phx:page-loading-start", info => topbar.show())
+window.addEventListener("phx:page-loading-stop", info => topbar.hide())
 
 // Connect if there are any LiveViews on the page
 liveSocket.connect()

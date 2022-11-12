@@ -35,7 +35,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
       %{
         data: %{
           "type" => "Create",
-          "to" => ["http://kazarma/pub/actors/bob"]
+          "to" => ["http://kazarma/actors/bob"]
         },
         object: %ActivityPub.Object{
           data: %{
@@ -55,7 +55,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
         data: %{
           "type" => "Create",
           "actor" => "http://pleroma/pub/actors/alice",
-          "to" => ["http://kazarma/pub/actors/bob"]
+          "to" => ["http://kazarma/actors/bob"]
         },
         object: %ActivityPub.Object{
           data: %{
@@ -396,7 +396,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
       %{
         data: %{
           "type" => "Create",
-          "to" => ["http://kazarma/pub/actors/bob"]
+          "to" => ["http://kazarma/actors/bob"]
         },
         object: %ActivityPub.Object{
           data: %{
@@ -495,7 +495,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
         data: %{
           "type" => "Create",
           "to" => [
-            "http://kazarma/pub/actors/bob",
+            "http://kazarma/actors/bob",
             "https://www.w3.org/ns/activitystreams#Public"
           ]
         },
@@ -517,7 +517,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
         data: %{
           "type" => "Create",
           "to" => [
-            "http://kazarma/pub/actors/bob",
+            "http://kazarma/actors/bob",
             "https://www.w3.org/ns/activitystreams#Public"
           ]
         },
@@ -650,7 +650,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
         data: %{
           "type" => "Create",
           "to" => [
-            "http://kazarma/pub/actors/bob",
+            "http://kazarma/actors/bob",
             "https://www.w3.org/ns/activitystreams#Public"
           ]
         },
