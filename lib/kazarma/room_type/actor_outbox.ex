@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule Kazarma.RoomType.Actor do
+defmodule Kazarma.RoomType.ActorOutbox do
   @moduledoc """
   This room type represents "inboxes and outboxes", in ActivityPub terminology, for ActivityPub actors.
 
