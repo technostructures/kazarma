@@ -46,7 +46,7 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   synapse:
-    image: matrixdotorg/synapse:v1.70.1
+    image: matrixdotorg/synapse:v1.71.0
     # domainname: matrix.local
     # Since synapse does not retry to connect to the database, restart upon
     # failure
@@ -132,7 +132,7 @@ services:
       - traefik.http.routers.delegations.tls=true
 
   element:
-    image: vectorim/element-web:v1.11.13
+    image: vectorim/element-web:v1.11.14
     labels:
       - traefik.enable=true
       - traefik.http.services.element.loadbalancer.server.port=80
