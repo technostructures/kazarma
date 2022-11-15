@@ -85,6 +85,8 @@ defmodule KazarmaWeb.Components.Profile do
   defp puppet_profile_links(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns),
     do: matrix_links(assigns)
 
+  attr(:copy, :string)
+  attr(:class, :string)
   slot(:inner_block, required: true)
 
   defp copy_link(assigns) do
@@ -101,6 +103,7 @@ defmodule KazarmaWeb.Components.Profile do
     """
   end
 
+  attr(:address, :string)
   slot(:inner_block, required: false)
 
   defp address_and_link(assigns) do
