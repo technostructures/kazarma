@@ -246,7 +246,7 @@ defmodule Kazarma.ActivityPub.Adapter do
             "actor" => remote_relay_ap_id,
             "object" => local_relay_ap_id
           }
-        } = activity
+        } = _activity
       ) do
     Logger.debug("try following back remote relay")
 

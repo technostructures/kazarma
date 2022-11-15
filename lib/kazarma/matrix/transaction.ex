@@ -95,10 +95,10 @@ defmodule Kazarma.Matrix.Transaction do
         state_key: user_id
       }) do
     case Kazarma.Address.matrix_id_to_actor(user_id) do
-      {:ok, %ActivityPub.Actor{local: true} = follower} ->
+      {:ok, %ActivityPub.Actor{local: true} = _follower} ->
         case Bridge.get_room_by_local_id(room_id) do
           %Room{data: %{"type" => "outbox"}, remote_id: followed_ap_id} ->
-            {:ok, followed} = ActivityPub.Actor.get_or_fetch_by_ap_id(followed_ap_id)
+            {:ok, _followed} = ActivityPub.Actor.get_or_fetch_by_ap_id(followed_ap_id)
 
           _ ->
             nil
