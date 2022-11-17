@@ -73,7 +73,7 @@ defmodule Kazarma.RoomType.DirectMessage do
 
   # =======================
 
-  def create_from_matrix(event, %Room{data: %{"type" => "note"}} = room, content) do
+  def create_from_matrix(event, %Room{data: %{"type" => "direct_message"}} = room, content) do
     with {:ok, actor} <- Address.matrix_id_to_actor(event.sender),
          replying_to =
            Activity.get_replied_activity_if_exists(event) ||
@@ -121,7 +121,7 @@ defmodule Kazarma.RoomType.DirectMessage do
     Bridge.create_room(%{
       local_id: room_id,
       remote_id: conversation,
-      data: %{type: :note, to: participants}
+      data: %{type: :direct_message, to: participants}
     })
   end
 
@@ -133,7 +133,7 @@ defmodule Kazarma.RoomType.DirectMessage do
             Bridge.create_room(%{
               local_id: room_id,
               remote_id: ActivityPub.Utils.generate_context_id(),
-              data: %{"type" => "note", "to" => []}
+              data: %{"type" => "direct_message", "to" => []}
             })
 
           room

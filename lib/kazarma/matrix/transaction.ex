@@ -48,17 +48,17 @@ defmodule Kazarma.Matrix.Transaction do
       text_content = build_text_content(event.content)
 
       case Bridge.get_room_by_local_id(room_id) do
-        %Room{data: %{"type" => "chat_message"}} = room ->
+        %Room{data: %{"type" => "chat"}} = room ->
           Kazarma.RoomType.Chat.create_from_matrix(
             event,
             room,
             text_content
           )
 
-        %Room{data: %{"type" => "note"}} = room ->
+        %Room{data: %{"type" => "direct_message"}} = room ->
           Kazarma.RoomType.DirectMessage.create_from_matrix(event, room, text_content)
 
-        %Room{data: %{"type" => "outbox"}} = room ->
+        %Room{data: %{"type" => "actor_outbox"}} = room ->
           Kazarma.RoomType.ActorOutbox.create_from_matrix(event, room, text_content)
 
         %Room{data: %{"type" => "collection"}} = room ->
@@ -97,7 +97,7 @@ defmodule Kazarma.Matrix.Transaction do
     case Kazarma.Address.matrix_id_to_actor(user_id) do
       {:ok, %ActivityPub.Actor{local: true} = _follower} ->
         case Bridge.get_room_by_local_id(room_id) do
-          %Room{data: %{"type" => "outbox"}, remote_id: followed_ap_id} ->
+          %Room{data: %{"type" => "actor_outbox"}, remote_id: followed_ap_id} ->
             {:ok, _followed} = ActivityPub.Actor.get_or_fetch_by_ap_id(followed_ap_id)
 
           _ ->
@@ -160,7 +160,7 @@ defmodule Kazarma.Matrix.Transaction do
   # @TODO separate in 2 functions
   defp maybe_follow_or_accept(room_id, joiner, %{content: %{"membership" => "join"}} = event) do
     case Bridge.get_room_by_local_id(room_id) do
-      %Room{data: %{"type" => "outbox"}, remote_id: followed_ap_id} ->
+      %Room{data: %{"type" => "actor_outbox"}, remote_id: followed_ap_id} ->
         {:ok, followed} = ActivityPub.Actor.get_or_fetch_by_ap_id(followed_ap_id)
         Kazarma.ActivityPub.follow(joiner, followed)
 

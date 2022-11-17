@@ -51,7 +51,7 @@ defmodule Kazarma.RoomType.Chat do
           type: "m.room.message",
           content: event_content
         },
-        %Room{data: %{"type" => "chat_message", "to_ap_id" => remote_id}},
+        %Room{data: %{"type" => "chat", "to_ap_id" => remote_id}},
         text_content
       ) do
     Logger.debug("Forwarding ChatMessage creation")
@@ -91,7 +91,7 @@ defmodule Kazarma.RoomType.Chat do
          {:ok, _room} <-
            Bridge.create_room(%{
              local_id: room_id,
-             data: %{"type" => "chat_message", "to_ap_id" => actor.ap_id}
+             data: %{"type" => "chat", "to_ap_id" => actor.ap_id}
            }) do
       :ok
     else
@@ -117,7 +117,7 @@ defmodule Kazarma.RoomType.Chat do
   defp insert_bridge_room(room_id, from_ap_id) do
     Bridge.create_room(%{
       local_id: room_id,
-      data: %{type: :chat_message, to_ap_id: from_ap_id}
+      data: %{type: :chat, to_ap_id: from_ap_id}
     })
   end
 end

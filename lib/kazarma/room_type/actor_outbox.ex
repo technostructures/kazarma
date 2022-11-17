@@ -117,7 +117,7 @@ defmodule Kazarma.RoomType.ActorOutbox do
     case Bridge.get_events_by_remote_id(reply_to_ap_id) do
       [%BridgeEvent{room_id: replied_to_room_id} | _] ->
         case Bridge.get_room_by_local_id(replied_to_room_id) do
-          %Room{data: %{"type" => "outbox"}} = room -> room
+          %Room{data: %{"type" => "actor_outbox"}} = room -> room
           _ -> get_room_for_public_create(Map.delete(object_data, "inReplyTo"))
         end
 
@@ -136,7 +136,7 @@ defmodule Kazarma.RoomType.ActorOutbox do
     end
   end
 
-  def create_from_matrix(event, %Room{data: %{"type" => "outbox"}} = room, content) do
+  def create_from_matrix(event, %Room{data: %{"type" => "actor_outbox"}} = room, content) do
     with {:ok, sender_actor} <- Address.matrix_id_to_actor(event.sender),
          {:ok, receiver_actor} <- Address.matrix_id_to_actor(room.data["matrix_id"]),
          to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id],
@@ -219,7 +219,7 @@ defmodule Kazarma.RoomType.ActorOutbox do
     Bridge.create_room(%{
       local_id: room_id,
       remote_id: ap_id,
-      data: %{type: :outbox, matrix_id: matrix_id}
+      data: %{type: :actor_outbox, matrix_id: matrix_id}
     })
   end
 end
