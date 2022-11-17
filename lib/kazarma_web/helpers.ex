@@ -70,7 +70,7 @@ defmodule KazarmaWeb.Helpers do
   end
 
   def outbox_room(%ActivityPub.Actor{ap_id: ap_id, username: username}) do
-    case Kazarma.Matrix.Bridge.get_room_by_remote_id(ap_id) do
+    case Kazarma.Bridge.get_room_by_remote_id(ap_id) do
       %MatrixAppService.Bridge.Room{} ->
         {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username)
         String.replace_leading(matrix_id, "@", "#")

@@ -8,7 +8,7 @@ defmodule Kazarma.RoomType.Chat do
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Address
   alias Kazarma.Logger
-  alias Kazarma.Matrix.Bridge
+  alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
 
@@ -34,7 +34,7 @@ defmodule Kazarma.RoomType.Chat do
          {:ok, event_id} <-
            Activity.send_message_and_attachment(matrix_id, room_id, object_data, [attachment]),
          {:ok, _} <-
-           Kazarma.Matrix.Bridge.create_event(%{
+           Bridge.create_event(%{
              local_id: event_id,
              remote_id: object_id,
              room_id: room_id
@@ -51,7 +51,7 @@ defmodule Kazarma.RoomType.Chat do
           type: "m.room.message",
           content: event_content
         },
-        %Room{data: %{"type" => "chat_message", "to_ap_id" => remote_id}},
+        %Room{data: %{"type" => "chat", "to_ap_id" => remote_id}},
         text_content
       ) do
     Logger.debug("Forwarding ChatMessage creation")
@@ -68,7 +68,7 @@ defmodule Kazarma.RoomType.Chat do
              content: text_content,
              attachment: attachment
            ) do
-      Kazarma.Matrix.Bridge.create_event(%{
+      Bridge.create_event(%{
         local_id: event_id,
         remote_id: remote_id,
         room_id: room_id
@@ -91,7 +91,7 @@ defmodule Kazarma.RoomType.Chat do
          {:ok, _room} <-
            Bridge.create_room(%{
              local_id: room_id,
-             data: %{"type" => "chat_message", "to_ap_id" => actor.ap_id}
+             data: %{"type" => "chat", "to_ap_id" => actor.ap_id}
            }) do
       :ok
     else
@@ -106,11 +106,18 @@ defmodule Kazarma.RoomType.Chat do
            Kazarma.Matrix.Client.get_direct_room(from_matrix_id, to_matrix_id),
          {:ok, %{"room_id" => room_id}} <-
            Kazarma.Matrix.Client.create_direct_room(from_matrix_id, to_matrix_id),
-         {:ok, _} <- Kazarma.Matrix.Bridge.insert_chat_message_bridge_room(room_id, from_ap_id) do
+         {:ok, _} <- insert_bridge_room(room_id, from_ap_id) do
       {:ok, room_id}
     else
       {:ok, room_id} -> {:ok, room_id}
       {:error, error} -> {:error, error}
     end
+  end
+
+  defp insert_bridge_room(room_id, from_ap_id) do
+    Bridge.create_room(%{
+      local_id: room_id,
+      data: %{type: :chat, to_ap_id: from_ap_id}
+    })
   end
 end

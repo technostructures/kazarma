@@ -10,6 +10,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
   import Mox
   import Kazarma.Matrix.Transaction
+  alias Kazarma.Bridge
   alias MatrixAppService.Event
 
   # Those are accounts created on public ActivityPub instances
@@ -130,9 +131,9 @@ defmodule Kazarma.Matrix.TransactionTest do
                local_id: "!direct_room:kazarma",
                data: %{
                  "to_ap_id" => "https://#{@pleroma_user_server}/users/#{@pleroma_user_name}",
-                 "type" => "chat_message"
+                 "type" => "chat"
                }
-             } = Kazarma.Matrix.Bridge.get_room_by_local_id("!direct_room:kazarma")
+             } = Bridge.get_room_by_local_id("!direct_room:kazarma")
     end
 
     test "when a puppet user is invited to a multiuser room a Bridge record is created and the room is joined" do
@@ -198,8 +199,8 @@ defmodule Kazarma.Matrix.TransactionTest do
 
       assert :ok == new_event(invitation_event_multiuser_fixture_pleroma())
 
-      assert %{data: %{"to" => [@pleroma_puppet_address], "type" => "note"}} =
-               Kazarma.Matrix.Bridge.get_room_by_local_id("!room:kazarma")
+      assert %{data: %{"to" => [@pleroma_puppet_address], "type" => "direct_message"}} =
+               Bridge.get_room_by_local_id("!room:kazarma")
 
       assert :ok == new_event(invitation_event_multiuser_fixture_mastodon())
 
@@ -209,16 +210,16 @@ defmodule Kazarma.Matrix.TransactionTest do
                    @mastodon_puppet_address,
                    @pleroma_puppet_address
                  ],
-                 "type" => "note"
+                 "type" => "direct_message"
                }
-             } = Kazarma.Matrix.Bridge.get_room_by_local_id("!room:kazarma")
+             } = Bridge.get_room_by_local_id("!room:kazarma")
     end
 
     test "when a nonexisting puppet user is invited nothing happens" do
       assert :ok == new_event(invitation_event_direct_nonexisting())
-      assert nil == Kazarma.Matrix.Bridge.get_room_by_local_id("!direct_room:kazarma")
+      assert nil == Bridge.get_room_by_local_id("!direct_room:kazarma")
       assert :ok == new_event(invitation_event_multiuser_fixture_nonexisting())
-      assert nil == Kazarma.Matrix.Bridge.get_room_by_local_id("!room:kazarma")
+      assert nil == Bridge.get_room_by_local_id("!room:kazarma")
     end
   end
 
@@ -241,7 +242,7 @@ defmodule Kazarma.Matrix.TransactionTest do
       {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
 
       {:ok, _user} =
-        Kazarma.Matrix.Bridge.create_user(%{
+        Bridge.create_user(%{
           local_id: "@alice:kazarma",
           remote_id: "http://kazarma/users/alice",
           data: %{
@@ -399,10 +400,10 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     setup do
       {:ok, _room} =
-        Kazarma.Matrix.Bridge.create_room(%{
+        Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: nil,
-          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
+          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat"}
         })
 
       :ok
@@ -461,7 +462,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  remote_id: "object_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
 
     test "when receiving a message with an attachment it forwards it in a ChatMessage activity" do
@@ -531,7 +532,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  remote_id: "object_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 
@@ -541,12 +542,12 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     setup do
       {:ok, _room} =
-        Kazarma.Matrix.Bridge.create_room(%{
+        Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: "http://pleroma/contexts/context",
           data: %{
             "to" => [@pleroma_puppet_address],
-            "type" => "note"
+            "type" => "direct_message"
           }
         })
 
@@ -635,7 +636,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  remote_id: "object_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
 
     test "when receiving a message with an attachment it forwards it in a Note activity" do
@@ -734,7 +735,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  remote_id: "object_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 
@@ -744,17 +745,17 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     setup do
       {:ok, _room} =
-        Kazarma.Matrix.Bridge.create_room(%{
+        Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: "http://pleroma/contexts/context",
           data: %{
             "to" => [@pleroma_puppet_address],
-            "type" => "note"
+            "type" => "direct_message"
           }
         })
 
       {:ok, _event} =
-        Kazarma.Matrix.Bridge.create_event(%{
+        Bridge.create_event(%{
           local_id: "reply_to_id",
           remote_id: "http://pleroma/objects/reply_to",
           room_id: "!room:kazarma"
@@ -870,7 +871,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  remote_id: "object_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 
@@ -882,7 +883,7 @@ defmodule Kazarma.Matrix.TransactionTest do
       ActivityPub.Object.insert(%{data: %{"id" => "remote_id"}})
 
       {:ok, _event} =
-        Kazarma.Matrix.Bridge.create_event(%{
+        Bridge.create_event(%{
           local_id: "local_id",
           remote_id: "remote_id",
           room_id: "!room:kazarma"
@@ -957,7 +958,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  remote_id: "delete_object_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 
@@ -989,10 +990,10 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     setup do
       {:ok, _room} =
-        Kazarma.Matrix.Bridge.create_room(%{
+        Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: nil,
-          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
+          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat"}
         })
 
       :ok
@@ -1057,7 +1058,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  remote_id: "object_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 
@@ -1067,10 +1068,10 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     setup do
       {:ok, _room} =
-        Kazarma.Matrix.Bridge.create_room(%{
+        Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: nil,
-          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
+          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat"}
         })
 
       :ok
@@ -1135,7 +1136,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  remote_id: "object_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 end

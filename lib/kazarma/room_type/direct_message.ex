@@ -12,7 +12,7 @@ defmodule Kazarma.RoomType.DirectMessage do
   alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
-  alias Kazarma.Matrix.Bridge
+  alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Room
 
   def create_from_ap(%{
@@ -59,7 +59,7 @@ defmodule Kazarma.RoomType.DirectMessage do
          {:ok, %{"room_id" => room_id}} <-
            Client.create_multiuser_room(creator, invites, opts),
          {:ok, _} <-
-           Bridge.insert_note_bridge_room(room_id, conversation, [
+           insert_bridge_room(room_id, conversation, [
              creator | invites
            ]) do
       {:ok, room_id}
@@ -73,7 +73,7 @@ defmodule Kazarma.RoomType.DirectMessage do
 
   # =======================
 
-  def create_from_matrix(event, %Room{data: %{"type" => "note"}} = room, content) do
+  def create_from_matrix(event, %Room{data: %{"type" => "direct_message"}} = room, content) do
     with {:ok, actor} <- Address.matrix_id_to_actor(event.sender),
          replying_to =
            Activity.get_replied_activity_if_exists(event) ||
@@ -111,9 +111,38 @@ defmodule Kazarma.RoomType.DirectMessage do
     with {:ok, _actor} <- Address.matrix_id_to_actor(user_id, [:activity_pub]),
          # @TODO maybe update if bridge room exist (new context/conversation)
          {:ok, _room} <-
-           Bridge.join_or_create_note_bridge_room(room_id, user_id),
+           join_or_create_bridge_room(room_id, user_id),
          _ <- Client.join(user_id, room_id) do
       :ok
     end
+  end
+
+  defp insert_bridge_room(room_id, conversation, participants) do
+    Bridge.create_room(%{
+      local_id: room_id,
+      remote_id: conversation,
+      data: %{type: :direct_message, to: participants}
+    })
+  end
+
+  defp join_or_create_bridge_room(room_id, user_id) do
+    room =
+      case Bridge.get_room_by_local_id(room_id) do
+        nil ->
+          {:ok, room} =
+            Bridge.create_room(%{
+              local_id: room_id,
+              remote_id: ActivityPub.Utils.generate_context_id(),
+              data: %{"type" => "direct_message", "to" => []}
+            })
+
+          room
+
+        room ->
+          room
+      end
+
+    updated_room_data = update_in(room.data["to"], &[user_id | &1]).data
+    Bridge.update_room(room, %{"data" => updated_room_data})
   end
 end

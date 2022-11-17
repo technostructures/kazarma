@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule Kazarma.RoomType.Actor do
+defmodule Kazarma.RoomType.ActorOutbox do
   @moduledoc """
   This room type represents "inboxes and outboxes", in ActivityPub terminology, for ActivityPub actors.
 
@@ -15,7 +15,7 @@ defmodule Kazarma.RoomType.Actor do
   alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
-  alias Kazarma.Matrix.Bridge
+  alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
 
@@ -117,7 +117,7 @@ defmodule Kazarma.RoomType.Actor do
     case Bridge.get_events_by_remote_id(reply_to_ap_id) do
       [%BridgeEvent{room_id: replied_to_room_id} | _] ->
         case Bridge.get_room_by_local_id(replied_to_room_id) do
-          %Room{data: %{"type" => "outbox"}} = room -> room
+          %Room{data: %{"type" => "actor_outbox"}} = room -> room
           _ -> get_room_for_public_create(Map.delete(object_data, "inReplyTo"))
         end
 
@@ -136,7 +136,7 @@ defmodule Kazarma.RoomType.Actor do
     end
   end
 
-  def create_from_matrix(event, %Room{data: %{"type" => "outbox"}} = room, content) do
+  def create_from_matrix(event, %Room{data: %{"type" => "actor_outbox"}} = room, content) do
     with {:ok, sender_actor} <- Address.matrix_id_to_actor(event.sender),
          {:ok, receiver_actor} <- Address.matrix_id_to_actor(room.data["matrix_id"]),
          to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id],
@@ -189,7 +189,7 @@ defmodule Kazarma.RoomType.Actor do
       ) do
     alias = Kazarma.Address.get_matrix_id_localpart(matrix_id)
 
-    with nil <- Kazarma.Matrix.Bridge.get_room_by_remote_id(ap_id),
+    with nil <- Bridge.get_room_by_remote_id(ap_id),
          {:ok, %{"room_id" => room_id}} <-
            Kazarma.Matrix.Client.create_outbox_room(
              matrix_id,
@@ -197,14 +197,14 @@ defmodule Kazarma.RoomType.Actor do
              name,
              alias
            ),
-         {:ok, room} <- Kazarma.Matrix.Bridge.insert_outbox_room(room_id, actor.ap_id, matrix_id) do
+         {:ok, room} <- insert_bridge_room(room_id, actor.ap_id, matrix_id) do
       {:ok, room}
     else
       {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}} ->
         {:ok, {room_id, _}} =
           Kazarma.Matrix.Client.get_alias("##{alias}:#{Kazarma.Address.domain()}")
 
-        Kazarma.Matrix.Bridge.insert_outbox_room(
+        insert_bridge_room(
           room_id,
           actor.ap_id,
           matrix_id
@@ -213,5 +213,13 @@ defmodule Kazarma.RoomType.Actor do
       %MatrixAppService.Bridge.Room{} = room ->
         {:ok, room}
     end
+  end
+
+  defp insert_bridge_room(room_id, ap_id, matrix_id) do
+    Bridge.create_room(%{
+      local_id: room_id,
+      remote_id: ap_id,
+      data: %{type: :actor_outbox, matrix_id: matrix_id}
+    })
   end
 end

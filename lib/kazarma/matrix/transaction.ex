@@ -7,7 +7,7 @@ defmodule Kazarma.Matrix.Transaction do
   @behaviour MatrixAppService.Adapter.Transaction
   alias Kazarma.Address
   alias Kazarma.Logger
-  alias Kazarma.Matrix.Bridge
+  alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
@@ -48,18 +48,18 @@ defmodule Kazarma.Matrix.Transaction do
       text_content = build_text_content(event.content)
 
       case Bridge.get_room_by_local_id(room_id) do
-        %Room{data: %{"type" => "chat_message"}} = room ->
+        %Room{data: %{"type" => "chat"}} = room ->
           Kazarma.RoomType.Chat.create_from_matrix(
             event,
             room,
             text_content
           )
 
-        %Room{data: %{"type" => "note"}} = room ->
+        %Room{data: %{"type" => "direct_message"}} = room ->
           Kazarma.RoomType.DirectMessage.create_from_matrix(event, room, text_content)
 
-        %Room{data: %{"type" => "outbox"}} = room ->
-          Kazarma.RoomType.Actor.create_from_matrix(event, room, text_content)
+        %Room{data: %{"type" => "actor_outbox"}} = room ->
+          Kazarma.RoomType.ActorOutbox.create_from_matrix(event, room, text_content)
 
         %Room{data: %{"type" => "collection"}} = room ->
           Kazarma.RoomType.Collection.create_from_matrix(event, room, text_content)
@@ -97,7 +97,7 @@ defmodule Kazarma.Matrix.Transaction do
     case Kazarma.Address.matrix_id_to_actor(user_id) do
       {:ok, %ActivityPub.Actor{local: true} = _follower} ->
         case Bridge.get_room_by_local_id(room_id) do
-          %Room{data: %{"type" => "outbox"}, remote_id: followed_ap_id} ->
+          %Room{data: %{"type" => "actor_outbox"}, remote_id: followed_ap_id} ->
             {:ok, _followed} = ActivityPub.Actor.get_or_fetch_by_ap_id(followed_ap_id)
 
           _ ->
@@ -160,7 +160,7 @@ defmodule Kazarma.Matrix.Transaction do
   # @TODO separate in 2 functions
   defp maybe_follow_or_accept(room_id, joiner, %{content: %{"membership" => "join"}} = event) do
     case Bridge.get_room_by_local_id(room_id) do
-      %Room{data: %{"type" => "outbox"}, remote_id: followed_ap_id} ->
+      %Room{data: %{"type" => "actor_outbox"}, remote_id: followed_ap_id} ->
         {:ok, followed} = ActivityPub.Actor.get_or_fetch_by_ap_id(followed_ap_id)
         Kazarma.ActivityPub.follow(joiner, followed)
 
@@ -172,7 +172,7 @@ defmodule Kazarma.Matrix.Transaction do
                }
              } <- event,
              %BridgeEvent{remote_id: invite_ap_id} <-
-               Kazarma.Matrix.Bridge.get_event_by_local_id(invite_event_id) do
+               Bridge.get_event_by_local_id(invite_event_id) do
           Kazarma.ActivityPub.accept(%{
             to: [group_ap_id],
             object: invite_ap_id,
@@ -237,8 +237,8 @@ defmodule Kazarma.Matrix.Transaction do
 
       ActivityPub.Actor.set_cache(actor)
 
-      Kazarma.Matrix.Bridge.get_user_by_remote_id(actor.ap_id)
-      |> Kazarma.Matrix.Bridge.update_user(%{
+      Bridge.get_user_by_remote_id(actor.ap_id)
+      |> Bridge.update_user(%{
         "data" => %{"ap_data" => actor.data, "keys" => actor.keys}
       })
 
