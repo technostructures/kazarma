@@ -13,7 +13,7 @@ defmodule Kazarma.RoomType.Collection do
   alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
-  alias Kazarma.Matrix.Bridge
+  alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Room
 
   def create_from_ap(%{
@@ -100,7 +100,7 @@ defmodule Kazarma.RoomType.Collection do
   end
 
   defp insert_bridge_room(room_id, group) do
-    Kazarma.Matrix.Bridge.create_room(%{
+    Bridge.create_room(%{
       local_id: room_id,
       remote_id: group,
       data: %{type: :collection}

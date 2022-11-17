@@ -9,6 +9,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   @behaviour ActivityPub.Adapter
 
   alias Kazarma.Address
+  alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias ActivityPub.Actor
   alias ActivityPub.Object
@@ -52,7 +53,7 @@ defmodule Kazarma.ActivityPub.Adapter do
       if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
 
       {:ok, _bridge_user} =
-        Kazarma.Matrix.Bridge.create_user(%{
+        Bridge.create_user(%{
           local_id: matrix_id,
           remote_id: ap_id,
           data: %{}
@@ -87,7 +88,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_remote_actor/1")
     Logger.debug(inspect(changeset))
 
-    with %{local_id: matrix_id} <- Kazarma.Matrix.Bridge.get_user_by_remote_id(previous["id"]) do
+    with %{local_id: matrix_id} <- Bridge.get_user_by_remote_id(previous["id"]) do
       set_if_changed(previous["name"], changes["name"], fn name ->
         Kazarma.Matrix.Client.put_displayname(matrix_id, name)
       end)
@@ -182,14 +183,14 @@ defmodule Kazarma.ActivityPub.Adapter do
 
     with {:ok, sender_matrix_id} <- Address.ap_id_to_matrix(sender_ap_id),
          %BridgeEvent{local_id: event_id, room_id: room_id} <-
-           Kazarma.Matrix.Bridge.get_event_by_remote_id(object_ap_id),
+           Bridge.get_event_by_remote_id(object_ap_id),
          {:ok, delete_event_id} <-
            Kazarma.Matrix.Client.redact_message(
              sender_matrix_id,
              room_id,
              event_id
            ) do
-      Kazarma.Matrix.Bridge.create_event(%{
+      Bridge.create_event(%{
         local_id: delete_event_id,
         remote_id: delete_remote_id,
         room_id: room_id
@@ -230,7 +231,7 @@ defmodule Kazarma.ActivityPub.Adapter do
            ),
          {:ok, event_id} <-
            Kazarma.Matrix.Client.invite(room_id, group_matrix_id, invitee_matrix_id) do
-      Kazarma.Matrix.Bridge.create_event(%{
+      Bridge.create_event(%{
         local_id: event_id,
         remote_id: invite_id,
         room_id: room_id

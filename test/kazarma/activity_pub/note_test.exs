@@ -3,6 +3,7 @@
 defmodule Kazarma.ActivityPub.NoteTest do
   use Kazarma.DataCase
 
+  alias Kazarma.Bridge
   import Mox
   import Kazarma.ActivityPub.Adapter
 
@@ -113,7 +114,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
-      |> Kazarma.Matrix.Bridge.create_room()
+      |> Bridge.create_room()
 
       assert :ok = handle_activity(note_fixture())
 
@@ -123,7 +124,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                  remote_id: "note_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
 
     test "when receiving a Note activity for a first conversation creates a new room and sends forward the message" do
@@ -168,7 +169,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                    "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
                  }
                }
-             ] = Kazarma.Matrix.Bridge.list_rooms()
+             ] = Bridge.list_rooms()
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -176,7 +177,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                  remote_id: "note_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
 
     test "when receiving a Note activity with attachments and some text forwards the attachments and the text" do
@@ -256,7 +257,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
-      |> Kazarma.Matrix.Bridge.create_room()
+      |> Bridge.create_room()
 
       assert :ok = handle_activity(note_with_attachments_fixture())
 
@@ -266,7 +267,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                  remote_id: "note_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
 
     test "when receiving a Note activity with attachments and no text forwards only the attachments" do
@@ -343,7 +344,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
-      |> Kazarma.Matrix.Bridge.create_room()
+      |> Bridge.create_room()
 
       note =
         note_with_attachments_fixture()
@@ -358,7 +359,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                  remote_id: "note_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 
@@ -368,7 +369,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
 
     setup do
       {:ok, _event} =
-        Kazarma.Matrix.Bridge.create_event(%{
+        Bridge.create_event(%{
           local_id: "local_id",
           remote_id: "http://pleroma/pub/objects/reply_to",
           room_id: "!room:kazarma"
@@ -448,7 +449,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
-      |> Kazarma.Matrix.Bridge.create_room()
+      |> Bridge.create_room()
 
       assert :ok = handle_activity(note_with_reply_fixture())
 
@@ -463,7 +464,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                  remote_id: "note_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 
@@ -561,7 +562,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
           "matrix_id" => "@_ap_alice___pleroma:kazarma"
         }
       }
-      |> Kazarma.Matrix.Bridge.create_room()
+      |> Bridge.create_room()
 
       assert :ok = handle_activity(public_note_fixture())
 
@@ -571,7 +572,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                  remote_id: "note_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
 
     test "receiving a public note forwards it to the puppet's timeline room even without a source part" do
@@ -601,7 +602,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
           "matrix_id" => "@_ap_alice___pleroma:kazarma"
         }
       }
-      |> Kazarma.Matrix.Bridge.create_room()
+      |> Bridge.create_room()
 
       assert :ok = handle_activity(public_note_fixture_with_content())
 
@@ -611,7 +612,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                  remote_id: "note_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 
@@ -621,7 +622,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
 
     setup do
       {:ok, _event} =
-        Kazarma.Matrix.Bridge.create_event(%{
+        Bridge.create_event(%{
           local_id: "local_id",
           remote_id: "http://pleroma/pub/objects/reply_to",
           room_id: "!room:kazarma"
@@ -704,7 +705,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
-      |> Kazarma.Matrix.Bridge.create_room()
+      |> Bridge.create_room()
 
       assert :ok = handle_activity(note_with_reply_fixture())
 
@@ -719,7 +720,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                  remote_id: "note_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 end

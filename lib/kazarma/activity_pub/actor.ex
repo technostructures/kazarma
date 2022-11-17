@@ -5,6 +5,7 @@ defmodule Kazarma.ActivityPub.Actor do
   Functions concerning ActivityPub actors.
   """
   alias ActivityPub.Actor
+  alias Kazarma.Bridge
   alias KazarmaWeb.Endpoint
   alias KazarmaWeb.Router.Helpers, as: Routes
   alias Kazarma.Logger
@@ -110,10 +111,10 @@ defmodule Kazarma.ActivityPub.Actor do
   def get_from_matrix("relay") do
     matrix_id = "@relay:#{Kazarma.Address.domain()}"
 
-    with nil <- Kazarma.Matrix.Bridge.get_user_by_local_id(matrix_id),
+    with nil <- Bridge.get_user_by_local_id(matrix_id),
          actor <- build_relay_actor(),
          {:ok, _} <-
-           Kazarma.Matrix.Bridge.create_user(%{
+           Bridge.create_user(%{
              local_id: matrix_id,
              remote_id: actor.ap_id,
              data: %{"ap_data" => actor.data, "keys" => actor.keys}
@@ -131,7 +132,7 @@ defmodule Kazarma.ActivityPub.Actor do
   def get_from_matrix(username) do
     case Kazarma.Address.ap_username_to_matrix_id(username, [:remote_matrix, :local_matrix]) do
       {:ok, matrix_id} ->
-        case Kazarma.Matrix.Bridge.get_user_by_local_id(matrix_id) do
+        case Bridge.get_user_by_local_id(matrix_id) do
           %{data: %{"ap_data" => ap_data, "keys" => keys}} ->
             Logger.debug("user found in database")
             {:ok, build_actor_from_data(ap_data, keys)}
@@ -143,7 +144,7 @@ defmodule Kazarma.ActivityPub.Actor do
                  Logger.debug("user found in Matrix"),
                  actor <- build_actor_from_profile(username, profile),
                  {:ok, _} <-
-                   Kazarma.Matrix.Bridge.create_user(%{
+                   Bridge.create_user(%{
                      local_id: matrix_id,
                      remote_id: actor.ap_id,
                      data: %{"ap_data" => actor.data, "keys" => actor.keys}

@@ -15,7 +15,7 @@ defmodule Kazarma.RoomType.ActorOutbox do
   alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
-  alias Kazarma.Matrix.Bridge
+  alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
 
@@ -189,7 +189,7 @@ defmodule Kazarma.RoomType.ActorOutbox do
       ) do
     alias = Kazarma.Address.get_matrix_id_localpart(matrix_id)
 
-    with nil <- Kazarma.Matrix.Bridge.get_room_by_remote_id(ap_id),
+    with nil <- Bridge.get_room_by_remote_id(ap_id),
          {:ok, %{"room_id" => room_id}} <-
            Kazarma.Matrix.Client.create_outbox_room(
              matrix_id,
@@ -216,7 +216,7 @@ defmodule Kazarma.RoomType.ActorOutbox do
   end
 
   defp insert_bridge_room(room_id, ap_id, matrix_id) do
-    Kazarma.Matrix.Bridge.create_room(%{
+    Bridge.create_room(%{
       local_id: room_id,
       remote_id: ap_id,
       data: %{type: :outbox, matrix_id: matrix_id}

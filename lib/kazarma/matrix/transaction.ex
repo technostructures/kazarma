@@ -7,7 +7,7 @@ defmodule Kazarma.Matrix.Transaction do
   @behaviour MatrixAppService.Adapter.Transaction
   alias Kazarma.Address
   alias Kazarma.Logger
-  alias Kazarma.Matrix.Bridge
+  alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
@@ -172,7 +172,7 @@ defmodule Kazarma.Matrix.Transaction do
                }
              } <- event,
              %BridgeEvent{remote_id: invite_ap_id} <-
-               Kazarma.Matrix.Bridge.get_event_by_local_id(invite_event_id) do
+               Bridge.get_event_by_local_id(invite_event_id) do
           Kazarma.ActivityPub.accept(%{
             to: [group_ap_id],
             object: invite_ap_id,
@@ -237,8 +237,8 @@ defmodule Kazarma.Matrix.Transaction do
 
       ActivityPub.Actor.set_cache(actor)
 
-      Kazarma.Matrix.Bridge.get_user_by_remote_id(actor.ap_id)
-      |> Kazarma.Matrix.Bridge.update_user(%{
+      Bridge.get_user_by_remote_id(actor.ap_id)
+      |> Bridge.update_user(%{
         "data" => %{"ap_data" => actor.data, "keys" => actor.keys}
       })
 

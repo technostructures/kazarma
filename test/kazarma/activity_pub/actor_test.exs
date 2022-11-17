@@ -4,6 +4,7 @@
 defmodule Kazarma.ActivityPub.ActorTest do
   use Kazarma.DataCase
 
+  alias Kazarma.Bridge
   import Mox
   import Kazarma.ActivityPub.Adapter
 
@@ -58,7 +59,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
                  },
                  "keys" => ^keys
                }
-             } = Kazarma.Matrix.Bridge.get_user_by_local_id("@alice:kazarma")
+             } = Bridge.get_user_by_local_id("@alice:kazarma")
 
       assert {:ok,
               %{
@@ -158,7 +159,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
       end)
 
       {:ok, _user} =
-        Kazarma.Matrix.Bridge.create_user(%{
+        Bridge.create_user(%{
           local_id: "@alice:kazarma",
           remote_id: "http://kazarma/actors/alice"
         })

@@ -12,7 +12,7 @@ defmodule Kazarma.RoomType.DirectMessage do
   alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
-  alias Kazarma.Matrix.Bridge
+  alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Room
 
   def create_from_ap(%{
@@ -118,7 +118,7 @@ defmodule Kazarma.RoomType.DirectMessage do
   end
 
   defp insert_bridge_room(room_id, conversation, participants) do
-    Kazarma.Matrix.Bridge.create_room(%{
+    Bridge.create_room(%{
       local_id: room_id,
       remote_id: conversation,
       data: %{type: :note, to: participants}
@@ -127,10 +127,10 @@ defmodule Kazarma.RoomType.DirectMessage do
 
   defp join_or_create_bridge_room(room_id, user_id) do
     room =
-      case Kazarma.Matrix.Bridge.get_room_by_local_id(room_id) do
+      case Bridge.get_room_by_local_id(room_id) do
         nil ->
           {:ok, room} =
-            Kazarma.Matrix.Bridge.create_room(%{
+            Bridge.create_room(%{
               local_id: room_id,
               remote_id: ActivityPub.Utils.generate_context_id(),
               data: %{"type" => "note", "to" => []}
@@ -143,6 +143,6 @@ defmodule Kazarma.RoomType.DirectMessage do
       end
 
     updated_room_data = update_in(room.data["to"], &[user_id | &1]).data
-    Kazarma.Matrix.Bridge.update_room(room, %{"data" => updated_room_data})
+    Bridge.update_room(room, %{"data" => updated_room_data})
   end
 end

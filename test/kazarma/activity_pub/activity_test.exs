@@ -3,6 +3,7 @@
 defmodule Kazarma.ActivityPub.ActivityTest do
   use Kazarma.DataCase
 
+  alias Kazarma.Bridge
   import Mox
   import Kazarma.ActivityPub.Adapter
 
@@ -24,7 +25,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     setup do
       {:ok, _event} =
-        Kazarma.Matrix.Bridge.create_event(%{
+        Bridge.create_event(%{
           local_id: "local_id",
           remote_id: "http://pleroma/pub/transactions/object_id",
           room_id: "!room:kazarma"
@@ -55,7 +56,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
                  remote_id: "delete_object_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 
@@ -145,7 +146,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
           "matrix_id" => "@_ap_alice___pleroma:kazarma"
         }
       }
-      |> Kazarma.Matrix.Bridge.create_room()
+      |> Bridge.create_room()
 
       assert :ok = handle_activity(public_note_fixture_with_mention())
     end

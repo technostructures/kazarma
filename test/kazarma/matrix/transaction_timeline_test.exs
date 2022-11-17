@@ -10,6 +10,7 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
 
   import Mox
   import Kazarma.Matrix.Transaction
+  alias Kazarma.Bridge
   alias MatrixAppService.Event
 
   # Those are accounts created on public ActivityPub instances
@@ -26,7 +27,7 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
 
     setup do
       {:ok, _room} =
-        Kazarma.Matrix.Bridge.create_room(%{
+        Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: @pleroma_user_ap_id,
           data: %{"matrix_id" => @pleroma_puppet_address, "type" => "outbox"}
@@ -148,7 +149,7 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
 
     setup do
       {:ok, _room} =
-        Kazarma.Matrix.Bridge.create_room(%{
+        Bridge.create_room(%{
           local_id: "!foo:kazarma",
           remote_id: @pleroma_user_ap_id,
           data: %{"matrix_id" => @pleroma_puppet_address, "type" => "outbox"}

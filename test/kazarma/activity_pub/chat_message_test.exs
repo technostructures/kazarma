@@ -3,6 +3,7 @@
 defmodule Kazarma.ActivityPub.ChatMessageTest do
   use Kazarma.DataCase
 
+  alias Kazarma.Bridge
   import Mox
   import Kazarma.ActivityPub.Adapter
 
@@ -150,7 +151,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
                    "to_ap_id" => "http://pleroma/pub/actors/alice"
                  }
                }
-             ] = Kazarma.Matrix.Bridge.list_rooms()
+             ] = Bridge.list_rooms()
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -158,7 +159,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
                  remote_id: "chat_message_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
 
     test "when receiving a ChatMessage activity for an existing conversation gets the corresponding room and forwards the message" do
@@ -212,7 +213,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
                  remote_id: "chat_message_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
 
     test "when receiving a ChatMessage activity with an attachement and some text forwards both the attachment and the text" do
@@ -272,7 +273,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
                  remote_id: "chat_message_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
 
     test "when receiving a ChatMessage activity with an attachement and no text forwards only the attachment" do
@@ -336,7 +337,7 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
                  remote_id: "chat_message_id",
                  room_id: "!room:kazarma"
                }
-             ] = Kazarma.Matrix.Bridge.list_events()
+             ] = Bridge.list_events()
     end
   end
 end

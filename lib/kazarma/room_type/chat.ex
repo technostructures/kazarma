@@ -8,7 +8,7 @@ defmodule Kazarma.RoomType.Chat do
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Address
   alias Kazarma.Logger
-  alias Kazarma.Matrix.Bridge
+  alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
 
@@ -34,7 +34,7 @@ defmodule Kazarma.RoomType.Chat do
          {:ok, event_id} <-
            Activity.send_message_and_attachment(matrix_id, room_id, object_data, [attachment]),
          {:ok, _} <-
-           Kazarma.Matrix.Bridge.create_event(%{
+           Bridge.create_event(%{
              local_id: event_id,
              remote_id: object_id,
              room_id: room_id
@@ -68,7 +68,7 @@ defmodule Kazarma.RoomType.Chat do
              content: text_content,
              attachment: attachment
            ) do
-      Kazarma.Matrix.Bridge.create_event(%{
+      Bridge.create_event(%{
         local_id: event_id,
         remote_id: remote_id,
         room_id: room_id
@@ -115,7 +115,7 @@ defmodule Kazarma.RoomType.Chat do
   end
 
   defp insert_bridge_room(room_id, from_ap_id) do
-    Kazarma.Matrix.Bridge.create_room(%{
+    Bridge.create_room(%{
       local_id: room_id,
       data: %{type: :chat_message, to_ap_id: from_ap_id}
     })
