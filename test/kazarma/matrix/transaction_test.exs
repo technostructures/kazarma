@@ -131,7 +131,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                local_id: "!direct_room:kazarma",
                data: %{
                  "to_ap_id" => "https://#{@pleroma_user_server}/users/#{@pleroma_user_name}",
-                 "type" => "chat_message"
+                 "type" => "chat"
                }
              } = Bridge.get_room_by_local_id("!direct_room:kazarma")
     end
@@ -199,7 +199,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
       assert :ok == new_event(invitation_event_multiuser_fixture_pleroma())
 
-      assert %{data: %{"to" => [@pleroma_puppet_address], "type" => "note"}} =
+      assert %{data: %{"to" => [@pleroma_puppet_address], "type" => "direct_message"}} =
                Bridge.get_room_by_local_id("!room:kazarma")
 
       assert :ok == new_event(invitation_event_multiuser_fixture_mastodon())
@@ -210,7 +210,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                    @mastodon_puppet_address,
                    @pleroma_puppet_address
                  ],
-                 "type" => "note"
+                 "type" => "direct_message"
                }
              } = Bridge.get_room_by_local_id("!room:kazarma")
     end
@@ -403,7 +403,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: nil,
-          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
+          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat"}
         })
 
       :ok
@@ -547,7 +547,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           remote_id: "http://pleroma/contexts/context",
           data: %{
             "to" => [@pleroma_puppet_address],
-            "type" => "note"
+            "type" => "direct_message"
           }
         })
 
@@ -750,7 +750,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           remote_id: "http://pleroma/contexts/context",
           data: %{
             "to" => [@pleroma_puppet_address],
-            "type" => "note"
+            "type" => "direct_message"
           }
         })
 
@@ -993,7 +993,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: nil,
-          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
+          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat"}
         })
 
       :ok
@@ -1071,7 +1071,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: nil,
-          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat_message"}
+          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat"}
         })
 
       :ok

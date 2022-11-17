@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule Kazarma.ActivityPub.NoteTest do
+defmodule Kazarma.RoomTypes.DirectMessageTest do
   use Kazarma.DataCase
 
   alias Kazarma.Bridge
@@ -165,7 +165,7 @@ defmodule Kazarma.ActivityPub.NoteTest do
                  local_id: "!room:kazarma",
                  remote_id: "http://pleroma/pub/contexts/context",
                  data: %{
-                   "type" => "note",
+                   "type" => "direct_message",
                    "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
                  }
                }

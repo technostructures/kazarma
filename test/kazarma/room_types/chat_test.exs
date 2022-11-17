@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule Kazarma.ActivityPub.ChatMessageTest do
+defmodule Kazarma.RoomTypes.ChatTest do
   use Kazarma.DataCase
 
   alias Kazarma.Bridge
@@ -140,14 +140,14 @@ defmodule Kazarma.ActivityPub.ChatMessageTest do
 
       assert [
                %MatrixAppService.Bridge.Room{
-                 data: %{"type" => "outbox", "matrix_id" => "@_ap_alice___pleroma:kazarma"},
+                 data: %{"type" => "actor_outbox", "matrix_id" => "@_ap_alice___pleroma:kazarma"},
                  local_id: "!room_id:kazarma",
                  remote_id: "http://pleroma/pub/actors/alice"
                },
                %MatrixAppService.Bridge.Room{
                  local_id: "!room:kazarma",
                  data: %{
-                   "type" => "chat_message",
+                   "type" => "chat",
                    "to_ap_id" => "http://pleroma/pub/actors/alice"
                  }
                }

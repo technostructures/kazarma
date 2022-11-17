@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule Kazarma.Matrix.TransactionTimelineTest do
+defmodule Kazarma.RoomTypes.ActorOutboxTest do
   @moduledoc """
   Transaction tests for events received from the Matrix server.
   We use existing Pleroma and Matrix accounts so we can create corresponding
@@ -30,7 +30,7 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
         Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: @pleroma_user_ap_id,
-          data: %{"matrix_id" => @pleroma_puppet_address, "type" => "outbox"}
+          data: %{"matrix_id" => @pleroma_puppet_address, "type" => "actor_outbox"}
         })
 
       :ok
@@ -152,7 +152,7 @@ defmodule Kazarma.Matrix.TransactionTimelineTest do
         Bridge.create_room(%{
           local_id: "!foo:kazarma",
           remote_id: @pleroma_user_ap_id,
-          data: %{"matrix_id" => @pleroma_puppet_address, "type" => "outbox"}
+          data: %{"matrix_id" => @pleroma_puppet_address, "type" => "actor_outbox"}
         })
 
       :ok
