@@ -113,7 +113,8 @@ defmodule Kazarma.RoomType.ActorOutbox do
     end
   end
 
-  defp get_room_for_public_create(%{"inReplyTo" => reply_to_ap_id} = object_data) do
+  defp get_room_for_public_create(%{"inReplyTo" => reply_to_ap_id} = object_data)
+       when not is_nil(reply_to_ap_id) do
     case Bridge.get_events_by_remote_id(reply_to_ap_id) do
       [%BridgeEvent{room_id: replied_to_room_id} | _] ->
         case Bridge.get_room_by_local_id(replied_to_room_id) do
