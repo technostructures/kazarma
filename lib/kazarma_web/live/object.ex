@@ -30,6 +30,12 @@ defmodule KazarmaWeb.Object do
         |> assign(page_title: page_title),
         temporary_assigns: []
       }
+    else
+      _ ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("Not found"))
+         |> push_navigate(to: "/")}
     end
   end
 
