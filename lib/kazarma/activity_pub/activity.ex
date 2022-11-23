@@ -213,7 +213,8 @@ defmodule Kazarma.ActivityPub.Activity do
   defp add_reply(body, object_data, room_id) when is_binary(body),
     do: add_reply({body, body}, object_data, room_id)
 
-  defp add_reply({body, formatted_body}, %{"inReplyTo" => reply_to_ap_id}, room_id) do
+  defp add_reply({body, formatted_body}, %{"inReplyTo" => reply_to_ap_id}, room_id)
+       when not is_nil(reply_to_ap_id) do
     case Bridge.get_events_by_remote_id(reply_to_ap_id) do
       [%BridgeEvent{local_id: event_id, room_id: replied_to_room_id} | _] ->
         {Client.reply_event(event_id, body, formatted_body), replied_to_room_id}
