@@ -38,6 +38,9 @@ defmodule KazarmaWeb.Helpers do
 
   def ap_id(%ActivityPub.Actor{data: %{"id" => ap_id}}), do: ap_id
 
+  def url(%ActivityPub.Actor{data: %{"url" => url}}), do: url
+  def url(%ActivityPub.Actor{data: %{"id" => ap_id}}), do: ap_id
+
   def type(%ActivityPub.Actor{local: true}), do: "Matrix"
   def type(%ActivityPub.Actor{data: %{"type" => type}}), do: "ActivityPub (#{type})"
 

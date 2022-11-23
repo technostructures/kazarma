@@ -70,7 +70,7 @@ defmodule KazarmaWeb.Components.Profile do
 
   defp ap_links(assigns) do
     ~H"""
-    <.external_link to={ap_id(@actor)} />
+    <.external_link to={url(@actor)} />
     """
   end
 
