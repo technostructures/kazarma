@@ -64,7 +64,7 @@ defmodule KazarmaWeb.Components.Object do
 
   attr :object, :map
   attr :actor, :map
-  attr :conn, :map
+  attr :socket, :map
   attr :type, :atom, default: nil
   attr :classes, :string, default: ""
 

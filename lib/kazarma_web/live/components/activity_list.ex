@@ -13,12 +13,19 @@ defmodule KazarmaWeb.Components.ActivityList do
       actor={actor_for_object(object)}
       type={:replied_to}
     />
-    <KazarmaWeb.Components.Object.show object={@object} actor={@actor} type={:main} classes="" />
+    <KazarmaWeb.Components.Object.show
+      object={@object}
+      actor={@actor}
+      type={:main}
+      socket={@socket}
+      classes=""
+    />
     <KazarmaWeb.Components.Object.show
       :for={object <- @next_objects}
       object={object}
       actor={actor_for_object(object)}
       type={:reply}
+      socket={@socket}
     />
     """
   end
