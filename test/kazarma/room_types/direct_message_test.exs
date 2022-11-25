@@ -4,7 +4,6 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
   use Kazarma.DataCase
 
   alias Kazarma.Bridge
-  import Mox
   import Kazarma.ActivityPub.Adapter
 
   describe "activity handler (handle_activity/1) for private Note" do

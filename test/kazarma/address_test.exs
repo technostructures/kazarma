@@ -3,7 +3,6 @@
 defmodule Kazarma.AddressTest do
   use Kazarma.DataCase
 
-  import Mox
   import Kazarma.Address
 
   setup :set_mox_from_context

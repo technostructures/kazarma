@@ -3,7 +3,6 @@
 defmodule Kazarma.Matrix.RoomTest do
   use Kazarma.DataCase
 
-  import Mox
   import Kazarma.Matrix.Room
 
   @ap_user_server "pleroma.interhacker.space"

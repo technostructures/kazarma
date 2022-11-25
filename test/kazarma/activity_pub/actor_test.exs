@@ -5,7 +5,6 @@ defmodule Kazarma.ActivityPub.ActorTest do
   use Kazarma.DataCase
 
   alias Kazarma.Bridge
-  import Mox
   import Kazarma.ActivityPub.Adapter
 
   describe "ActivityPub request for a local user (get_actor_by_username/1)" do

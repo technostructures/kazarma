@@ -8,7 +8,6 @@ defmodule Kazarma.Matrix.TransactionTest do
   """
   use Kazarma.DataCase
 
-  import Mox
   import Kazarma.Matrix.Transaction
   alias Kazarma.Bridge
   alias MatrixAppService.Event
