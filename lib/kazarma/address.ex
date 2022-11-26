@@ -142,6 +142,10 @@ defmodule Kazarma.Address do
       ~r/#{puppet_prefix()}(?<localpart>[#{@matrix_chars}]+)#{@matrix_puppet_separation}(?<domain>#{@valid_domain})/
 
     case Regex.named_captures(regex, user_id) do
+      # @TODO: make configurable
+      %{"localpart" => "_kazarma", "domain" => ^domain} ->
+        {:appservice_bot, "_kazarma"}
+
       %{"localpart" => localpart, "domain" => ^domain} ->
         # local Matrix user
         case String.starts_with?(localpart, puppet_prefix()) &&
@@ -173,6 +177,9 @@ defmodule Kazarma.Address do
     |> case do
       {:activity_pub, sub_localpart, sub_domain} ->
         {:ok, "#{sub_localpart}@#{sub_domain}"}
+
+      {:appservice_bot, localpart} ->
+        {:ok, "#{localpart}@#{domain()}"}
 
       {:local_matrix, localpart} ->
         {:ok, "#{localpart}@#{domain()}"}

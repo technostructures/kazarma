@@ -118,13 +118,18 @@ defmodule Kazarma.Matrix.Transaction do
           state_key: user_id
         } = event
       ) do
-    case Kazarma.Address.matrix_id_to_actor(user_id) do
-      {:ok, %ActivityPub.Actor{local: true} = actor} ->
-        bridge_profile_change(user_id, actor, content)
-        maybe_follow_or_accept(room_id, actor, event)
-
-      {:ok, %ActivityPub.Actor{local: false}} ->
+    case Kazarma.Address.parse_matrix_id(user_id) do
+      {:activity_pub, _sub_localpart, _sub_domain} ->
         accept_puppet_invitation(user_id, sender_id, room_id, content)
+
+      {:appservice_bot, _localpart} ->
+        accept_appservice_bot_invitation(user_id, room_id, content)
+
+      {:local_matrix, _localpart} ->
+        handle_matrix_member_event(user_id, room_id, content, event)
+
+      {:remote_matrix, _localpart, _remote_domain} ->
+        handle_matrix_member_event(user_id, room_id, content, event)
 
       _ ->
         :ok
@@ -136,6 +141,22 @@ defmodule Kazarma.Matrix.Transaction do
   def new_event(%Event{type: type} = event) do
     Logger.debug("Received #{type} from Synapse")
     Logger.debug(inspect(event))
+  end
+
+  defp accept_appservice_bot_invitation(user_id, room_id, %{
+         "membership" => "invite"
+       }) do
+    Kazarma.Matrix.Client.join(user_id, room_id)
+  end
+
+  defp accept_appservice_bot_invitation(_, _, _) do
+    :ok
+  end
+
+  defp handle_matrix_member_event(user_id, room_id, content, event) do
+    {:ok, actor} = Kazarma.Address.matrix_id_to_actor(user_id)
+    bridge_profile_change(user_id, actor, content)
+    maybe_follow_or_accept(room_id, actor, event)
   end
 
   defp accept_puppet_invitation(user_id, sender_id, room_id, %{
@@ -183,6 +204,8 @@ defmodule Kazarma.Matrix.Transaction do
       _ ->
         nil
     end
+
+    :ok
   end
 
   defp maybe_follow_or_accept(_room_id, _follower, _content), do: nil
