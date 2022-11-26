@@ -15,7 +15,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       %ActivityPub.Object{
         data: %{
           "id" => "delete_object_id",
-          "actor" => "http://kazarma/actors/bob",
+          "actor" => "http://kazarma/-/bob",
           "type" => "Delete",
           "to" => ["http://pleroma/pub/actors/alice"],
           "object" => "http://pleroma/pub/transactions/object_id"
@@ -88,7 +88,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         data: %{
           "type" => "Create",
           "to" => [
-            "http://kazarma/actors/bob",
+            "http://kazarma/-/bob",
             "https://www.w3.org/ns/activitystreams#Public"
           ]
         },
@@ -96,7 +96,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
           data: %{
             "type" => "Note",
             "content" =>
-              ~S(<p><span class="h-card"><a href="http://kazarma/actors/bob" class="u-url mention">@<span>bob@kazarma.kazarma.local</span></a></span> hello</p>),
+              ~S(<p><span class="h-card"><a href="http://kazarma/-/bob" class="u-url mention">@<span>bob@kazarma.kazarma.local</span></a></span> hello</p>),
             "source" => "@bob@kazarma.kazarma.local hello",
             "id" => "note_id",
             "actor" => "http://pleroma/pub/actors/alice",
@@ -105,7 +105,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
             "tag" => [
               %{
                 "type" => "Mention",
-                "href" => "http://kazarma/actors/bob",
+                "href" => "http://kazarma/-/bob",
                 "name" => "@bob@kazarma.kazarma.local"
               }
             ]

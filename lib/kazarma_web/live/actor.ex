@@ -14,29 +14,29 @@ defmodule KazarmaWeb.Actor do
   end
 
   @impl true
+  def mount(%{"localpart" => localpart, "server" => "-"} = params, session, socket) do
+    mount(%{"username" => "#{localpart}@#{Kazarma.Address.domain()}"}, session, socket)
+  end
+
+  def mount(%{"localpart" => localpart, "server" => server} = params, session, socket) do
+    mount(%{"username" => "#{localpart}@#{server}"}, session, socket)
+  end
+
   def mount(%{"username" => username}, _session, socket) do
-    case get_actor(username) do
-      {:ok, actor} ->
-        public_activities = Kazarma.ActivityPub.Actor.public_activites_for_actor(actor)
-        page_title = String.replace(actor.data["name"], ~r/(?<=.{20})(.+)/s, "...")
+    {:ok, actor} = get_actor(username)
+    public_activities = Kazarma.ActivityPub.Actor.public_activites_for_actor(actor)
+    page_title = String.replace(actor.data["name"], ~r/(?<=.{20})(.+)/s, "...")
 
-        {
-          :ok,
-          socket
-          |> assign(conn: socket)
-          |> assign(offset: 0)
-          |> assign(actor: actor)
-          |> assign(last_page: length(public_activities) < 10)
-          |> assign(page_title: page_title),
-          temporary_assigns: [activities: public_activities]
-        }
-
-      _ ->
-        {:ok,
-         socket
-         |> put_flash(:error, gettext("Not found"))
-         |> push_navigate(to: "/")}
-    end
+    {
+      :ok,
+      socket
+      |> assign(conn: socket)
+      |> assign(offset: 0)
+      |> assign(actor: actor)
+      |> assign(last_page: length(public_activities) < 10)
+      |> assign(page_title: page_title),
+      temporary_assigns: [activities: public_activities]
+    }
   end
 
   @impl true
@@ -55,7 +55,7 @@ defmodule KazarmaWeb.Actor do
   def handle_event("search", %{"search" => %{"address" => address}}, socket) do
     case Kazarma.search_user(address) do
       {:ok, actor} ->
-        actor_path = Routes.activity_pub_path(socket, :actor, actor.username)
+        actor_path = Kazarma.ActivityPub.Adapter.actor_path(actor)
         # dirty fix because LiveView does not re-enable the form when redirecting
         send(self(), {:redirect, actor_path})
         {:noreply, socket}

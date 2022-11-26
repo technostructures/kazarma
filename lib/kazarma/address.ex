@@ -5,6 +5,8 @@ defmodule Kazarma.Address do
   Functions about Matrix and ActivityPub addresses conversion.
   """
 
+  alias ActivityPub.Actor
+
   @alphanum "A-z0-9"
   @alphanum_lowercased "a-z0-9"
   @ap_chars @alphanum <> "_"
@@ -28,6 +30,16 @@ defmodule Kazarma.Address do
     username
     |> String.replace_suffix(":#{Kazarma.Address.domain()}", "")
     |> String.replace_leading("@", "")
+  end
+
+  def localpart(%Actor{username: username}) do
+    [localpart, _server] = String.split(username, "@")
+    localpart
+  end
+
+  def server(%Actor{username: username}) do
+    [_localpart, server] = String.split(username, "@")
+    server
   end
 
   @doc """
@@ -98,12 +110,12 @@ defmodule Kazarma.Address do
   end
 
   def ap_localpart_to_local_ap_id(localpart) do
-    KazarmaWeb.Router.Helpers.activity_pub_url(KazarmaWeb.Endpoint, :actor, localpart)
+    KazarmaWeb.Router.Helpers.activity_pub_url(KazarmaWeb.Endpoint, :actor, "-", localpart)
   end
 
   def ap_id_to_matrix(ap_id, types \\ [:remote_matrix, :local_matrix, :activity_pub]) do
-    case ActivityPub.Actor.get_cached_by_ap_id(ap_id) do
-      {:ok, %ActivityPub.Actor{username: username}} ->
+    case Actor.get_cached_by_ap_id(ap_id) do
+      {:ok, %Actor{username: username}} ->
         ap_username_to_matrix_id(username, types)
 
       _ ->
@@ -176,7 +188,7 @@ defmodule Kazarma.Address do
   def matrix_id_to_actor(matrix_id, types \\ [:activity_pub, :local_matrix, :remote_matrix]) do
     case matrix_id_to_ap_username(matrix_id, types) do
       {:ok, username} ->
-        ActivityPub.Actor.get_or_fetch_by_username(username)
+        Actor.get_or_fetch_by_username(username)
 
       error ->
         error

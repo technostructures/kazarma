@@ -9,7 +9,7 @@ defmodule KazarmaWeb.SearchController do
   def search(conn, %{"search" => %{"address" => address}}) do
     case Kazarma.search_user(address) do
       {:ok, actor} ->
-        actor_path = Routes.activity_pub_path(conn, :actor, actor.username)
+        actor_path = Kazarma.ActivityPub.Adapter.actor_path(actor)
         redirect(conn, to: actor_path)
 
       _ ->

@@ -42,7 +42,7 @@ defmodule KazarmaWeb.Components.Object do
       <div class="">
         <h1 class="card-title text-xl">
           <.link
-            navigate={KazarmaWeb.Router.Helpers.activity_pub_path(@socket, :actor, @actor.username)}
+            navigate={Kazarma.ActivityPub.Adapter.actor_path(@actor)}
             class="link link-hover"
             title={main_address(@actor)}
           >
@@ -52,7 +52,7 @@ defmodule KazarmaWeb.Components.Object do
       </div>
       <div class="text-sm ml-auto">
         <.link
-          navigate={KazarmaWeb.Router.Helpers.activity_pub_path(@socket, :object, @object.id)}
+          navigate={Kazarma.ActivityPub.Adapter.object_path(@object, @actor)}
           class="link link-hover"
         >
           <%= datetime(@object) %>

@@ -56,10 +56,10 @@ defmodule Kazarma.ActivityPub.Actor do
       "type" => "Person",
       "name" => displayname,
       "icon" => avatar_url && %{"type" => "Image", "url" => avatar_url},
-      "followers" => Routes.activity_pub_url(Endpoint, :followers, local_username),
-      "followings" => Routes.activity_pub_url(Endpoint, :following, local_username),
-      "inbox" => Routes.activity_pub_url(Endpoint, :inbox, local_username),
-      "outbox" => Routes.activity_pub_url(Endpoint, :noop, local_username),
+      "followers" => Routes.activity_pub_url(Endpoint, :followers, "-", local_username),
+      "followings" => Routes.activity_pub_url(Endpoint, :following, "-", local_username),
+      "inbox" => Routes.activity_pub_url(Endpoint, :inbox, "-", local_username),
+      "outbox" => Routes.activity_pub_url(Endpoint, :noop, "-", local_username),
       "manuallyApprovesFollowers" => false,
       endpoints: %{
         "sharedInbox" => Routes.activity_pub_url(Endpoint, :inbox)
@@ -68,7 +68,7 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def build_relay_actor do
-    ap_id = Routes.activity_pub_url(Endpoint, :actor, "relay")
+    ap_id = Routes.activity_pub_url(Endpoint, :actor, "-", "relay")
     {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
 
     %Actor{
@@ -89,10 +89,10 @@ defmodule Kazarma.ActivityPub.Actor do
       "type" => "Application",
       "name" => "Kazarma",
       # "icon" => avatar_url && %{"type" => "Image", "url" => avatar_url},
-      "followers" => Routes.activity_pub_url(Endpoint, :followers, "relay"),
-      "followings" => Routes.activity_pub_url(Endpoint, :following, "relay"),
+      "followers" => Routes.activity_pub_url(Endpoint, :followers, "-", "relay"),
+      "followings" => Routes.activity_pub_url(Endpoint, :following, "-", "relay"),
       "inbox" => Routes.activity_pub_url(Endpoint, :inbox),
-      "outbox" => Routes.activity_pub_url(Endpoint, :noop, "relay"),
+      "outbox" => Routes.activity_pub_url(Endpoint, :noop, "-", "relay"),
       "manuallyApprovesFollowers" => false,
       endpoints: %{
         "sharedInbox" => Routes.activity_pub_url(Endpoint, :inbox)

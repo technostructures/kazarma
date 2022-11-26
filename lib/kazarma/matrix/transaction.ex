@@ -145,14 +145,14 @@ defmodule Kazarma.Matrix.Transaction do
     Kazarma.RoomType.Chat.handle_puppet_invite(user_id, sender_id, room_id)
   end
 
-  defp accept_puppet_invitation(user_id, _sender_id, room_id, %{"membership" => "invite"}) do
+  defp accept_puppet_invitation(user_id, sender_id, room_id, %{"membership" => "invite"}) do
     # @TODO fix this: could be handled by:
     # DirectMessage: accepts and add (if none)/update bridge room
     # Collection room: accepts
     # Actor: accepts
     # MatrixUser: accepts
     # Feed: accepts
-    Kazarma.RoomType.DirectMessage.handle_puppet_invite(user_id, room_id)
+    Kazarma.RoomType.DirectMessage.handle_puppet_invite(user_id, sender_id, room_id)
   end
 
   defp accept_puppet_invitation(_user_id, _sender_id, _room_id, _event_content), do: :ok

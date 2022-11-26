@@ -35,7 +35,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
         data: %{
           "type" => "Create",
           "actor" => "http://pleroma/pub/actors/alice",
-          "to" => ["http://kazarma/actors/bob"]
+          "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
           data: %{
@@ -52,7 +52,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
         data: %{
           "type" => "Create",
           "actor" => "http://pleroma/pub/actors/alice",
-          "to" => ["http://kazarma/actors/bob"]
+          "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
           data: %{

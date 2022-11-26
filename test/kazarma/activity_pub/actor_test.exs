@@ -24,20 +24,20 @@ defmodule Kazarma.ActivityPub.ActorTest do
                local: true,
                deactivated: false,
                username: "alice@kazarma",
-               ap_id: "http://kazarma/actors/alice",
+               ap_id: "http://kazarma/-/alice",
                data: %{
                  "preferredUsername" => "alice",
-                 "id" => "http://kazarma/actors/alice",
+                 "id" => "http://kazarma/-/alice",
                  "type" => "Person",
                  "name" => "Alice",
                  "icon" => %{
                    "type" => "Image",
                    "url" => "http://matrix/_matrix/media/r0/download/server/image_id"
                  },
-                 "followers" => "http://kazarma/actors/alice/followers",
-                 "followings" => "http://kazarma/actors/alice/following",
-                 "inbox" => "http://kazarma/actors/alice/inbox",
-                 "outbox" => "http://kazarma/actors/alice/outbox",
+                 "followers" => "http://kazarma/-/alice/followers",
+                 "followings" => "http://kazarma/-/alice/following",
+                 "inbox" => "http://kazarma/-/alice/inbox",
+                 "outbox" => "http://kazarma/-/alice/outbox",
                  "manuallyApprovesFollowers" => false,
                  endpoints: %{
                    "sharedInbox" => "http://kazarma/shared_inbox"
@@ -49,7 +49,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
                data: %{
                  "ap_data" => %{
                    "preferredUsername" => "alice",
-                   "id" => "http://kazarma/actors/alice",
+                   "id" => "http://kazarma/-/alice",
                    "type" => "Person",
                    "name" => "Alice",
                    "icon" => %{
@@ -65,7 +65,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
               %{
                 data: %{
                   "preferredUsername" => "alice",
-                  "id" => "http://kazarma/actors/alice",
+                  "id" => "http://kazarma/-/alice",
                   "type" => "Person",
                   "name" => "Alice",
                   "icon" => %{
@@ -161,7 +161,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
       {:ok, _user} =
         Bridge.create_user(%{
           local_id: "@alice:kazarma",
-          remote_id: "http://kazarma/actors/alice"
+          remote_id: "http://kazarma/-/alice"
         })
 
       assert :ok =
@@ -176,7 +176,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
                    data: %{
                      "name" => "old_name",
                      "icon" => %{"url" => "https://via.placeholder.com/300"},
-                     "id" => "http://kazarma/actors/alice"
+                     "id" => "http://kazarma/-/alice"
                    }
                  }
                })

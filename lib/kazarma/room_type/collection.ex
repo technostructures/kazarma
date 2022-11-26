@@ -74,7 +74,7 @@ defmodule Kazarma.RoomType.Collection do
     with {:ok, sender_actor} <- Address.matrix_id_to_actor(event.sender),
          to = [group_ap_id],
          replied_activity = Activity.get_replied_activity_if_exists(event),
-         context = Activity.make_context(replied_activity),
+         context = Activity.make_context(replied_activity, sender_actor),
          in_reply_to = Activity.make_in_reply_to(replied_activity),
          attachment = Activity.attachment_from_matrix_event_content(event.content),
          tags = [],

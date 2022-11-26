@@ -17,6 +17,53 @@ defmodule Kazarma.ActivityPub.Adapter do
   alias KazarmaWeb.Router.Helpers, as: Routes
 
   @impl ActivityPub.Adapter
+  def actor_url(actor) do
+    Routes.activity_pub_url(Endpoint, :actor, server_for_url(actor), Address.localpart(actor))
+  end
+
+  def actor_path(actor) do
+    Routes.activity_pub_path(Endpoint, :actor, server_for_url(actor), Address.localpart(actor))
+  end
+
+  defp server_for_url(%Actor{local: true}), do: "-"
+  defp server_for_url(%Actor{local: false} = actor), do: Address.server(actor)
+
+  @impl ActivityPub.Adapter
+  def context_url(uuid, actor) do
+    Routes.activity_pub_url(
+      Endpoint,
+      :object,
+      server_for_url(actor),
+      Address.localpart(actor),
+      "context",
+      uuid
+    )
+  end
+
+  @impl ActivityPub.Adapter
+  def object_url(%{id: uuid, data: %{"type" => type}}, actor) do
+    Routes.activity_pub_url(
+      Endpoint,
+      :object,
+      server_for_url(actor),
+      Address.localpart(actor),
+      String.downcase(type),
+      uuid
+    )
+  end
+
+  def object_path(%{id: uuid, data: %{"type" => type}}, actor) do
+    Routes.activity_pub_path(
+      Endpoint,
+      :object,
+      server_for_url(actor),
+      Address.localpart(actor),
+      String.downcase(type),
+      uuid
+    )
+  end
+
+  @impl ActivityPub.Adapter
   def get_actor_by_username(username) do
     Logger.debug("asked for local Matrix user #{username}")
 
@@ -252,7 +299,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     Logger.debug("try following back remote relay")
 
     if local_relay_ap_id ==
-         Routes.activity_pub_url(Endpoint, :actor, "relay") do
+         Routes.activity_pub_url(Endpoint, :actor, "-", "relay") do
       {:ok, local_relay} = ActivityPub.Actor.get_cached_by_ap_id(local_relay_ap_id)
       {:ok, remote_relay} = ActivityPub.Actor.get_cached_by_ap_id(remote_relay_ap_id)
       ActivityPub.follow(local_relay, remote_relay)
