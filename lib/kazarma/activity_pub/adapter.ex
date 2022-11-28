@@ -67,7 +67,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   def get_actor_by_username(username) do
     Logger.debug("asked for local Matrix user #{username}")
 
-    Kazarma.ActivityPub.Actor.get_from_matrix(username)
+    Kazarma.ActivityPub.Actor.get_local_actor(username)
   end
 
   @impl ActivityPub.Adapter

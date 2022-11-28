@@ -108,7 +108,7 @@ defmodule Kazarma.ActivityPub.Actor do
     %{actor | data: put_in(actor.data, ["icon"], %{"type" => "Image", "url" => avatar_url})}
   end
 
-  def get_from_matrix("relay") do
+  def get_local_actor("relay") do
     matrix_id = "@relay:#{Kazarma.Address.domain()}"
 
     with nil <- Bridge.get_user_by_local_id(matrix_id),
@@ -129,7 +129,7 @@ defmodule Kazarma.ActivityPub.Actor do
     end
   end
 
-  def get_from_matrix(username) do
+  def get_local_actor(username) do
     case Kazarma.Address.ap_username_to_matrix_id(username, [:remote_matrix, :local_matrix]) do
       {:ok, matrix_id} ->
         case Bridge.get_user_by_local_id(matrix_id) do

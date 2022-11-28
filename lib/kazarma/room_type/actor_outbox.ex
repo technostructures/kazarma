@@ -233,6 +233,9 @@ defmodule Kazarma.RoomType.ActorOutbox do
              alias
            ),
          {:ok, room} <- insert_bridge_room(room_id, actor.ap_id, matrix_id) do
+      {:ok, relay} = ActivityPub.Actor.get_cached_by_username("relay@#{Address.domain()}")
+      ActivityPub.follow(relay, actor)
+
       {:ok, room}
     else
       {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}} ->
