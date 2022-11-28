@@ -21,6 +21,6 @@ defmodule KazarmaWeb.CorrectParamsPlug do
   def call(%{params: %{"localpart" => localpart, "server" => server} = params} = conn, _action) do
     new_params = Map.put(params, "username", "#{localpart}@#{server}")
 
-    %{conn | params: new_params} |> dbg()
+    %{conn | params: new_params}
   end
 end
