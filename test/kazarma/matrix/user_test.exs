@@ -35,7 +35,10 @@ defmodule Kazarma.Matrix.UserTest do
           invite: [],
           room_version: "5",
           room_alias_name: @ap_puppet_username,
-          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
         ],
         [user_id: @ap_puppet_matrix_id] ->
           {:ok, %{"room_id" => "!room_id:kazarma"}}
