@@ -139,7 +139,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
       assert [
                %MatrixAppService.Bridge.Room{
-                 data: %{"type" => "actor_outbox", "matrix_id" => "@_ap_alice___pleroma:kazarma"},
+                 data: %{"type" => "ap_user", "matrix_id" => "@_ap_alice___pleroma:kazarma"},
                  local_id: "!room_id:kazarma",
                  remote_id: "http://pleroma/pub/actors/alice"
                },

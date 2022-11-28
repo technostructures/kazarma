@@ -29,7 +29,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         Bridge.create_room(%{
           local_id: "!foo:kazarma",
           remote_id: @pleroma_user_ap_id,
-          data: %{"matrix_id" => @pleroma_puppet_address, "type" => "actor_outbox"}
+          data: %{"matrix_id" => @pleroma_puppet_address, "type" => "ap_user"}
         })
 
       :ok

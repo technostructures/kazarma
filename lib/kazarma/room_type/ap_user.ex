@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule Kazarma.RoomType.ActorOutbox do
+defmodule Kazarma.RoomType.ApUser do
   @moduledoc """
   This room type represents "inboxes and outboxes", in ActivityPub terminology, for ActivityPub actors.
 
@@ -118,7 +118,7 @@ defmodule Kazarma.RoomType.ActorOutbox do
     case Bridge.get_events_by_remote_id(reply_to_ap_id) do
       [%BridgeEvent{room_id: replied_to_room_id} | _] ->
         case Bridge.get_room_by_local_id(replied_to_room_id) do
-          %Room{data: %{"type" => "actor_outbox"}} = room -> room
+          %Room{data: %{"type" => "ap_user"}} = room -> room
           _ -> get_room_for_public_create(Map.delete(object_data, "inReplyTo"))
         end
 
@@ -223,7 +223,7 @@ defmodule Kazarma.RoomType.ActorOutbox do
     Bridge.create_room(%{
       local_id: room_id,
       remote_id: ap_id,
-      data: %{type: :actor_outbox, matrix_id: matrix_id}
+      data: %{type: :ap_user, matrix_id: matrix_id}
     })
   end
 end

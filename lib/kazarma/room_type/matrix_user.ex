@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2020-2021 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule Kazarma.RoomType.MatrixOutbox do
+defmodule Kazarma.RoomType.MatrixUser do
   @moduledoc """
   Matrix Outbox rooms are rooms representing the timeline/wall of a Matrix user
   If the relevant user posts in the room, it's bridged as a public Create/Note
@@ -39,7 +39,7 @@ defmodule Kazarma.RoomType.MatrixOutbox do
 
   def join(actor, follower_ap_id) do
     case Bridge.get_room_by_remote_id(actor.ap_id) do
-      %Room{local_id: room_id, data: %{"type" => "matrix_outbox"}} ->
+      %Room{local_id: room_id, data: %{"type" => "matrix_user"}} ->
         {:ok, follower_matrix_id} = Address.ap_id_to_matrix(follower_ap_id, [:activity_pub])
         Client.join(follower_matrix_id, room_id)
 
@@ -70,7 +70,7 @@ defmodule Kazarma.RoomType.MatrixOutbox do
     Bridge.create_room(%{
       local_id: room_id,
       remote_id: ap_id,
-      data: %{type: :matrix_outbox, matrix_id: matrix_id}
+      data: %{type: :matrix_user, matrix_id: matrix_id}
     })
   end
 end

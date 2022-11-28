@@ -15,8 +15,8 @@ defmodule Kazarma.Commands do
 
   def handle_command(["outbox"], room_id, user_id) do
     case Bridge.get_room_by_local_id(room_id) do
-      %Room{data: %{"type" => "matrix_outbox"}} = room ->
-        Kazarma.RoomType.MatrixOutbox.maybe_set_outbox_type(room_id, user_id)
+      %Room{data: %{"type" => "matrix_user"}} = room ->
+        Kazarma.RoomType.MatrixUser.maybe_set_outbox_type(room_id, user_id)
 
       nil ->
         {:error, :room_type_should_be_matrix_user_room, room_id}
@@ -24,7 +24,7 @@ defmodule Kazarma.Commands do
   end
 
   def handle_command(["follow"], room_id, user_id) do
-    with %Room{data: %{"type" => "actor_outbox", "matrix_id" => receiver_id}} <-
+    with %Room{data: %{"type" => "ap_user", "matrix_id" => receiver_id}} <-
            Bridge.get_room_by_local_id(room_id),
          {:ok, sender} <- Address.matrix_id_to_actor(user_id),
          {:ok, receiver} <- Address.matrix_id_to_actor(receiver_id) do
@@ -39,7 +39,7 @@ defmodule Kazarma.Commands do
   end
 
   def handle_command(["unfollow"], room_id, user_id) do
-    with %Room{data: %{"type" => "actor_outbox", "matrix_id" => receiver_id}} <-
+    with %Room{data: %{"type" => "ap_user", "matrix_id" => receiver_id}} <-
            Bridge.get_room_by_local_id(room_id),
          {:ok, sender} <- Address.matrix_id_to_actor(user_id),
          {:ok, receiver} <- Address.matrix_id_to_actor(receiver_id) do

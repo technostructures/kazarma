@@ -69,14 +69,14 @@ defmodule Kazarma.Matrix.Transaction do
         %Room{data: %{"type" => "direct_message"}} = room ->
           Kazarma.RoomType.DirectMessage.create_from_matrix(event, room, text_content)
 
-        %Room{data: %{"type" => "actor_outbox"}} = room ->
-          Kazarma.RoomType.ActorOutbox.create_from_matrix(event, room, text_content)
+        %Room{data: %{"type" => "ap_user"}} = room ->
+          Kazarma.RoomType.ApUser.create_from_matrix(event, room, text_content)
 
         %Room{data: %{"type" => "collection"}} = room ->
           Kazarma.RoomType.Collection.create_from_matrix(event, room, text_content)
 
-        %Room{data: %{"type" => "matrix_outbox"}} = room ->
-          Kazarma.RoomType.MatrixOutbox.create_from_event(event, room)
+        %Room{data: %{"type" => "matrix_user"}} = room ->
+          Kazarma.RoomType.MatrixUser.create_from_event(event, room)
 
         nil ->
           :ok

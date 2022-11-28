@@ -106,7 +106,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           data: %{}
         })
 
-      {:ok, _outbox_room} = Kazarma.RoomType.ActorOutbox.get_or_create_outbox(actor, matrix_id)
+      {:ok, _outbox_room} = Kazarma.RoomType.ApUser.get_or_create_outbox(actor, matrix_id)
 
       :ok
     else
@@ -158,7 +158,7 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     result =
       if "https://www.w3.org/ns/activitystreams#Public" in to do
-        Kazarma.RoomType.ActorOutbox.create_from_ap(activity)
+        Kazarma.RoomType.ApUser.create_from_ap(activity)
       else
         case activity do
           %{
