@@ -64,8 +64,11 @@ defmodule Kazarma.Matrix.Transaction do
         %Room{data: %{"type" => "collection"}} = room ->
           Kazarma.RoomType.Collection.create_from_matrix(event, room, text_content)
 
+        %Room{data: %{"type" => "matrix_outbox"}} = room ->
+          Kazarma.RoomType.MatrixOutbox.create_from_event(event, room)
+
         nil ->
-          :ok
+          handle_command(event)
       end
     end
 
@@ -142,6 +145,17 @@ defmodule Kazarma.Matrix.Transaction do
     Logger.debug("Received #{type} from Synapse")
     Logger.debug(inspect(event))
   end
+
+  defp handle_command(%Event{
+         type: "m.room.message",
+         room_id: room_id,
+         user_id: user_id,
+         content: %{"body" => "!kazarma outbox", "msgtype" => "m.text"}
+       }) do
+    Kazarma.RoomType.MatrixOutbox.maybe_set_outbox_type(room_id, user_id)
+  end
+
+  defp handle_command(_), do: :ok
 
   defp accept_appservice_bot_invitation(user_id, room_id, %{
          "membership" => "invite"
@@ -284,11 +298,11 @@ defmodule Kazarma.Matrix.Transaction do
 
   defp is_tagged_redact(_), do: false
 
-  defp build_text_content(%{
-         "msgtype" => "m.text",
-         "format" => "org.matrix.custom.html",
-         "formatted_body" => formatted_body
-       }) do
+  def build_text_content(%{
+        "msgtype" => "m.text",
+        "format" => "org.matrix.custom.html",
+        "formatted_body" => formatted_body
+      }) do
     formatted_body
     |> remove_mx_reply
     |> convert_mentions
@@ -296,9 +310,9 @@ defmodule Kazarma.Matrix.Transaction do
     # |> HtmlSanitizeEx.Scrubber.scrub(Kazarma.Matrix.Scrubber) # we may need an ActivityPub.Scrubber
   end
 
-  defp build_text_content(%{"msgtype" => "m.text", "body" => body}), do: body
+  def build_text_content(%{"msgtype" => "m.text", "body" => body}), do: body
 
-  defp build_text_content(_), do: ""
+  def build_text_content(_), do: ""
 
   defp ap_mention_from_matrix_id(matrix_id) do
     case Address.matrix_id_to_actor(matrix_id) do
