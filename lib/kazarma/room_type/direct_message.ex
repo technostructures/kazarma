@@ -132,15 +132,15 @@ defmodule Kazarma.RoomType.DirectMessage do
           {:ok, inviter_actor} = Address.matrix_id_to_actor(inviter_id)
 
           {:ok, room} =
-            insert_bridge_room(room_id, ActivityPub.Utils.generate_context_id(inviter_actor), [])
+            insert_bridge_room(room_id, ActivityPub.Utils.generate_context_id(inviter_actor), [
+              matrix_id
+            ])
 
-          room
+          {:ok, room}
 
         room ->
-          room
+          updated_room_data = update_in(room.data["to"], &[matrix_id | &1]).data
+          Bridge.update_room(room, %{"data" => updated_room_data})
       end
-
-    updated_room_data = update_in(room.data["to"], &[matrix_id | &1]).data
-    Bridge.update_room(room, %{"data" => updated_room_data})
   end
 end
