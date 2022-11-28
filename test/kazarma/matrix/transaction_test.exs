@@ -111,7 +111,10 @@ defmodule Kazarma.Matrix.TransactionTest do
           invite: [],
           room_version: "5",
           room_alias_name: @pleroma_puppet_username,
-          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
         ],
         [user_id: @pleroma_puppet_address] ->
           {:ok, %{"room_id" => "!room_id:kazarma"}}
@@ -171,7 +174,10 @@ defmodule Kazarma.Matrix.TransactionTest do
           invite: [],
           room_version: "5",
           room_alias_name: @pleroma_puppet_username,
-          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
         ],
         [user_id: @pleroma_puppet_address] ->
           {:ok, %{"room_id" => "!room_id:kazarma"}}
@@ -184,7 +190,10 @@ defmodule Kazarma.Matrix.TransactionTest do
           invite: [],
           room_version: "5",
           room_alias_name: @mastodon_puppet_username,
-          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
         ],
         [user_id: @mastodon_puppet_address] ->
           {:ok, %{"room_id" => "!room_id:kazarma"}}
@@ -584,7 +593,10 @@ defmodule Kazarma.Matrix.TransactionTest do
           invite: [],
           room_version: "5",
           room_alias_name: @pleroma_puppet_username,
-          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
         ],
         [user_id: @pleroma_puppet_address] ->
           {:ok, %{"room_id" => "!room_id:kazarma"}}
@@ -670,7 +682,10 @@ defmodule Kazarma.Matrix.TransactionTest do
           invite: [],
           room_version: "5",
           room_alias_name: @pleroma_puppet_username,
-          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
         ],
         [user_id: @pleroma_puppet_address] ->
           {:ok, %{"room_id" => "!room_id:kazarma"}}
@@ -813,7 +828,10 @@ defmodule Kazarma.Matrix.TransactionTest do
           invite: [],
           room_version: "5",
           room_alias_name: @pleroma_puppet_username,
-          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
         ],
         [user_id: @pleroma_puppet_address] ->
           {:ok, %{"room_id" => "!room_id:kazarma"}}

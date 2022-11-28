@@ -124,7 +124,10 @@ defmodule Kazarma.RoomTypes.ChatTest do
           invite: [],
           room_version: "5",
           room_alias_name: "_ap_alice___pleroma",
-          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
         ],
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, %{"room_id" => "!room_id:kazarma"}}
@@ -188,7 +191,10 @@ defmodule Kazarma.RoomTypes.ChatTest do
           invite: [],
           room_version: "5",
           room_alias_name: "_ap_alice___pleroma",
-          initial_state: [%{content: %{guest_access: :can_join}, type: "m.room.guest_access"}]
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
         ],
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, %{"room_id" => "!room_id:kazarma"}}
