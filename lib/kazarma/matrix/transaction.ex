@@ -170,7 +170,7 @@ defmodule Kazarma.Matrix.Transaction do
   defp handle_matrix_member_event(user_id, room_id, content, event) do
     {:ok, actor} = Kazarma.Address.matrix_id_to_actor(user_id)
     bridge_profile_change(user_id, actor, content)
-    maybe_follow_or_accept(room_id, actor, event)
+    handle_join(room_id, actor, event)
   end
 
   defp accept_puppet_invitation(user_id, sender_id, room_id, %{
@@ -192,28 +192,10 @@ defmodule Kazarma.Matrix.Transaction do
 
   defp accept_puppet_invitation(_user_id, _sender_id, _room_id, _event_content), do: :ok
 
-  # @TODO separate in 2 functions
-  defp maybe_follow_or_accept(room_id, joiner, %{content: %{"membership" => "join"}} = event) do
+  defp handle_join(room_id, joiner, %{content: %{"membership" => "join"}} = event) do
     case Bridge.get_room_by_local_id(room_id) do
-      %Room{data: %{"type" => "actor_outbox"}, remote_id: followed_ap_id} ->
-        {:ok, followed} = ActivityPub.Actor.get_or_fetch_by_ap_id(followed_ap_id)
-        Kazarma.ActivityPub.follow(joiner, followed)
-
       %Room{data: %{"type" => "collection"}, remote_id: group_ap_id} ->
-        with %{
-               unsigned: %{
-                 "prev_content" => %{"membership" => "invite"},
-                 "replaces_state" => invite_event_id
-               }
-             } <- event,
-             %BridgeEvent{remote_id: invite_ap_id} <-
-               Bridge.get_event_by_local_id(invite_event_id) do
-          Kazarma.ActivityPub.accept(%{
-            to: [group_ap_id],
-            object: invite_ap_id,
-            actor: joiner
-          })
-        end
+        Kazarma.RoomType.Collection.handle_join(joiner, event, group_ap_id)
 
       _ ->
         nil
@@ -222,7 +204,7 @@ defmodule Kazarma.Matrix.Transaction do
     :ok
   end
 
-  defp maybe_follow_or_accept(_room_id, _follower, _content), do: nil
+  defp handle_join(_room_id, _follower, _content), do: nil
 
   defp bridge_profile_change(matrix_id, actor, content) do
     Logger.debug("bridge profile change")
