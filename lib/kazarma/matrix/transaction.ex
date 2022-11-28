@@ -40,6 +40,17 @@ defmodule Kazarma.Matrix.Transaction do
 
   def new_event(%Event{type: "m.room.message", content: content}) when content == %{}, do: :ok
 
+  def new_event(%Event{
+        type: "m.room.message",
+        room_id: room_id,
+        user_id: user_id,
+        content: %{"body" => "!kazarma" <> rest, "msgtype" => "m.text"}
+      }) do
+    Kazarma.Commands.handle_command(rest, room_id, user_id)
+
+    :ok
+  end
+
   def new_event(%Event{type: "m.room.message", room_id: room_id} = event) do
     Logger.info("Received m.room.message from Synapse")
     Logger.matrix_input(event)
@@ -68,7 +79,7 @@ defmodule Kazarma.Matrix.Transaction do
           Kazarma.RoomType.MatrixOutbox.create_from_event(event, room)
 
         nil ->
-          handle_command(event)
+          :ok
       end
     end
 
@@ -144,15 +155,6 @@ defmodule Kazarma.Matrix.Transaction do
   def new_event(%Event{type: type} = event) do
     Logger.debug("Received #{type} from Synapse")
     Logger.debug(inspect(event))
-  end
-
-  defp handle_command(%Event{
-         type: "m.room.message",
-         room_id: room_id,
-         user_id: user_id,
-         content: %{"body" => "!kazarma outbox", "msgtype" => "m.text"}
-       }) do
-    Kazarma.RoomType.MatrixOutbox.maybe_set_outbox_type(room_id, user_id)
   end
 
   defp handle_command(_), do: :ok
