@@ -291,18 +291,26 @@ defmodule Kazarma.ActivityPub.Adapter do
         %{
           data: %{
             "type" => "Follow",
-            "actor" => remote_relay_ap_id,
-            "object" => local_relay_ap_id
+            "actor" => follower,
+            "object" => following
           }
-        } = _activity
+        } = activity
       ) do
-    Logger.debug("try following back remote relay")
-
-    if local_relay_ap_id ==
+    # @TODO make relay be the appservice bot
+    if following ==
          Routes.activity_pub_url(Endpoint, :actor, "-", "relay") do
-      {:ok, local_relay} = ActivityPub.Actor.get_cached_by_ap_id(local_relay_ap_id)
-      {:ok, remote_relay} = ActivityPub.Actor.get_cached_by_ap_id(remote_relay_ap_id)
+      Logger.debug("follow back remote relay")
+      {:ok, local_relay} = ActivityPub.Actor.get_cached_by_ap_id(following)
+      {:ok, remote_relay} = ActivityPub.Actor.get_cached_by_ap_id(follower)
       ActivityPub.follow(local_relay, remote_relay)
+    else
+      case ActivityPub.Actor.get_cached_by_ap_id(following) do
+        {:ok, %ActivityPub.Actor{local: true} = actor} ->
+          ActivityPub.accept(%{to: [follower], actor: actor, object: activity.data})
+
+        {:ok, %ActivityPub.Actor{local: false} = actor} ->
+          ActivityPub.accept(%{to: [follower], actor: actor, object: activity.data})
+      end
     end
   end
 
