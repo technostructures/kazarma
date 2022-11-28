@@ -137,7 +137,41 @@ defmodule Kazarma.RoomType.ActorOutbox do
     end
   end
 
-  def create_from_matrix(event, %Room{data: %{"type" => "actor_outbox"}} = room, content) do
+  def create_from_matrix(
+        %MatrixAppService.Event{
+          type: "m.room.message",
+          room_id: room_id,
+          user_id: user_id,
+          sender: sender,
+          content: %{"body" => "!kazarma follow", "msgtype" => "m.text"}
+        },
+        room,
+        _content
+      ) do
+    with {:ok, sender_actor} <- Address.matrix_id_to_actor(sender),
+         {:ok, receiver_actor} <- Address.matrix_id_to_actor(room.data["matrix_id"]) do
+      Kazarma.ActivityPub.follow(sender_actor, receiver_actor)
+    end
+  end
+
+  def create_from_matrix(
+        %MatrixAppService.Event{
+          type: "m.room.message",
+          room_id: room_id,
+          user_id: user_id,
+          sender: sender,
+          content: %{"body" => "!kazarma unfollow", "msgtype" => "m.text"}
+        },
+        room,
+        _content
+      ) do
+    with {:ok, sender_actor} <- Address.matrix_id_to_actor(sender),
+         {:ok, receiver_actor} <- Address.matrix_id_to_actor(room.data["matrix_id"]) do
+      Kazarma.ActivityPub.unfollow(sender_actor, receiver_actor)
+    end
+  end
+
+  def create_from_matrix(event, room, content) do
     with {:ok, sender_actor} <- Address.matrix_id_to_actor(event.sender),
          {:ok, receiver_actor} <- Address.matrix_id_to_actor(room.data["matrix_id"]),
          to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id],
