@@ -4,7 +4,6 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
   use Kazarma.DataCase
 
   alias Kazarma.Bridge
-  import Mox
   import Kazarma.ActivityPub.Adapter
 
   describe "activity handler (handle_activity/1) for private Note" do
@@ -36,7 +35,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       %{
         data: %{
           "type" => "Create",
-          "to" => ["http://kazarma/actors/bob"]
+          "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
           data: %{
@@ -56,7 +55,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         data: %{
           "type" => "Create",
           "actor" => "http://pleroma/pub/actors/alice",
-          "to" => ["http://kazarma/actors/bob"]
+          "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
           data: %{
@@ -397,7 +396,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       %{
         data: %{
           "type" => "Create",
-          "to" => ["http://kazarma/actors/bob"]
+          "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
           data: %{
@@ -496,7 +495,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         data: %{
           "type" => "Create",
           "to" => [
-            "http://kazarma/actors/bob",
+            "http://kazarma/-/bob",
             "https://www.w3.org/ns/activitystreams#Public"
           ]
         },
@@ -518,7 +517,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         data: %{
           "type" => "Create",
           "to" => [
-            "http://kazarma/actors/bob",
+            "http://kazarma/-/bob",
             "https://www.w3.org/ns/activitystreams#Public"
           ]
         },
@@ -651,7 +650,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         data: %{
           "type" => "Create",
           "to" => [
-            "http://kazarma/actors/bob",
+            "http://kazarma/-/bob",
             "https://www.w3.org/ns/activitystreams#Public"
           ]
         },

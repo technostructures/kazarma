@@ -87,9 +87,9 @@ defmodule Kazarma.ActivityPub.Activity do
 
   def make_in_reply_to(_), do: nil
 
-  def make_context(%Object{data: %{"context" => context}}), do: context
+  def make_context(%Object{data: %{"context" => context}}, actor), do: context
 
-  def make_context(_), do: ActivityPub.Utils.generate_context_id()
+  def make_context(_, actor), do: ActivityPub.Utils.generate_context_id(actor)
 
   def mention_tag_for_actor(actor) do
     %{

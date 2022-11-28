@@ -107,12 +107,12 @@ defmodule Kazarma.RoomType.DirectMessage do
     end
   end
 
-  def handle_puppet_invite(user_id, room_id) do
-    with {:ok, _actor} <- Address.matrix_id_to_actor(user_id, [:activity_pub]),
+  def handle_puppet_invite(matrix_id, inviter_id, room_id) do
+    with {:ok, _actor} <- Address.matrix_id_to_actor(matrix_id, [:activity_pub]),
          # @TODO maybe update if bridge room exist (new context/conversation)
          {:ok, _room} <-
-           join_or_create_bridge_room(room_id, user_id),
-         _ <- Client.join(user_id, room_id) do
+           join_or_create_bridge_room(matrix_id, inviter_id, room_id),
+         _ <- Client.join(matrix_id, room_id) do
       :ok
     end
   end
@@ -125,24 +125,22 @@ defmodule Kazarma.RoomType.DirectMessage do
     })
   end
 
-  defp join_or_create_bridge_room(room_id, user_id) do
+  defp join_or_create_bridge_room(matrix_id, inviter_id, room_id) do
     room =
       case Bridge.get_room_by_local_id(room_id) do
         nil ->
-          {:ok, room} =
-            Bridge.create_room(%{
-              local_id: room_id,
-              remote_id: ActivityPub.Utils.generate_context_id(),
-              data: %{"type" => "direct_message", "to" => []}
-            })
+          {:ok, inviter_actor} = Address.matrix_id_to_actor(inviter_id)
 
-          room
+          {:ok, room} =
+            insert_bridge_room(room_id, ActivityPub.Utils.generate_context_id(inviter_actor), [
+              matrix_id
+            ])
+
+          {:ok, room}
 
         room ->
-          room
+          updated_room_data = update_in(room.data["to"], &[matrix_id | &1]).data
+          Bridge.update_room(room, %{"data" => updated_room_data})
       end
-
-    updated_room_data = update_in(room.data["to"], &[user_id | &1]).data
-    Bridge.update_room(room, %{"data" => updated_room_data})
   end
 end

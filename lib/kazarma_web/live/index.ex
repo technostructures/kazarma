@@ -4,6 +4,7 @@
 defmodule KazarmaWeb.Index do
   @moduledoc false
 
+  alias Kazarma.Address
   use KazarmaWeb, :live_view
 
   @impl true
@@ -19,7 +20,8 @@ defmodule KazarmaWeb.Index do
   def handle_event("search", %{"search" => %{"address" => address}}, socket) do
     case Kazarma.search_user(address) do
       {:ok, actor} ->
-        actor_path = Routes.activity_pub_path(socket, :actor, actor.username)
+        actor_path = Kazarma.ActivityPub.Adapter.actor_path(actor)
+
         # dirty fix because LiveView does not re-enable the form when redirecting
         send(self(), {:redirect, actor_path})
         {:noreply, socket}

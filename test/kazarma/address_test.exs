@@ -3,7 +3,6 @@
 defmodule Kazarma.AddressTest do
   use Kazarma.DataCase
 
-  import Mox
   import Kazarma.Address
 
   setup :set_mox_from_context
@@ -218,8 +217,8 @@ defmodule Kazarma.AddressTest do
   end
 
   test "ap_localpart_to_local_ap_id" do
-    assert ap_localpart_to_local_ap_id("test") == "http://#{domain()}/actors/test"
-    assert ap_localpart_to_local_ap_id("te-s_T.2") == "http://#{domain()}/actors/te-s_T.2"
+    assert ap_localpart_to_local_ap_id("test") == "http://#{domain()}/-/test"
+    assert ap_localpart_to_local_ap_id("te-s_T.2") == "http://#{domain()}/-/te-s_T.2"
   end
 
   describe "matrix_id_to_actor" do

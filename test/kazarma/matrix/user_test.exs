@@ -3,7 +3,6 @@
 defmodule Kazarma.Matrix.UserTest do
   use Kazarma.DataCase
 
-  import Mox
   import Kazarma.Matrix.User
 
   # This is an account created on a public ActivityPub instance

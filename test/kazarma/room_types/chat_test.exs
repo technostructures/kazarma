@@ -4,7 +4,6 @@ defmodule Kazarma.RoomTypes.ChatTest do
   use Kazarma.DataCase
 
   alias Kazarma.Bridge
-  import Mox
   import Kazarma.ActivityPub.Adapter
 
   describe "activity handler (handle_activity/1) for ChatMessage" do
@@ -35,7 +34,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
         data: %{
           "type" => "Create",
           "actor" => "http://pleroma/pub/actors/alice",
-          "to" => ["http://kazarma/actors/bob"]
+          "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
           data: %{
@@ -52,7 +51,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
         data: %{
           "type" => "Create",
           "actor" => "http://pleroma/pub/actors/alice",
-          "to" => ["http://kazarma/actors/bob"]
+          "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
           data: %{

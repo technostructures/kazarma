@@ -8,7 +8,6 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
   """
   use Kazarma.DataCase
 
-  import Mox
   import Kazarma.Matrix.Transaction
   alias Kazarma.Bridge
   alias MatrixAppService.Event
@@ -67,18 +66,18 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       Kazarma.ActivityPub.TestServer
       |> expect(:follow, fn
         %ActivityPub.Actor{
-          ap_id: "http://kazarma/actors/alice",
+          ap_id: "http://kazarma/-/alice",
           data: %{
             :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
             "capabilities" => %{"acceptsChatMessages" => true},
-            "followers" => "http://kazarma/actors/alice/followers",
-            "followings" => "http://kazarma/actors/alice/following",
+            "followers" => "http://kazarma/-/alice/followers",
+            "followings" => "http://kazarma/-/alice/following",
             "icon" => nil,
-            "id" => "http://kazarma/actors/alice",
-            "inbox" => "http://kazarma/actors/alice/inbox",
+            "id" => "http://kazarma/-/alice",
+            "inbox" => "http://kazarma/-/alice/inbox",
             "manuallyApprovesFollowers" => false,
             "name" => "Alice",
-            "outbox" => "http://kazarma/actors/alice/outbox",
+            "outbox" => "http://kazarma/-/alice/outbox",
             "preferredUsername" => "alice",
             "type" => "Person"
           },
@@ -190,18 +189,18 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/actors/bob",
+            ap_id: "http://kazarma/-/bob",
             data: %{
               :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/actors/bob/followers",
-              "followings" => "http://kazarma/actors/bob/following",
+              "followers" => "http://kazarma/-/bob/followers",
+              "followings" => "http://kazarma/-/bob/following",
               "icon" => nil,
-              "id" => "http://kazarma/actors/bob",
-              "inbox" => "http://kazarma/actors/bob/inbox",
+              "id" => "http://kazarma/-/bob",
+              "inbox" => "http://kazarma/-/bob/inbox",
               "manuallyApprovesFollowers" => false,
               "name" => "Bob",
-              "outbox" => "http://kazarma/actors/bob/outbox",
+              "outbox" => "http://kazarma/-/bob/outbox",
               "preferredUsername" => "bob",
               "type" => "Person"
             },
@@ -214,8 +213,8 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           },
           context: _,
           object: %{
-            "actor" => "http://kazarma/actors/bob",
-            "attributedTo" => "http://kazarma/actors/bob",
+            "actor" => "http://kazarma/-/bob",
+            "attributedTo" => "http://kazarma/-/bob",
             "content" => "hello",
             "context" => _,
             "conversation" => _,

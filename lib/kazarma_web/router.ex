@@ -16,6 +16,10 @@ defmodule KazarmaWeb.Router do
     plug(KazarmaWeb.LiveOrJsonPlug)
   end
 
+  pipeline :correct_params do
+    plug(KazarmaWeb.CorrectParamsPlug)
+  end
+
   pipeline :browser do
     plug :fetch_session
 
@@ -89,26 +93,41 @@ defmodule KazarmaWeb.Router do
 
   scope "/", ActivityPubWeb do
     pipe_through(:activity_pub)
+    pipe_through(:correct_params)
 
     # get "/objects/:uuid", ActivityPubController, :object
     # get "/actors/:username", ActivityPubController, :actor
-    get "/actors/:username/followers", ActivityPubController, :followers
-    get "/actors/:username/following", ActivityPubController, :following
-    get "/actors/:username/outbox", ActivityPubController, :noop
+    # get "/actors/:username/followers", ActivityPubController, :followers
+    # get "/actors/:username/following", ActivityPubController, :following
+    # get "/actors/:username/outbox", ActivityPubController, :noop
+    get "/:server/:localpart/followers", ActivityPubController, :followers
+    get "/:server/:localpart/following", ActivityPubController, :following
+    get "/:server/:localpart/outbox", ActivityPubController, :noop
   end
 
+  # @TODO allow routes made for only local users
+
   scope "/", KazarmaWeb do
+    pipe_through(:correct_params)
     pipe_through(:accepts_html_and_json)
     pipe_through(:browser)
 
-    live("/objects/:uuid", Object, :object, as: :activity_pub)
-    live("/actors/:username", Actor, :actor, as: :activity_pub)
+    # live("/objects/:uuid", Object, :object, as: :activity_pub)
+    # live("/actors/:username", Actor, :actor, as: :activity_pub)
+    live("/:server/:localpart/:type/:uuid", Object, :object, as: :activity_pub)
+    live("/:server/:localpart", Actor, :actor, as: :activity_pub)
+  end
+
+  scope "/", ActivityPubWeb do
+    pipe_through(:correct_params)
+    pipe_through(:signed_activity_pub)
+
+    post "/:server/:localpart/inbox", ActivityPubController, :inbox
   end
 
   scope "/", ActivityPubWeb do
     pipe_through(:signed_activity_pub)
 
-    post "/actors/:username/inbox", ActivityPubController, :inbox
     post "/shared_inbox", ActivityPubController, :inbox
   end
 end

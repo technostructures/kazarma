@@ -8,42 +8,35 @@ defmodule KazarmaWeb.Object do
 
   @impl true
   def mount(%{"uuid" => uuid}, _session, socket) do
-    with ap_id <-
-           KazarmaWeb.Router.Helpers.activity_pub_url(socket, :object, uuid),
-         %ActivityPub.Object{public: true, data: %{"actor" => actor_id, "type" => "Note"}} =
-           object <-
-           ActivityPub.Object.get_cached_by_ap_id(ap_id) || ActivityPub.Object.get_by_id(uuid),
-         {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_ap_id(actor_id) do
-      previous_objects = traverse_replies_to(object) |> Enum.reverse()
-      next_objects = Kazarma.ActivityPub.Activity.get_replies_for(object)
+    {:ok, _raw_uuid} = Ecto.UUID.dump(uuid)
 
-      page_title =
-        "#{String.replace(object.data["content"], ~r/(?<=.{20})(.+)/s, "...")} – #{actor.data["name"]}"
+    %ActivityPub.Object{public: true, data: %{"actor" => actor_id, "type" => "Note"}} =
+      object = ActivityPub.Object.get_by_id(uuid)
 
-      {
-        :ok,
-        socket
-        |> assign(object: object)
-        |> assign(previous_objects: previous_objects)
-        |> assign(next_objects: next_objects)
-        |> assign(actor: actor)
-        |> assign(page_title: page_title),
-        temporary_assigns: []
-      }
-    else
-      _ ->
-        {:ok,
-         socket
-         |> put_flash(:error, gettext("Not found"))
-         |> push_navigate(to: "/")}
-    end
+    {:ok, actor} = ActivityPub.Actor.get_or_fetch_by_ap_id(actor_id)
+    previous_objects = traverse_replies_to(object) |> Enum.reverse()
+    next_objects = Kazarma.ActivityPub.Activity.get_replies_for(object)
+
+    page_title =
+      "#{String.replace(object.data["content"], ~r/(?<=.{20})(.+)/s, "...")} – #{actor.data["name"]}"
+
+    {
+      :ok,
+      socket
+      |> assign(object: object)
+      |> assign(previous_objects: previous_objects)
+      |> assign(next_objects: next_objects)
+      |> assign(actor: actor)
+      |> assign(page_title: page_title),
+      temporary_assigns: []
+    }
   end
 
   @impl true
   def handle_event("search", %{"search" => %{"address" => address}}, socket) do
     case Kazarma.search_user(address) do
       {:ok, actor} ->
-        actor_path = Routes.activity_pub_path(socket, :actor, actor.username)
+        actor_path = Kazarma.ActivityPub.Adapter.actor_path(actor)
         # dirty fix because LiveView does not re-enable the form when redirecting
         send(self(), {:redirect, actor_path})
         {:noreply, socket}
