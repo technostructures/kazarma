@@ -132,6 +132,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
                  username: "bob@pleroma",
                  ap_id: "http://pleroma/users/bob",
                  data: %{
+                   "id" => "http://pleroma/users/bob",
                    "name" => "Bob",
                    "icon" => %{"type" => "Image", "url" => "https://via.placeholder.com/150"}
                  }

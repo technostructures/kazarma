@@ -14,6 +14,7 @@ defmodule Kazarma.RoomType.Collection do
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
+  alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
 
   def create_from_ap(%{
@@ -96,6 +97,24 @@ defmodule Kazarma.RoomType.Collection do
       })
 
       :ok
+    end
+  end
+
+  # @TODO destructure event in Matrix.Transaction
+  def handle_join(joiner, event, group_ap_id) do
+    with %{
+           unsigned: %{
+             "prev_content" => %{"membership" => "invite"},
+             "replaces_state" => invite_event_id
+           }
+         } <- event,
+         %BridgeEvent{remote_id: invite_ap_id} <-
+           Bridge.get_event_by_local_id(invite_event_id) do
+      Kazarma.ActivityPub.accept(%{
+        to: [group_ap_id],
+        object: invite_ap_id,
+        actor: joiner
+      })
     end
   end
 
