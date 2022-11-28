@@ -39,6 +39,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       %Event{
         type: "m.room.member",
         content: %{"membership" => "join"},
+        sender: "@alice:kazarma",
         room_id: "!room:kazarma",
         state_key: "@alice:kazarma"
       }

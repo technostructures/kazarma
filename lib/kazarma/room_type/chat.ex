@@ -81,9 +81,15 @@ defmodule Kazarma.RoomType.Chat do
   def create_from_matrix(_), do: :ok
 
   def handle_puppet_invite(user_id, sender_id, room_id) do
-    Kazarma.Matrix.Client.join(user_id, room_id)
-    create_bridge_room(user_id, room_id)
-    Kazarma.Matrix.Client.put_new_direct_room_data(user_id, sender_id, room_id)
+    case Kazarma.Address.matrix_id_to_actor(user_id) do
+      {:ok, %ActivityPub.Actor{local: false}} ->
+        Kazarma.Matrix.Client.join(user_id, room_id)
+        create_bridge_room(user_id, room_id)
+        Kazarma.Matrix.Client.put_new_direct_room_data(user_id, sender_id, room_id)
+
+      _ ->
+        :ok
+    end
   end
 
   defp create_bridge_room(user_id, room_id) do
