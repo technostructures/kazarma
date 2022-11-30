@@ -14,7 +14,7 @@
 
 <div
   :if={live_flash(@flash, :error)}
-  class="alert alert-danger mb-2 shadow-lg container mx-auto lg:max-w-3xl"
+  class="alert alert-error w-full rounded-none m-0 cursor-pointer shadow-lg flex-col"
   role="alert"
   phx-click="lv:clear-flash"
   phx-value-key="error"
