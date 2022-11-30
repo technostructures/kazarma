@@ -14,16 +14,37 @@ defmodule Kazarma.ActivityPub.Activity do
 
   import Ecto.Query
 
-  def create_note_from_event(event, sender, to, mentions) do
-    replied_activity = get_replied_activity_if_exists(event)
-    context = make_context(replied_activity, sender)
+  def create_from_event(
+        event,
+        params
+      ) do
+    sender = Keyword.fetch!(params, :sender)
+
+    to = Keyword.fetch!(params, :to)
+
+    type = Keyword.get(params, :type, "Note")
+
+    replied_activity =
+      get_replied_activity_if_exists(event) || Keyword.get(params, :fallback_reply)
+
     in_reply_to = make_in_reply_to(replied_activity)
+
+    context = Keyword.get(params, :context) || make_context(replied_activity, sender)
+
     attachment = attachment_from_matrix_event_content(event.content)
-    tags = Enum.map(mentions, &make_mention_tag/1)
+
+    # @TODO
+    # mentions = get_mentions_from_event(event) ++ Keyword.get(params, :additional_mentions, [])
+    mentions = Keyword.get(params, :additional_mentions, [])
+
+    # @TODO
+    # content = Kazarma.Matrix.Transaction.build_text_content(event.content, mentions)
     content = Kazarma.Matrix.Transaction.build_text_content(event.content)
 
+    tags = Enum.map(mentions, &mention_tag_for_actor/1)
+
     case create(
-           type: "Note",
+           type: type,
            sender: sender,
            receivers_id: to,
            context: context,
@@ -42,14 +63,6 @@ defmodule Kazarma.ActivityPub.Activity do
       error ->
         {:error, error}
     end
-  end
-
-  defp make_mention_tag(actor) do
-    %{
-      "href" => actor.ap_id,
-      "name" => "@#{actor.data["preferredUsername"]}",
-      "type" => "Mention"
-    }
   end
 
   def create(params) do

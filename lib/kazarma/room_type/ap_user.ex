@@ -137,40 +137,16 @@ defmodule Kazarma.RoomType.ApUser do
     end
   end
 
-  def create_from_matrix(event, room, content) do
-    with {:ok, sender_actor} <- Address.matrix_id_to_actor(event.sender),
-         {:ok, receiver_actor} <- Address.matrix_id_to_actor(room.data["matrix_id"]),
-         to = ["https://www.w3.org/ns/activitystreams#Public", receiver_actor.ap_id],
-         replied_activity = Activity.get_replied_activity_if_exists(event),
-         context = Activity.make_context(replied_activity, sender_actor),
-         in_reply_to = Activity.make_in_reply_to(replied_activity),
-         attachment = Activity.attachment_from_matrix_event_content(event.content),
-         tags = [
-           %{
-             "href" => receiver_actor.ap_id,
-             "name" => "@#{receiver_actor.data["preferredUsername"]}",
-             "type" => "Mention"
-           }
-         ],
-         {:ok, %{object: %Object{data: %{"id" => remote_id}}}} <-
-           Activity.create(
-             type: "Note",
-             sender: sender_actor,
-             receivers_id: to,
-             context: context,
-             in_reply_to: in_reply_to,
-             content: content,
-             attachment: attachment,
-             tags: tags
-           ) do
-      Bridge.create_event(%{
-        local_id: event.event_id,
-        remote_id: remote_id,
-        room_id: event.room_id
-      })
+  def create_from_event(event, room) do
+    {:ok, sender} = Address.matrix_id_to_actor(event.sender)
+    {:ok, receiver} = Address.matrix_id_to_actor(room.data["matrix_id"])
 
-      :ok
-    end
+    Activity.create_from_event(
+      event,
+      sender: sender,
+      to: ["https://www.w3.org/ns/activitystreams#Public", receiver.ap_id],
+      additional_mentions: [receiver]
+    )
   end
 
   def get_or_create_outbox(ap_id) do

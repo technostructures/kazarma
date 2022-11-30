@@ -456,7 +456,6 @@ defmodule Kazarma.Matrix.TransactionTest do
             pointer_id: nil,
             username: "bob@kazarma"
           },
-          context: nil,
           object: %{
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",
@@ -514,7 +513,6 @@ defmodule Kazarma.Matrix.TransactionTest do
             pointer_id: nil,
             username: "bob@kazarma"
           },
-          context: nil,
           object: %{
             "actor" => "http://kazarma/-/bob",
             "attachment" => %{
@@ -1059,7 +1057,6 @@ defmodule Kazarma.Matrix.TransactionTest do
             pointer_id: nil,
             username: "bob@kazarma"
           },
-          context: nil,
           object: %{
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",
@@ -1137,7 +1134,6 @@ defmodule Kazarma.Matrix.TransactionTest do
             pointer_id: nil,
             username: "bob@kazarma"
           },
-          context: nil,
           object: %{
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",

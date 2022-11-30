@@ -7,6 +7,7 @@ defmodule Kazarma.RoomType.MatrixUser do
   If another user posts in the room, it's a public Create/Note with a mention
   Users can declare a public room as an outbox room by using the appservice bot
   """
+  alias ActivityPub.Actor
   alias ActivityPub.Object
   alias Kazarma.Address
   alias Kazarma.Logger
@@ -19,20 +20,19 @@ defmodule Kazarma.RoomType.MatrixUser do
     {:ok, sender} = Address.matrix_id_to_actor(event.sender)
 
     if sender == room.data["matrix_id"] do
-      Kazarma.ActivityPub.Activity.create_note_from_event(
+      Activity.create_from_event(
         event,
-        sender,
-        ["https://www.w3.org/ns/activitystreams#Public"],
-        []
+        sender: sender,
+        to: ["https://www.w3.org/ns/activitystreams#Public"]
       )
     else
       {:ok, receiver} = Address.matrix_id_to_actor(room.data["matrix_id"])
 
-      Kazarma.ActivityPub.Activity.create_note_from_event(
+      Activity.create_from_event(
         event,
-        sender,
-        ["https://www.w3.org/ns/activitystreams#Public", receiver.ap_id],
-        [receiver]
+        sender: sender,
+        to: ["https://www.w3.org/ns/activitystreams#Public", receiver.ap_id],
+        additional_mentions: [receiver]
       )
     end
   end
@@ -51,7 +51,7 @@ defmodule Kazarma.RoomType.MatrixUser do
   def maybe_set_outbox_type(room_id, user_id) do
     if Client.is_administrator(room_id, user_id) do
       case Address.matrix_id_to_actor(user_id) do
-        {:ok, %ActivityPub.Actor{ap_id: ap_id}} ->
+        {:ok, %Actor{ap_id: ap_id}} ->
           insert_bridge_room(room_id, user_id, ap_id)
 
         _ ->

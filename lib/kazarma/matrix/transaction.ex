@@ -56,24 +56,21 @@ defmodule Kazarma.Matrix.Transaction do
     Logger.matrix_input(event)
 
     if !is_tagged_message(event) do
-      text_content = build_text_content(event.content)
-
       case Bridge.get_room_by_local_id(room_id) do
         %Room{data: %{"type" => "chat"}} = room ->
-          Kazarma.RoomType.Chat.create_from_matrix(
+          Kazarma.RoomType.Chat.create_from_event(
             event,
-            room,
-            text_content
+            room
           )
 
         %Room{data: %{"type" => "direct_message"}} = room ->
-          Kazarma.RoomType.DirectMessage.create_from_matrix(event, room, text_content)
+          Kazarma.RoomType.DirectMessage.create_from_event(event, room)
 
         %Room{data: %{"type" => "ap_user"}} = room ->
-          Kazarma.RoomType.ApUser.create_from_matrix(event, room, text_content)
+          Kazarma.RoomType.ApUser.create_from_event(event, room)
 
         %Room{data: %{"type" => "collection"}} = room ->
-          Kazarma.RoomType.Collection.create_from_matrix(event, room, text_content)
+          Kazarma.RoomType.Collection.create_from_event(event, room)
 
         %Room{data: %{"type" => "matrix_user"}} = room ->
           Kazarma.RoomType.MatrixUser.create_from_event(event, room)

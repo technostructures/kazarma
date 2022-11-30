@@ -43,42 +43,18 @@ defmodule Kazarma.RoomType.Chat do
     end
   end
 
-  def create_from_matrix(
-        %Event{
-          event_id: event_id,
-          room_id: room_id,
-          sender: sender,
-          type: "m.room.message",
-          content: event_content
-        },
-        %Room{data: %{"type" => "chat", "to_ap_id" => remote_id}},
-        text_content
-      ) do
+  def create_from_event(event, room) do
     Logger.debug("Forwarding ChatMessage creation")
 
-    with {:ok, username} <- Kazarma.Address.matrix_id_to_ap_username(sender),
-         {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_username(username),
-         attachment =
-           Kazarma.ActivityPub.Activity.attachment_from_matrix_event_content(event_content),
-         {:ok, %{object: %ActivityPub.Object{data: %{"id" => remote_id}}}} <-
-           Activity.create(
-             type: "ChatMessage",
-             sender: actor,
-             receivers_id: [remote_id],
-             content: text_content,
-             attachment: attachment
-           ) do
-      Bridge.create_event(%{
-        local_id: event_id,
-        remote_id: remote_id,
-        room_id: room_id
-      })
+    {:ok, sender} = Address.matrix_id_to_actor(event.sender)
 
-      :ok
-    end
+    Activity.create_from_event(
+      event,
+      sender: sender,
+      to: [room.data["to_ap_id"]],
+      type: "ChatMessage"
+    )
   end
-
-  def create_from_matrix(_), do: :ok
 
   def handle_puppet_invite(user_id, sender_id, room_id) do
     case Kazarma.Address.matrix_id_to_actor(user_id) do

@@ -73,38 +73,23 @@ defmodule Kazarma.RoomType.DirectMessage do
 
   # =======================
 
-  def create_from_matrix(event, %Room{data: %{"type" => "direct_message"}} = room, content) do
-    with {:ok, actor} <- Address.matrix_id_to_actor(event.sender),
-         replying_to =
-           Activity.get_replied_activity_if_exists(event) ||
-             Bridge.get_last_event_in_room(room.local_id),
-         in_reply_to = Activity.make_in_reply_to(replying_to),
-         to =
-           List.delete(room.data["to"], event.sender)
-           |> Enum.map(&Address.unchecked_matrix_id_to_actor/1)
-           |> Enum.filter(&(!is_nil(&1))),
-         to_ap_id = Enum.map(to, & &1.ap_id),
-         attachment = Activity.attachment_from_matrix_event_content(event.content),
-         tags = Enum.map(to, &Activity.mention_tag_for_actor/1),
-         {:ok, %{object: %Object{data: %{"id" => remote_id}}}} <-
-           Activity.create(
-             type: "Note",
-             sender: actor,
-             receivers_id: to_ap_id,
-             context: room.remote_id,
-             in_reply_to: in_reply_to,
-             content: content,
-             attachment: attachment,
-             tags: tags
-           ) do
-      Bridge.create_event(%{
-        local_id: event.event_id,
-        remote_id: remote_id,
-        room_id: event.room_id
-      })
+  def create_from_event(event, room) do
+    {:ok, sender} = Address.matrix_id_to_actor(event.sender)
+    fallback_reply = Bridge.get_last_event_in_room(room.local_id)
 
-      :ok
-    end
+    recipients =
+      List.delete(room.data["to"], event.sender)
+      |> Enum.map(&Address.unchecked_matrix_id_to_actor/1)
+      |> Enum.filter(&(!is_nil(&1)))
+
+    Activity.create_from_event(
+      event,
+      sender: sender,
+      to: Enum.map(recipients, & &1.ap_id),
+      additional_mentions: recipients,
+      context: room.remote_id,
+      fallback_reply: fallback_reply
+    )
   end
 
   def handle_puppet_invite(matrix_id, inviter_id, room_id) do
