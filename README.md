@@ -23,9 +23,11 @@ A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://githu
 
 ## Development environment
 
-### Using [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
+### Using [Docker](https://docs.docker.com/engine/install/)
 
 ```bash
+git clone git@gitlab.com:kazarma/kazarma.git
+cd kazarma
 git submodule update --init --recursive
 docker compose run --rm synapse generate
 docker compose run --rm kazarma mix do deps.get, ecto.setup
@@ -93,9 +95,11 @@ docker compose run --rm synapse generate
 docker compose run --rm kazarma mix ecto.setup
 ```
 
-### Locally
+### Without using Docker
 
 ```bash
+git clone git@gitlab.com:kazarma/kazarma.git
+cd kazarma
 git submodule update --init --recursive
 mix do deps.get, ecto.setup
 iex -S mix phx.server
