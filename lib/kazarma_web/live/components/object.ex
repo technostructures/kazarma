@@ -27,18 +27,6 @@ defmodule KazarmaWeb.Components.Object do
   def header(assigns) do
     ~H"""
     <div class="flex flex-row items-center">
-      <div>
-        <%= unless is_nil(avatar_url(@actor)) do %>
-          <div class="avatar">
-            <div class="rounded-full w-12 h-12 shadow">
-              <img
-                src={avatar_url(@actor)}
-                alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])}
-              />
-            </div>
-          </div>
-        <% end %>
-      </div>
       <div class="">
         <h1 class="card-title text-xl">
           <.link
@@ -72,20 +60,32 @@ defmodule KazarmaWeb.Components.Object do
     ~H"""
     <div
       id={@object.data["id"]}
-      class={"card shadow-lg side bg-base-100 mt-4 flex flex-row #{if @type == :main, do: "bg-base-200"} #{@classes}"}
+      class={"card shadow-lg side bg-base-100 mt-4 flex flex-row items-center #{if @type == :main, do: "bg-base-200"} #{@classes}"}
     >
-      <div :if={@type == :reply} class="align-center">
-        <.reply_icon class="w-10 h-10 m-4 -mr-5" />
+      <div :if={@type == :reply} class="self-start align-center">
+        <.reply_icon class="w-10 h-10 m-2 -mr-4 self-start" />
       </div>
-      <div class="card-body">
+      <div>
+        <%= unless is_nil(avatar_url(@actor)) do %>
+          <div class="avatar">
+            <div class="rounded-full w-24 h-24 my-4 ml-4 shadow">
+              <img
+                src={avatar_url(@actor)}
+                alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])}
+              />
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <div class="card-body p-4">
         <.header actor={@actor} object={@object} socket={@socket} />
         <div class="mt-0 mb-0 divider"></div>
         <p class="">
           <.display_body object={@object} />
         </p>
       </div>
-      <div :if={@type == :replied_to} class="align-center">
-        <.reply_icon class="w-10 h-10 m-4 -ml-5" />
+      <div :if={@type == :replied_to} class="self-end align-center">
+        <.replied_icon class="w-10 h-10 m-2 -ml-5" />
       </div>
     </div>
     """
