@@ -46,6 +46,8 @@ defmodule Kazarma.Matrix.Transaction do
         user_id: user_id,
         content: %{"body" => "!kazarma" <> rest, "msgtype" => "m.text"}
       }) do
+    Logger.debug("received a bot command")
+
     Kazarma.Commands.handle_command(rest, room_id, user_id)
 
     :ok

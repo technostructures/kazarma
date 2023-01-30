@@ -8,19 +8,17 @@ defmodule Kazarma.Commands do
   alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Room
 
+  require Logger
+
   def handle_command(command, room_id, user_id) when is_binary(command) do
     String.split(command, ~r{\s}, trim: true)
     |> handle_command(room_id, user_id)
   end
 
   def handle_command(["outbox"], room_id, user_id) do
-    case Bridge.get_room_by_local_id(room_id) do
-      %Room{data: %{"type" => "matrix_user"}} = room ->
-        Kazarma.RoomType.MatrixUser.maybe_set_outbox_type(room_id, user_id)
+    Logger.debug("activated a Matrix User room type")
 
-      nil ->
-        {:error, :room_type_should_be_matrix_user_room, room_id}
-    end
+    Kazarma.RoomType.MatrixUser.maybe_set_outbox_type(room_id, user_id)
   end
 
   def handle_command(["follow"], room_id, user_id) do
