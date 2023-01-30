@@ -184,4 +184,321 @@ defmodule KazarmaWeb.Components.Icon do
     </svg>
     """
   end
+
+  @doc """
+  Matrix icon
+
+  Source: https://commons.wikimedia.org/wiki/File:Matrix_icon.svg
+  License: Public domain
+  """
+  def matrix_icon(assigns) do
+    ~H"""
+    <svg
+      version="1.1"
+      viewBox="0 0 27.9 32"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:cc="http://creativecommons.org/ns#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    >
+      <title>Matrix (protocol) logo</title>
+      <g transform="translate(-.095 .005)" fill="#040404">
+        <path d="m27.1 31.2v-30.5h-2.19v-0.732h3.04v32h-3.04v-0.732z" />
+        <path d="m8.23 10.4v1.54h0.044c0.385-0.564 0.893-1.03 1.49-1.37 0.58-0.323 1.25-0.485 1.99-0.485 0.72 0 1.38 0.14 1.97 0.42 0.595 0.279 1.05 0.771 1.36 1.48 0.338-0.5 0.796-0.941 1.38-1.32 0.58-0.383 1.27-0.574 2.06-0.574 0.602 0 1.16 0.074 1.67 0.22 0.514 0.148 0.954 0.383 1.32 0.707 0.366 0.323 0.653 0.746 0.859 1.27 0.205 0.522 0.308 1.15 0.308 1.89v7.63h-3.13v-6.46c0-0.383-0.015-0.743-0.044-1.08-0.0209-0.307-0.103-0.607-0.242-0.882-0.133-0.251-0.336-0.458-0.584-0.596-0.257-0.146-0.606-0.22-1.05-0.22-0.44 0-0.796 0.085-1.07 0.253-0.272 0.17-0.485 0.39-0.639 0.662-0.159 0.287-0.264 0.602-0.308 0.927-0.052 0.347-0.078 0.697-0.078 1.05v6.35h-3.13v-6.4c0-0.338-7e-3 -0.673-0.021-1-0.0114-0.314-0.0749-0.623-0.188-0.916-0.108-0.277-0.3-0.512-0.55-0.673-0.258-0.168-0.636-0.253-1.14-0.253-0.198 0.0083-0.394 0.042-0.584 0.1-0.258 0.0745-0.498 0.202-0.705 0.374-0.228 0.184-0.422 0.449-0.584 0.794-0.161 0.346-0.242 0.798-0.242 1.36v6.62h-3.13v-11.4z" />
+        <path d="m0.936 0.732v30.5h2.19v0.732h-3.04v-32h3.03v0.732z" />
+      </g>
+      <style xmlns="" data-source="base" class="dblt-ykjmwcnxmi" /><style
+        xmlns=""
+        data-source="stylesheet-processor"
+        class="dblt-ykjmwcnxmi"
+      />
+      <div xmlns="" id="saka-gui-root">
+        <div>
+          <div><style /></div>
+        </div>
+      </div>
+    </svg>
+    """
+  end
+
+  @doc """
+  ActivityPub icon
+
+  Source: https://commons.wikimedia.org/wiki/File:ActivityPub-logo-symbol.svg
+  License: Public domain
+  """
+  def ap_icon(assigns) do
+    ~H"""
+    <svg
+      xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:cc="http://creativecommons.org/ns#"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:svg="http://www.w3.org/2000/svg"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+      xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+      width="130"
+      height="130"
+      viewBox="0 0 34.395832 34.395832"
+      version="1.1"
+      id="svg8"
+      inkscape:version="0.92.1 r15371"
+      sodipodi:docname="ActivityPub-logo-symbol.svg"
+    >
+      <title id="title4590">ActivityPub logo</title>
+      <defs id="defs2">
+        <linearGradient id="AP-4-0" osb:paint="solid">
+          <stop style="stop-color:#5e5e5e;stop-opacity:1;" offset="0" id="stop5660" />
+        </linearGradient>
+        <linearGradient id="linearGradient5640" osb:paint="solid">
+          <stop style="stop-color:#000000;stop-opacity:1;" offset="0" id="stop5638" />
+        </linearGradient>
+        <linearGradient id="linearGradient5634" osb:paint="solid">
+          <stop style="stop-color:#000000;stop-opacity:1;" offset="0" id="stop5632" />
+        </linearGradient>
+        <linearGradient id="linearGradient5628" osb:paint="solid">
+          <stop style="stop-color:#000000;stop-opacity:1;" offset="0" id="stop5626" />
+        </linearGradient>
+        <linearGradient id="AP-3-7" osb:paint="solid">
+          <stop style="stop-color:#c678c5;stop-opacity:1;" offset="0" id="stop5498" />
+        </linearGradient>
+        <linearGradient id="AP-2-3" osb:paint="solid">
+          <stop style="stop-color:#6d6d6d;stop-opacity:1;" offset="0" id="stop5230" />
+        </linearGradient>
+        <linearGradient id="AP1-5" osb:paint="solid">
+          <stop style="stop-color:#f1007e;stop-opacity:1;" offset="0" id="stop5212" />
+        </linearGradient>
+        <linearGradient
+          inkscape:collect="always"
+          xlink:href="#AP-3-7"
+          id="linearGradient5749"
+          gradientUnits="userSpaceOnUse"
+          x1="3319.292"
+          y1="-1291.2802"
+          x2="3344.3645"
+          y2="-1291.2802"
+        />
+        <linearGradient
+          inkscape:collect="always"
+          xlink:href="#AP1-5"
+          id="linearGradient7297-7"
+          gradientUnits="userSpaceOnUse"
+          x1="3241.6836"
+          y1="-1355.4329"
+          x2="3254.9529"
+          y2="-1355.4329"
+        />
+        <linearGradient
+          inkscape:collect="always"
+          xlink:href="#AP-2-3"
+          id="linearGradient7303-7"
+          gradientUnits="userSpaceOnUse"
+          x1="3225.7603"
+          y1="-1355.4329"
+          x2="3239.0295"
+          y2="-1355.4329"
+        />
+        <linearGradient
+          inkscape:collect="always"
+          xlink:href="#AP1-5"
+          id="linearGradient8308"
+          gradientUnits="userSpaceOnUse"
+          x1="3241.6836"
+          y1="-1355.4329"
+          x2="3254.9529"
+          y2="-1355.4329"
+        />
+        <linearGradient
+          inkscape:collect="always"
+          xlink:href="#AP1-5"
+          id="linearGradient8310"
+          gradientUnits="userSpaceOnUse"
+          x1="3241.6836"
+          y1="-1355.4329"
+          x2="3254.9529"
+          y2="-1355.4329"
+        />
+        <linearGradient
+          inkscape:collect="always"
+          xlink:href="#AP1-5"
+          id="linearGradient8312"
+          gradientUnits="userSpaceOnUse"
+          x1="3241.6836"
+          y1="-1355.4329"
+          x2="3254.9529"
+          y2="-1355.4329"
+        />
+        <linearGradient
+          inkscape:collect="always"
+          xlink:href="#AP-2-3"
+          id="linearGradient8314"
+          gradientUnits="userSpaceOnUse"
+          x1="3225.7603"
+          y1="-1355.4329"
+          x2="3239.0295"
+          y2="-1355.4329"
+          gradientTransform="matrix(3.7000834,0,0,3.7000834,-11935.582,4544.6634)"
+        />
+        <linearGradient
+          inkscape:collect="always"
+          xlink:href="#AP-2-3"
+          id="linearGradient5188"
+          gradientUnits="userSpaceOnUse"
+          gradientTransform="matrix(0.42732603,0,0,0.42732603,-1363.3009,454.91899)"
+          x1="3269.126"
+          y1="-1354.6217"
+          x2="3322.1943"
+          y2="-1354.6217"
+        />
+      </defs>
+      <sodipodi:namedview
+        id="base"
+        pagecolor="#ffffff"
+        bordercolor="#666666"
+        borderopacity="0.14509804"
+        inkscape:pageopacity="0.0"
+        inkscape:pageshadow="2"
+        inkscape:zoom="0.70710678"
+        inkscape:cx="-195.34129"
+        inkscape:cy="-120.65903"
+        inkscape:document-units="px"
+        inkscape:current-layer="layer1"
+        showgrid="false"
+        inkscape:snap-global="true"
+        showguides="false"
+        inkscape:guide-bbox="true"
+        showborder="true"
+        fit-margin-top="0"
+        fit-margin-left="0"
+        fit-margin-right="0"
+        fit-margin-bottom="0"
+        inkscape:showpageshadow="false"
+        borderlayer="false"
+        units="px"
+      >
+        <inkscape:grid
+          type="xygrid"
+          id="grid4572"
+          enabled="false"
+          originx="7.1437514"
+          originy="-404.28382"
+        />
+        <inkscape:grid
+          type="axonomgrid"
+          id="grid4574"
+          units="mm"
+          empspacing="12"
+          originx="7.1437514"
+          originy="-404.28382"
+          enabled="false"
+        />
+        <sodipodi:guide
+          position="3278.981,1256.5057"
+          orientation="0,1"
+          id="guide5059"
+          inkscape:locked="false"
+        />
+        <sodipodi:guide
+          position="3278.981,1238.2495"
+          orientation="0,1"
+          id="guide5061"
+          inkscape:locked="false"
+        />
+      </sodipodi:namedview>
+      <metadata id="metadata5">
+        <rdf:RDF>
+          <cc:Work rdf:about="">
+            <dc:format>image/svg+xml</dc:format>
+            <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+            <dc:title>ActivityPub logo</dc:title>
+            <cc:license rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+            <dc:date>2017-04-15</dc:date>
+            <dc:creator>
+              <cc:Agent>
+                <dc:title>Robert Martinez</dc:title>
+              </cc:Agent>
+            </dc:creator>
+            <dc:subject>
+              <rdf:Bag>
+                <rdf:li>ActivityPub</rdf:li>
+              </rdf:Bag>
+            </dc:subject>
+          </cc:Work>
+          <cc:License rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+            <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction" />
+            <cc:permits rdf:resource="http://creativecommons.org/ns#Distribution" />
+            <cc:permits rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+          </cc:License>
+        </rdf:RDF>
+      </metadata>
+      <g
+        inkscape:label="Layer 1"
+        inkscape:groupmode="layer"
+        id="layer1"
+        style="opacity:1"
+        transform="translate(7.1437516,141.67967)"
+      >
+        <path
+          style="fill:#000000;stroke-width:0.26458335"
+          d=""
+          id="path5497"
+          inkscape:connector-curvature="0"
+        />
+        <g id="g5197" transform="translate(-4.2352716,0.01824528)">
+          <g
+            id="g5132-90"
+            style="fill:url(#linearGradient7297-7);fill-opacity:1"
+            transform="matrix(0.9789804,0,0,0.9789804,-3157.9561,1202.4422)"
+          >
+            <g
+              transform="matrix(0.2553682,0,0,0.2553682,2615.9213,-1125.3113)"
+              id="g5080-78"
+              style="fill:url(#linearGradient8312);fill-opacity:1"
+            >
+              <path
+                inkscape:connector-curvature="0"
+                id="path5404-0-0"
+                d="m 2450.431,-937.13662 51.9615,30 v 12 l -51.9615,30 v -12 l 41.5693,-24 -41.5692,-24 z"
+                style="fill:url(#linearGradient8308);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                sodipodi:nodetypes="cccccccc"
+              />
+              <path
+                sodipodi:nodetypes="cccc"
+                style="fill:url(#linearGradient8310);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                d="m 2450.431,-913.13662 20.7847,12 -20.7847,12 z"
+                id="path5406-6-3"
+                inkscape:connector-curvature="0"
+              />
+            </g>
+          </g>
+          <g
+            id="g5127-1"
+            style="fill:url(#linearGradient7303-7);fill-opacity:1"
+            transform="matrix(0.9789804,0,0,0.9789804,-3157.9561,1202.4422)"
+          >
+            <path
+              id="path5467-2-0"
+              transform="matrix(0.27026418,0,0,0.27026418,3225.7603,-1228.2597)"
+              d="M 49.097656,-504.56641 0,-476.2207 v 11.33789 l 39.277344,-22.67578 v 45.35351 l 9.820312,5.66992 z m -19.638672,34.01563 -19.6406246,11.33789 19.6406246,11.33789 z"
+              style="fill:url(#linearGradient8314);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.25000042px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+              inkscape:connector-curvature="0"
+            />
+          </g>
+        </g>
+      </g>
+      <style xmlns="" data-source="base" class="dblt-ykjmwcnxmi" /><style
+        xmlns=""
+        data-source="stylesheet-processor"
+        class="dblt-ykjmwcnxmi"
+      />
+      <div xmlns="" id="saka-gui-root">
+        <div>
+          <div><style /></div>
+        </div>
+      </div>
+    </svg>
+    """
+  end
 end
