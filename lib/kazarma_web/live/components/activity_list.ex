@@ -12,6 +12,7 @@ defmodule KazarmaWeb.Components.ActivityList do
       object={object}
       actor={actor_for_object(object)}
       type={:replied_to}
+      socket={@socket}
     />
     <KazarmaWeb.Components.Object.show
       object={@object}
