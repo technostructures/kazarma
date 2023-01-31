@@ -26,8 +26,8 @@ defmodule KazarmaWeb.Components.Object do
 
   def header(assigns) do
     ~H"""
-    <div class="flex flex-row items-center">
-      <div class="">
+    <div class="flex flex-row flex-wrap items-center">
+      <div class="grow">
         <h1 class="card-title text-xl">
           <.link
             navigate={Kazarma.ActivityPub.Adapter.actor_path(@actor)}
@@ -38,7 +38,7 @@ defmodule KazarmaWeb.Components.Object do
           </.link>
         </h1>
       </div>
-      <div class="text-sm ml-auto">
+      <div class="text-sm grow-0">
         <.link
           navigate={Kazarma.ActivityPub.Adapter.object_path(@object, @actor)}
           class="link link-hover"

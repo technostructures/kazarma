@@ -6,7 +6,7 @@
     <%= display_name(@actor) %>
   </:button>
   <:page>
-    <div class="mx-8 col-span-2 px-4">
+    <div class="mx-4 lg:mx-12 col-span-2">
       <div id="activity_list" phx-update="append" class="my-4">
         <%= for object <- @activities do %>
           <KazarmaWeb.Components.Object.show actor={@actor} object={object} socket={@socket} />
