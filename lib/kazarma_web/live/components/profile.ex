@@ -8,21 +8,6 @@ defmodule KazarmaWeb.Components.Profile do
   import KazarmaWeb.Helpers
   import KazarmaWeb.Gettext
 
-  defp avatar(assigns) do
-    ~H"""
-    <div>
-      <div :if={!is_nil(avatar_url(@actor))} class="avatar">
-        <div class="rounded-full w-12 h-12 shadow">
-          <img
-            src={avatar_url(@actor)}
-            alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])}
-          />
-        </div>
-      </div>
-    </div>
-    """
-  end
-
   defp type_prefix(assigns) do
     ~H"""
     <span>
@@ -137,16 +122,21 @@ defmodule KazarmaWeb.Components.Profile do
 
   def original_profile(assigns) do
     ~H"""
-    <div class="card shadow-lg bg-base-100 base-100">
+    <div class="card shadow-lg bg-base-100 flex flex-row base-100">
+      <div :if={!is_nil(avatar_url(@actor))} class="avatar">
+        <div class="rounded-full w-24 h-24 my-4 ml-4 shadow">
+          <img
+            src={avatar_url(@actor)}
+            alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])}
+          />
+        </div>
+      </div>
       <div class="card-body p-6">
         <h1 class="card-title flex-wrap text-2xl">
           <%= display_name(@actor) %>
           <.profile_links actor={@actor} />
           <.type_badge actor={@actor} />
         </h1>
-        <div>
-          <.avatar actor={@actor} />
-        </div>
         <div>
           <!-- <.type_prefix actor={@actor} /> -->
           <.main_address_and_link actor={@actor} />
