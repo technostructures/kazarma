@@ -64,7 +64,7 @@ defmodule KazarmaWeb.Components.Profile do
   defp matrix_links(assigns) do
     ~H"""
     <.external_link to={"https://matrix.to/#/" <> matrix_id(@actor)} />
-    <KazarmaWeb.Button.ghost to={matrix_scheme_user(@actor)} link_text="[m]" />
+    <!-- <KazarmaWeb.Button.ghost to={matrix_scheme_user(@actor)} link_text="[m]" /> -->
     """
   end
 
@@ -160,7 +160,7 @@ defmodule KazarmaWeb.Components.Profile do
     ~H"""
     <.address_and_link address={@outbox_room}>
       <.external_link to={"https://matrix.to/#/" <> @outbox_room} />
-      <KazarmaWeb.Button.ghost to={matrix_scheme_room(@actor)} link_text="[m]" />
+      <!-- <KazarmaWeb.Button.ghost to={matrix_scheme_room(@actor)} link_text="[m]" /> -->
     </.address_and_link>
     """
   end
