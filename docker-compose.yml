@@ -46,7 +46,7 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   synapse:
-    image: matrixdotorg/synapse:v1.72.0
+    image: matrixdotorg/synapse:v1.76.0
     # domainname: matrix.local
     # Since synapse does not retry to connect to the database, restart upon
     # failure
@@ -132,7 +132,7 @@ services:
       - traefik.http.routers.delegations.tls=true
 
   element:
-    image: vectorim/element-web:v1.11.15
+    image: vectorim/element-web:v1.11.22
     labels:
       - traefik.enable=true
       - traefik.http.services.element.loadbalancer.server.port=80
@@ -177,7 +177,7 @@ services:
       # - ./pleroma/_build:/_build
 
   traefik:
-    image: traefik:v2.9.5
+    image: traefik:v2.9.6
     # Expose these ports to directly access all containers on your public interface (e.g. useful on macOS)
     # ports:
     #   - 80:80
