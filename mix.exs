@@ -50,7 +50,7 @@ defmodule Kazarma.MixProject do
       {:phoenix_live_dashboard, "~> 0.7.1"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 0.20"},
+      {:gettext, "~> 0.22"},
       {:jason, "~> 1.3"},
       {:plug_cowboy, "~> 2.5"},
       {:httpoison, "~> 1.5"},
