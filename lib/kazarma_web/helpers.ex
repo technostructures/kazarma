@@ -44,6 +44,17 @@ defmodule KazarmaWeb.Helpers do
   def type(%ActivityPub.Actor{local: true}), do: "Matrix"
   def type(%ActivityPub.Actor{data: %{"type" => type}}), do: "ActivityPub (#{type})"
 
+  def type_icon(%ActivityPub.Actor{local: true}), do: KazarmaWeb.Components.Icon.matrix_icon(%{})
+
+  def type_icon(%ActivityPub.Actor{}),
+    do: KazarmaWeb.Components.Icon.ap_icon(%{})
+
+  def opposite_type_icon(%ActivityPub.Actor{local: true}),
+    do: KazarmaWeb.Components.Icon.ap_icon(%{})
+
+  def opposite_type_icon(%ActivityPub.Actor{}),
+    do: KazarmaWeb.Components.Icon.matrix_icon(%{})
+
   def puppet_type(%ActivityPub.Actor{local: true, data: %{"type" => type}}),
     do: "Kazarma/ActivityPub (#{type})"
 

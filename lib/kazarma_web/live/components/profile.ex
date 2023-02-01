@@ -8,115 +8,54 @@ defmodule KazarmaWeb.Components.Profile do
   import KazarmaWeb.Helpers
   import KazarmaWeb.Gettext
 
-  defp type_prefix(assigns) do
+  defp profile_address(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
     ~H"""
-    <span>
-      <%= type(@actor) %>:
-    </span>
+    <.address_that_opens to={matrix_to(@actor)} address={matrix_id(@actor)} />
     """
   end
 
-  defp type_badge(assigns) do
+  defp profile_address(%{actor: %ActivityPub.Actor{}} = assigns) do
     ~H"""
-    <div class="badge h-auto">
-      <%= type(@actor) %>
-    </div>
+    <.address_that_opens to={url(@actor)} address={ap_username(@actor)} />
     """
   end
 
-  defp puppet_type_badge(assigns) do
+  defp puppet_addresses(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
     ~H"""
-    <div class="badge h-auto">
-      <%= puppet_type(@actor) %>
-    </div>
+    <.address_that_copies to={url(@actor)} address={ap_username(@actor)} />
     """
   end
 
-  defp external_link(assigns) do
+  defp puppet_addresses(%{actor: %ActivityPub.Actor{}} = assigns) do
+    assigns = assign(assigns, :outbox_room, outbox_room(assigns.actor))
+
     ~H"""
-    <.link
-      href={@to}
-      target="_blank"
-      aria-label={gettext("Open")}
-      title={gettext("Open")}
-      class="btn btn-ghost btn-sm"
-    >
-      <.external_link_icon />
-    </.link>
+    <.address_that_opens to={matrix_to(@actor)} address={matrix_id(@actor)} />
+    <.address_that_opens
+      :if={@outbox_room}
+      to={"https://matrix.to/#/" <> @outbox_room}
+      address={@outbox_room}
+    />
     """
   end
 
-  defp matrix_links(assigns) do
+  defp address_that_opens(assigns) do
     ~H"""
-    <.external_link to={"https://matrix.to/#/" <> matrix_id(@actor)} />
-    <!-- <KazarmaWeb.Button.ghost to={matrix_scheme_user(@actor)} link_text="[m]" /> -->
-    """
-  end
-
-  defp ap_links(assigns) do
-    ~H"""
-    <.external_link to={url(@actor)} />
-    """
-  end
-
-  defp profile_links(%{actor: %ActivityPub.Actor{local: true}} = assigns),
-    do: matrix_links(assigns)
-
-  defp profile_links(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns),
-    do: ap_links(assigns)
-
-  defp puppet_profile_links(%{actor: %ActivityPub.Actor{local: true}} = assigns), do: ~H()
-
-  defp puppet_profile_links(%{actor: %ActivityPub.Actor{data: %{"type" => _type}}} = assigns),
-    do: matrix_links(assigns)
-
-  attr(:copy, :string)
-  attr(:class, :string)
-  slot(:inner_block, required: true)
-
-  defp copy_link(assigns) do
-    ~H"""
-    <.link
-      to="#"
-      aria_label={gettext("Copy")}
-      title={gettext("Copy")}
-      data-copy={@copy}
-      class={@class}
-    >
-      <%= render_slot(@inner_block) %>
-    </.link>
-    """
-  end
-
-  attr(:address, :string)
-  slot(:inner_block, required: false)
-
-  defp address_and_link(assigns) do
-    ~H"""
-    <div class="flex items-center space-x-6">
-      <.copy_link
-        copy={@address}
-        class="link link-secondary link-hover link-neutral font-mono overflow-x-auto"
-      >
+    <div class="tooltip" data-tip="Click to open">
+      <.link href={@to} target="_blank" aria-label={gettext("Open")} class="link link-hover">
         <%= @address %>
-      </.copy_link>
-      <.copy_link copy={@address} class="link link-secondary link-hover link-neutral font-mono">
-        <.copy_icon />
-      </.copy_link>
-      <%= render_slot(@inner_block) %>
+      </.link>
     </div>
     """
   end
 
-  defp main_address_and_link(assigns) do
+  defp address_that_copies(assigns) do
     ~H"""
-    <.address_and_link address={main_address(@actor)} />
-    """
-  end
-
-  defp puppet_address_and_link(assigns) do
-    ~H"""
-    <.address_and_link address={puppet_address(@actor)} />
+    <div class="tooltip" data-tip="Click to copy">
+      <.link href="#" aria-label={gettext("Copy")} data-copy={@address} class="link link-hover">
+        <%= @address %>
+      </.link>
+    </div>
     """
   end
 
@@ -125,58 +64,52 @@ defmodule KazarmaWeb.Components.Profile do
     <div class="card shadow-lg bg-base-100 flex flex-row base-100">
       <div :if={!is_nil(avatar_url(@actor))} class="avatar">
         <div class="rounded-full w-24 h-24 my-4 ml-4 shadow">
-          <img
-            src={avatar_url(@actor)}
-            alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])}
-          />
+          <.link
+            navigate={Kazarma.ActivityPub.Adapter.actor_path(@actor)}
+            class="link link-hover"
+            title={main_address(@actor)}
+          >
+            <img
+              src={avatar_url(@actor)}
+              alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])}
+            />
+          </.link>
         </div>
       </div>
       <div class="card-body p-6">
-        <h1 class="card-title flex-wrap text-2xl">
-          <%= display_name(@actor) %>
-          <.profile_links actor={@actor} />
-          <.type_badge actor={@actor} />
-        </h1>
+        <div class="card-title flex flex-row flex-wrap">
+          <h1 class="grow text-2xl">
+            <.link
+              navigate={Kazarma.ActivityPub.Adapter.actor_path(@actor)}
+              class="link link-hover"
+              title={main_address(@actor)}
+            >
+              <%= display_name(@actor) %>
+            </.link>
+          </h1>
+          <div class="grow-0">
+            <%= type_icon(@actor) %>
+          </div>
+        </div>
         <div>
-          <!-- <.type_prefix actor={@actor} /> -->
-          <.main_address_and_link actor={@actor} />
+          <.profile_address actor={@actor} />
         </div>
       </div>
     </div>
     """
   end
 
-  defp outbox_room_and_links(assigns) do
-    ~H"""
-    <.address_and_link address={@outbox_room}>
-      <.external_link to={"https://matrix.to/#/" <> @outbox_room} />
-      <!-- <KazarmaWeb.Button.ghost to={matrix_scheme_room(@actor)} link_text="[m]" /> -->
-    </.address_and_link>
-    """
-  end
-
-  defp maybe_outbox_room_and_links(assigns) do
-    case outbox_room(assigns.actor) do
-      nil ->
-        ~H()
-
-      outbox_room ->
-        Map.put(assigns, :outbox_room, outbox_room)
-        |> outbox_room_and_links()
-    end
-  end
-
   def puppet_profile(assigns) do
     ~H"""
     <div class="card shadow-lg bg-base-300 base-100 mt-4">
       <div class="card-body p-6">
-        <h2 class="card-title flex-wrap">
-          <%= display_name(@actor) %>
-          <.puppet_profile_links actor={@actor} />
-          <.puppet_type_badge actor={@actor} />
-        </h2>
-        <.puppet_address_and_link actor={@actor} />
-        <.maybe_outbox_room_and_links actor={@actor} />
+        <div class="flex flex-row">
+          <div class="mr-2"><%= opposite_type_icon(@actor) %></div>
+          via Kazarma
+        </div>
+        <div class="">
+          <.puppet_addresses actor={@actor} />
+        </div>
       </div>
     </div>
     """
