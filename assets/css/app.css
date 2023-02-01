@@ -7,6 +7,8 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+@import "fonts.css";
+
 .alert:empty {
   display: none;
 }
