@@ -60,7 +60,7 @@ defmodule KazarmaWeb.Components.Object do
     ~H"""
     <div
       id={@object.data["id"]}
-      class={"card shadow-lg side bg-base-100 mt-4 flex flex-row items-center #{if @type == :main, do: "bg-base-200"} #{@classes}"}
+      class={"card shadow-lg side bg-base-100 mt-4 flex flex-row items-center #{if @type == :main, do: "bg-accent"} #{@classes}"}
     >
       <div :if={@type == :reply} class="self-start align-center">
         <.reply_icon class="w-10 h-10 m-2 -mr-4 self-start" />
@@ -79,7 +79,8 @@ defmodule KazarmaWeb.Components.Object do
       </div>
       <div class="card-body p-4">
         <.header actor={@actor} object={@object} socket={@socket} />
-        <div class="mt-0 mb-0 divider"></div>
+        <div class={"mt-0 mb-0 divider #{if @type == :main, do: "before:bg-[#ffb7a4] after:bg-[#ffb7a4]"}"}>
+        </div>
         <p class="">
           <.display_body object={@object} />
         </p>

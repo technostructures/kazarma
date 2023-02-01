@@ -25,6 +25,23 @@ module.exports = {
   variants: {
     extend: {},
   },
+  daisyui: {
+    themes: [
+      {
+        mytheme: {
+         "primary": "#650ef0",
+         "secondary": "#ff2ef0",
+         "accent": "#ffddd4",
+         "neutral": "#4b5563",
+         "base-100": "#FFFaf0",
+         "info": "#650ef0",
+         "success": "#42d684",
+         "warning": "#ff7b52",
+         "error": "#ff7b52",
+        },
+      },
+    ],
+  },
   plugins: [
     require('@tailwindcss/typography'),
     require('daisyui')

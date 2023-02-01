@@ -26,3 +26,10 @@
 .max-h-unset {
   max-height: unset !important
 }
+
+header {
+    background: linear-gradient(
+        to right,
+        #ff7b52,
+        #ff2ef0);
+}

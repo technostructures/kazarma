@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="winter">
+<html lang="en" data-theme="mytheme">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -15,11 +15,11 @@
   <body class="bg-gray-100 min-h-screen">
     <a class="sr-only" href="#main"><%= gettext("Skip to content") %></a>
     <a class="sr-only" href="#search_address"><%= gettext("Skip to search") %></a>
-    <header class="navbar sticky h-28 sm:h-16 top-0 z-50 shadow-lg justify-between flex-wrap bg-base-300 items-center p-0">
+    <header class="navbar sticky h-28 sm:h-16 top-0 z-50 shadow-lg justify-between flex-wrap items-center p-0">
       <div class="flex-none m-2 lg:m-4 lg:flex order-1">
         <.link
           navigate={Routes.index_path(@conn, :index)}
-          class="text-2xl font-bold link link-hover"
+          class="text-2xl text-black font-bold link link-hover"
         >
           kazarma
         </.link>

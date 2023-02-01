@@ -101,7 +101,7 @@ defmodule KazarmaWeb.Components.Profile do
 
   def puppet_profile(assigns) do
     ~H"""
-    <div class="card shadow-lg bg-base-300 base-100 mt-4">
+    <div class="card shadow-lg bg-accent base-100 mt-4">
       <div class="card-body p-6">
         <div class="flex flex-row">
           <div class="mr-2"><%= opposite_type_icon(@actor) %></div>
