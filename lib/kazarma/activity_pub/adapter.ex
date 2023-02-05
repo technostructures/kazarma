@@ -106,8 +106,6 @@ defmodule Kazarma.ActivityPub.Adapter do
           data: %{}
         })
 
-      {:ok, _outbox_room} = Kazarma.RoomType.ApUser.get_or_create_outbox(actor, matrix_id)
-
       :ok
     else
       {:error, _code, %{"error" => error}} ->
