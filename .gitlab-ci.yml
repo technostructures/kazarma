@@ -41,6 +41,24 @@ prepare_test:
     <<: *global_cache
     policy: pull-push
 
+build_plt:
+  stage: setup
+  interruptible: true
+  needs:
+    - prepare_test
+  rules:
+    - changes:
+        - matrix_app_service
+        - activity_pub
+        - polyjuice_client
+        - mix.lock
+  script:
+    - mix dialyzer.clean
+    - mix dialyzer.build
+  cache:
+    <<: *global_cache
+    policy: pull-push
+
 prepare_dev:
   extends: .prepare
   only:
@@ -227,7 +245,9 @@ dialyzer:
     - .analysis
     - .mix
   needs:
-    - prepare_test
+    - job: prepare_test
+    - job: build_plt
+      optional: true
   script:
     - mix dialyzer
   cache: 
