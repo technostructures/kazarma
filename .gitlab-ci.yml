@@ -17,6 +17,7 @@ cache: &global_cache
   paths:
     - _build
     - deps
+    - /root/.mix
 
 variables:
   MIX_ENV: test
