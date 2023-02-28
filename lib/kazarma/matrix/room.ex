@@ -11,6 +11,6 @@ defmodule Kazarma.Matrix.Room do
   def query_alias(room_alias) do
     Logger.debug("Received ask for outbox #{room_alias}")
 
-    :not_found
+    :error
   end
 end
