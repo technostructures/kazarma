@@ -1,7 +1,7 @@
 <.form
   :let={f}
-  for={:search}
-  action={Routes.search_path(@conn, :search)}
+  for={%{}}
+  action={Routes.search_path(@socket, :search)}
   as={:search}
   phx-submit="search"
   class="w-full"
