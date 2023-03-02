@@ -104,23 +104,6 @@ defmodule Kazarma.ActivityPub.ActorTest do
                                      user_id: "@_ap_bob___pleroma:kazarma" ->
         :ok
       end)
-      |> expect(:create_room, 1, fn
-        [
-          visibility: :public,
-          name: "Bob",
-          topic: nil,
-          is_direct: false,
-          invite: [],
-          room_version: "5",
-          room_alias_name: "_ap_bob___pleroma",
-          initial_state: [
-            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
-            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
-          ]
-        ],
-        [user_id: "@_ap_bob___pleroma:kazarma"] ->
-          {:ok, %{"room_id" => "!room_id:kazarma"}}
-      end)
       |> expect(:upload, fn _blob, _opts, user_id: "@_ap_bob___pleroma:kazarma" ->
         {:ok, "mxc://server/media_id"}
       end)

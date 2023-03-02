@@ -104,7 +104,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
         user_id: "@_ap_alice___pleroma:kazarma" ->
           :ok
       end)
-      |> expect(:create_room, 2, fn
+      |> expect(:create_room, 1, fn
         [
           visibility: :private,
           name: nil,
@@ -115,22 +115,6 @@ defmodule Kazarma.RoomTypes.ChatTest do
         ],
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, %{"room_id" => "!room:kazarma"}}
-
-        [
-          visibility: :public,
-          name: "Alice",
-          topic: nil,
-          is_direct: false,
-          invite: [],
-          room_version: "5",
-          room_alias_name: "_ap_alice___pleroma",
-          initial_state: [
-            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
-            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
-          ]
-        ],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, %{"room_id" => "!room_id:kazarma"}}
       end)
       |> expect(:send_message, fn "!room:kazarma",
                                   {"hello \uFEFF", "hello"},
@@ -141,11 +125,6 @@ defmodule Kazarma.RoomTypes.ChatTest do
       assert :ok = handle_activity(chat_message_fixture())
 
       assert [
-               %MatrixAppService.Bridge.Room{
-                 data: %{"type" => "ap_user", "matrix_id" => "@_ap_alice___pleroma:kazarma"},
-                 local_id: "!room_id:kazarma",
-                 remote_id: "http://pleroma/pub/actors/alice"
-               },
                %MatrixAppService.Bridge.Room{
                  local_id: "!room:kazarma",
                  data: %{
@@ -181,23 +160,6 @@ defmodule Kazarma.RoomTypes.ChatTest do
                                      "Alice",
                                      user_id: "@_ap_alice___pleroma:kazarma" ->
         :ok
-      end)
-      |> expect(:create_room, 1, fn
-        [
-          visibility: :public,
-          name: "Alice",
-          topic: nil,
-          is_direct: false,
-          invite: [],
-          room_version: "5",
-          room_alias_name: "_ap_alice___pleroma",
-          initial_state: [
-            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
-            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
-          ]
-        ],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, %{"room_id" => "!room_id:kazarma"}}
       end)
       |> expect(:get_data, fn "@_ap_alice___pleroma:kazarma",
                               "m.direct",
