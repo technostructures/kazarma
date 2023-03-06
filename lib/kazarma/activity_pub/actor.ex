@@ -5,10 +5,11 @@ defmodule Kazarma.ActivityPub.Actor do
   Functions concerning ActivityPub actors.
   """
   alias ActivityPub.Actor
+  alias Kazarma.Address
   alias Kazarma.Bridge
+  alias Kazarma.Logger
   alias KazarmaWeb.Endpoint
   alias KazarmaWeb.Router.Helpers, as: Routes
-  alias Kazarma.Logger
 
   import Ecto.Query
 
@@ -68,13 +69,13 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def build_relay_actor do
-    ap_id = Routes.activity_pub_url(Endpoint, :actor, "-", "relay")
+    ap_id = Address.relay_ap_id()
     {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
 
     %Actor{
       local: true,
       deactivated: false,
-      username: "relay@#{Kazarma.Address.domain()}",
+      username: Address.relay_username(),
       ap_id: ap_id,
       data: build_relay_actor_data(ap_id),
       keys: keys
@@ -82,17 +83,19 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def build_relay_actor_data(ap_id) do
+    localpart = Address.relay_localpart()
+
     %{
-      "preferredUsername" => "relay",
+      "preferredUsername" => localpart,
       "capabilities" => %{"acceptsChatMessages" => false},
       "id" => ap_id,
       "type" => "Application",
       "name" => "Kazarma",
       # "icon" => avatar_url && %{"type" => "Image", "url" => avatar_url},
-      "followers" => Routes.activity_pub_url(Endpoint, :followers, "-", "relay"),
-      "followings" => Routes.activity_pub_url(Endpoint, :following, "-", "relay"),
+      "followers" => Routes.activity_pub_url(Endpoint, :followers, "-", localpart),
+      "followings" => Routes.activity_pub_url(Endpoint, :following, "-", localpart),
       "inbox" => Routes.activity_pub_url(Endpoint, :inbox),
-      "outbox" => Routes.activity_pub_url(Endpoint, :noop, "-", "relay"),
+      "outbox" => Routes.activity_pub_url(Endpoint, :noop, "-", localpart),
       "manuallyApprovesFollowers" => false,
       endpoints: %{
         "sharedInbox" => Routes.activity_pub_url(Endpoint, :inbox)
@@ -109,7 +112,7 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_local_actor(username) do
-    if "relay@#{Kazarma.Address.domain()}" == username do
+    if username == Address.relay_username() do
       get_relay_actor()
     else
       get_puppet_actor(username)
@@ -117,7 +120,7 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_relay_actor() do
-    matrix_id = "@relay:#{Kazarma.Address.domain()}"
+    matrix_id = Address.relay_matrix_id()
 
     with nil <- Bridge.get_user_by_local_id(matrix_id),
          actor <- build_relay_actor(),
@@ -138,7 +141,7 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_puppet_actor(username) do
-    matrix_id = "@relay:#{Kazarma.Address.domain()}"
+    matrix_id = Address.relay_matrix_id()
 
     case Kazarma.Address.ap_username_to_matrix_id(username, [:remote_matrix, :local_matrix]) do
       {:ok, matrix_id} ->

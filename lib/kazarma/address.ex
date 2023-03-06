@@ -20,6 +20,27 @@ defmodule Kazarma.Address do
 
   def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "_ap_")
 
+  # @TODO: make configurable
+  def relay_localpart, do: "relay"
+
+  def relay_username, do: "#{relay_localpart()}@#{domain()}"
+
+  def relay_matrix_id, do: "@#{relay_localpart()}:#{domain()}"
+
+  def relay_ap_id,
+    do:
+      KazarmaWeb.Router.Helpers.activity_pub_url(
+        KazarmaWeb.Endpoint,
+        :actor,
+        "-",
+        relay_localpart()
+      )
+
+  def relay_actor do
+    {:ok, actor} = ActivityPub.Actor.get_cached_by_ap_id(relay_ap_id())
+    actor
+  end
+
   def get_username_localpart(username) do
     username
     |> String.replace_suffix("@#{Kazarma.Address.domain()}", "")

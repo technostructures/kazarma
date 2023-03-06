@@ -295,8 +295,7 @@ defmodule Kazarma.ActivityPub.Adapter do
         } = activity
       ) do
     # @TODO make relay be the appservice bot
-    if following ==
-         Routes.activity_pub_url(Endpoint, :actor, "-", "relay") do
+    if following == Address.relay_ap_id() do
       Logger.debug("follow back remote relay")
       {:ok, local_relay} = ActivityPub.Actor.get_cached_by_ap_id(following)
       {:ok, remote_relay} = ActivityPub.Actor.get_cached_by_ap_id(follower)

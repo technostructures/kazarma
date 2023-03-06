@@ -175,7 +175,7 @@ defmodule Kazarma.RoomType.ApUser do
              alias
            ),
          {:ok, room} <- insert_bridge_room(room_id, actor.ap_id, matrix_id) do
-      {:ok, relay} = ActivityPub.Actor.get_by_username("relay@#{Address.domain()}")
+      relay = Address.relay_actor()
       ActivityPub.follow(relay, actor)
 
       {:ok, room}
