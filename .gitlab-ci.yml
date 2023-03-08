@@ -44,8 +44,6 @@ prepare_test:
 build_plt:
   stage: setup
   interruptible: true
-  needs:
-    - prepare_test
   rules:
     - changes:
         - matrix_app_service
