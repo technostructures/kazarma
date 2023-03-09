@@ -56,7 +56,30 @@ defmodule KazarmaWeb.Components.Object do
   attr :type, :atom, default: nil
   attr :classes, :string, default: ""
 
-  def show(assigns) do
+  def show(%{object: object} = assigns) when is_binary(object), do: show_redirect_link(assigns)
+  def show(%{object: %ActivityPub.Object{}} = assigns), do: show_content(assigns)
+
+  def show_redirect_link(assigns) do
+    ~H"""
+    <div class={"card shadow-lg side bg-base-100 mt-4 flex flex-row items-center #{@classes}"}>
+      <div :if={@type == :reply} class="self-start align-center">
+        <.reply_icon class="w-10 h-10 m-2 -mr-4 self-start" />
+      </div>
+      <div class="card-body p-4">
+        <div class="flex">
+          <.link href={@object} class="btn mx-auto" title={gettext("Open")}>
+            <%= gettext("Open") %>
+          </.link>
+        </div>
+      </div>
+      <div :if={@type == :replied_to} class="self-end align-center">
+        <.replied_icon class="w-10 h-10 m-2 -ml-5" />
+      </div>
+    </div>
+    """
+  end
+
+  def show_content(assigns) do
     ~H"""
     <div
       id={@object.data["id"]}
