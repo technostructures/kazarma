@@ -24,7 +24,16 @@ defmodule KazarmaWeb.Actor do
 
   def mount(%{"username" => username}, _session, socket) do
     {:ok, actor} = get_actor(username)
-    public_activities = Kazarma.ActivityPub.Actor.public_activites_for_actor(actor)
+
+    public_activities =
+      case Kazarma.Bridge.get_room_by_remote_id(actor.ap_id) do
+        %MatrixAppService.Bridge.Room{} ->
+          Kazarma.ActivityPub.Actor.public_activites_for_actor(actor)
+
+        nil ->
+          :unbridged
+      end
+
     page_title = String.replace(actor.data["name"], ~r/(?<=.{20})(.+)/s, "...")
 
     {
@@ -33,7 +42,7 @@ defmodule KazarmaWeb.Actor do
       |> assign(conn: socket)
       |> assign(offset: 0)
       |> assign(actor: actor)
-      |> assign(last_page: length(public_activities) < 10)
+      |> assign(last_page: is_list(public_activities) && length(public_activities) < 10)
       |> assign(page_title: page_title),
       temporary_assigns: [activities: public_activities]
     }

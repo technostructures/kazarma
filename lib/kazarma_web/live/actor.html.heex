@@ -7,14 +7,33 @@
   </:button>
   <:page>
     <div class="mx-4 lg:mx-12 col-span-2">
-      <div id="activity_list" phx-update="append" class="my-4">
-        <%= for object <- @activities do %>
-          <KazarmaWeb.Components.Object.show actor={@actor} object={object} socket={@socket} />
-        <% end %>
-      </div>
-      <div :if={!@last_page} class="flex flex-row justify-center">
-        <button phx-click="load_more" class="btn btn-secondary btn-wide">...</button>
-      </div>
+      <%= case @activities do %>
+        <% :unbridged -> %>
+          <div id="unbridged" class="card mx-auto my-4 shadow-lg side bg-base-100 prose">
+            <div class="card-body">
+              <%= gettext("This user is not bridged.") %>
+              <%= gettext(
+                "They can follow the relay actor to start being bridged over Matrix: %{relay}.",
+                relay: Kazarma.Address.relay_username()
+              ) %>
+            </div>
+          </div>
+        <% [] -> %>
+          <div id="no-activities" class="card mx-auto my-4 shadow-lg side bg-base-100 prose">
+            <div class="card-body">
+              <%= gettext("No activity yet.") %>
+            </div>
+          </div>
+        <% [_|_] -> %>
+          <div id="activity_list" phx-update="append" class="my-4">
+            <%= for object <- @activities do %>
+              <KazarmaWeb.Components.Object.show actor={@actor} object={object} socket={@socket} />
+            <% end %>
+          </div>
+          <div :if={!@last_page} class="flex flex-row justify-center">
+            <button phx-click="load_more" class="btn btn-secondary btn-wide">...</button>
+          </div>
+      <% end %>
     </div>
   </:page>
 </KazarmaWeb.Components.Drawer.drawer>
