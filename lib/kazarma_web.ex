@@ -22,26 +22,13 @@ defmodule KazarmaWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: KazarmaWeb
+      use Phoenix.Controller,
+        formats: [:html, :json],
+        layouts: [html: KazarmaWeb.Layouts]
 
       import Plug.Conn
       import KazarmaWeb.Gettext
       alias KazarmaWeb.Router.Helpers, as: Routes
-    end
-  end
-
-  def view do
-    quote do
-      use Phoenix.View,
-        root: "lib/kazarma_web/templates",
-        namespace: KazarmaWeb
-
-      # Import convenience functions from controllers
-      import Phoenix.Controller,
-        only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
-
-      # Include shared imports and aliases for views
-      unquote(view_helpers())
     end
   end
 
@@ -63,7 +50,6 @@ defmodule KazarmaWeb do
       use Phoenix.Router
 
       import Plug.Conn
-      import Phoenix.Component
       import Phoenix.LiveView.Router
       import Phoenix.Controller
 
@@ -81,25 +67,45 @@ defmodule KazarmaWeb do
 
   def live_view do
     quote do
-      alias KazarmaWeb.Router.Helpers, as: Routes
-      use Phoenix.LiveView, layout: {KazarmaWeb.LayoutView, :live}
+      use Phoenix.LiveView,
+        layout: {KazarmaWeb.Layouts, :app}
 
-      unquote(view_helpers())
+      alias KazarmaWeb.Router.Helpers, as: Routes
+
+      unquote(html_helpers())
     end
   end
 
-  defp view_helpers do
+  def live_component do
+    quote do
+      use Phoenix.LiveComponent
+
+      unquote(html_helpers())
+    end
+  end
+
+  def html do
+    quote do
+      use Phoenix.Component
+
+      # Import convenience functions from controllers
+      import Phoenix.Controller,
+        only: [get_csrf_token: 0, view_module: 1, view_template: 1]
+
+      # Include general helpers for rendering HTML
+      unquote(html_helpers())
+    end
+  end
+
+  defp html_helpers do
     quote do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
-      import Phoenix.Component
-
-      # Import basic rendering functionality (render, render_layout, etc)
-      import Phoenix.View
-
       import KazarmaWeb.Helpers
-      import KazarmaWeb.ErrorHelpers
+
+      import KazarmaWeb.CoreComponents
+
       import KazarmaWeb.Gettext
       alias KazarmaWeb.Router.Helpers, as: Routes
     end
