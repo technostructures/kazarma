@@ -7,29 +7,48 @@ defmodule KazarmaWeb.Object do
   use KazarmaWeb, :live_view
 
   @impl true
-  def mount(%{"uuid" => uuid}, _session, socket) do
+  def mount(%{"uuid" => uuid}, session, socket) do
     {:ok, _raw_uuid} = Ecto.UUID.dump(uuid)
 
-    %ActivityPub.Object{public: true, data: %{"actor" => actor_id, "type" => "Note"}} =
-      object = ActivityPub.Object.get_by_id(uuid)
+    ActivityPub.Object.get_by_id(uuid)
+    |> dbg()
+    |> mount(session, socket)
+  end
 
-    {:ok, actor} = ActivityPub.Actor.get_or_fetch_by_ap_id(actor_id)
-    previous_objects = traverse_replies_to(object) |> Enum.reverse()
-    next_objects = Kazarma.ActivityPub.Activity.get_replies_for(object)
+  def mount(
+        %ActivityPub.Object{data: %{"actor" => actor_id, "id" => ap_id}} = object,
+        _session,
+        socket
+      ) do
+    if is_bridged(object) do
+      {:ok, actor} = ActivityPub.Actor.get_or_fetch_by_ap_id(actor_id)
 
-    page_title =
-      "#{String.replace(object.data["content"], ~r/(?<=.{20})(.+)/s, "...")} – #{actor.data["name"]}"
+      previous_objects =
+        traverse_replies_to(object) |> Enum.reverse() |> Enum.map(&maybe_redirect_link/1)
 
-    {
-      :ok,
-      socket
-      |> assign(object: object)
-      |> assign(previous_objects: previous_objects)
-      |> assign(next_objects: next_objects)
-      |> assign(actor: actor)
-      |> assign(page_title: page_title),
-      temporary_assigns: []
-    }
+      next_objects =
+        Kazarma.ActivityPub.Activity.get_replies_for(object) |> Enum.map(&maybe_redirect_link/1)
+
+      page_title =
+        "#{String.replace(object.data["content"], ~r/(?<=.{20})(.+)/s, "...")} – #{actor.data["name"]}"
+
+      {
+        :ok,
+        socket
+        |> assign(object: object)
+        |> assign(previous_objects: previous_objects)
+        |> assign(next_objects: next_objects)
+        |> assign(actor: actor)
+        |> assign(page_title: page_title),
+        temporary_assigns: []
+      }
+    else
+      {
+        :ok,
+        socket
+        |> redirect(external: ap_id)
+      }
+    end
   end
 
   @impl true
@@ -49,6 +68,28 @@ defmodule KazarmaWeb.Object do
   @impl true
   def handle_info({:redirect, to}, socket) do
     {:noreply, push_navigate(socket, to: to)}
+  end
+
+  defp is_bridged(%ActivityPub.Object{public: true, local: true, data: %{"type" => "Note"}}),
+    do: true
+
+  defp is_bridged(%ActivityPub.Object{
+         public: true,
+         local: false,
+         data: %{"type" => "Note", "actor" => actor_id}
+       }) do
+    case Kazarma.Bridge.get_room_by_remote_id(actor_id) do
+      %MatrixAppService.Bridge.Room{} -> true
+      _ -> false
+    end
+  end
+
+  defp maybe_redirect_link(object) do
+    if is_bridged(object) do
+      object
+    else
+      object.data["id"]
+    end
   end
 
   defp traverse_replies_to(%{data: %{"inReplyTo" => reply_to_id}}) do
