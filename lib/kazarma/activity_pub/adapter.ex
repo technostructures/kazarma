@@ -81,13 +81,11 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl ActivityPub.Adapter
-  def maybe_create_remote_actor(
-        %Actor{
-          username: username,
-          ap_id: ap_id,
-          data: %{"name" => name} = data
-        } = actor
-      ) do
+  def maybe_create_remote_actor(%Actor{
+        username: username,
+        ap_id: ap_id,
+        data: %{"name" => name} = data
+      }) do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
@@ -284,30 +282,60 @@ defmodule Kazarma.ActivityPub.Adapter do
     end
   end
 
-  # Instance following (Mobilizon style)
+  # Follow
   def handle_activity(
         %{
           data: %{
             "type" => "Follow",
             "actor" => follower,
-            "object" => following
+            "object" => followed
           }
         } = activity
       ) do
-    # @TODO make relay be the appservice bot
-    if following == Address.relay_ap_id() do
-      Logger.debug("follow back remote relay")
-      {:ok, local_relay} = ActivityPub.Actor.get_cached_by_ap_id(following)
-      {:ok, remote_relay} = ActivityPub.Actor.get_cached_by_ap_id(follower)
-      ActivityPub.follow(local_relay, remote_relay)
-    else
-      case ActivityPub.Actor.get_cached_by_ap_id(following) do
-        {:ok, %ActivityPub.Actor{local: true} = actor} ->
-          ActivityPub.accept(%{to: [follower], actor: actor, object: activity.data})
+    Logger.debug("received Follow")
 
-        {:ok, %ActivityPub.Actor{local: false} = actor} ->
-          ActivityPub.accept(%{to: [follower], actor: actor, object: activity.data})
-      end
+    case ActivityPub.Actor.get_cached_by_ap_id(followed) do
+      {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
+        ActivityPub.accept(%{to: [follower], actor: followed_actor, object: activity.data})
+
+        if followed == Address.relay_ap_id() do
+          Logger.debug("follow back remote actor")
+          {:ok, follower_actor} = ActivityPub.Actor.get_cached_by_ap_id(follower)
+          ActivityPub.follow(followed_actor, follower_actor)
+          {:ok, _} = Kazarma.RoomType.ApUser.create_outbox(follower_actor)
+        end
+
+      _ ->
+        :error
+    end
+  end
+
+  # Unfollow (Undo/Follow)
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Undo",
+            "actor" => follower,
+            "object" => %{
+              "type" => "Follow",
+              "object" => followed
+            }
+          }
+        } = activity
+      ) do
+    Logger.debug("received Undo/Follow")
+
+    case ActivityPub.Actor.get_cached_by_ap_id(followed) do
+      {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
+        if followed == Address.relay_ap_id() do
+          Logger.debug("unfollow back remote actor")
+          {:ok, follower_actor} = ActivityPub.Actor.get_cached_by_ap_id(follower)
+          ActivityPub.unfollow(followed_actor, follower_actor)
+          {:ok, _} = Kazarma.RoomType.ApUser.deactivate_outbox(follower_actor)
+        end
+
+      _ ->
+        :error
     end
   end
 
