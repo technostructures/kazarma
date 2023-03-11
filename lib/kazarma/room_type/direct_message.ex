@@ -67,10 +67,15 @@ defmodule Kazarma.RoomType.DirectMessage do
     with nil <- Bridge.get_room_by_remote_id(conversation),
          {:ok, %{"room_id" => room_id}} <-
            Client.create_multiuser_room(creator, invites, opts),
-         {:ok, _} <-
+         {:ok, room} <-
            insert_bridge_room(room_id, conversation, [
              creator | invites
            ]) do
+      Telemetry.log_created_room(room,
+        room_type: :direct_message,
+        room_id: room_id
+      )
+
       {:ok, room_id}
     else
       %Room{local_id: local_id} -> {:ok, local_id}
@@ -131,6 +136,11 @@ defmodule Kazarma.RoomType.DirectMessage do
             insert_bridge_room(room_id, ActivityPub.Utils.generate_context_id(inviter_actor), [
               matrix_id
             ])
+
+          Telemetry.log_created_room(room,
+            room_type: :direct_message,
+            room_id: room_id
+          )
 
           {:ok, room}
 

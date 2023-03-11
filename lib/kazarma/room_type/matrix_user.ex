@@ -53,7 +53,14 @@ defmodule Kazarma.RoomType.MatrixUser do
     if Client.is_administrator(room_id, user_id) do
       case Address.matrix_id_to_actor(user_id) do
         {:ok, %Actor{ap_id: ap_id}} ->
-          insert_bridge_room(room_id, user_id, ap_id)
+          {:ok, room} = insert_bridge_room(room_id, user_id, ap_id)
+
+          Telemetry.log_created_room(room,
+            room_type: :matrix_user,
+            room_id: room_id
+          )
+
+          {:ok, room}
 
         _ ->
           nil

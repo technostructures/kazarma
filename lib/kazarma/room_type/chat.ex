@@ -79,11 +79,12 @@ defmodule Kazarma.RoomType.Chat do
 
   defp create_bridge_room(user_id, room_id) do
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),
-         {:ok, _room} <-
-           Bridge.create_room(%{
-             local_id: room_id,
-             data: %{"type" => "chat", "to_ap_id" => actor.ap_id}
-           }) do
+         {:ok, room} <- insert_bridge_room(room_id, actor.ap_id) do
+      Telemetry.log_created_room(room,
+        room_type: :chat,
+        room_id: room_id
+      )
+
       :ok
     else
       _ -> :error
@@ -97,7 +98,12 @@ defmodule Kazarma.RoomType.Chat do
            Kazarma.Matrix.Client.get_direct_room(from_matrix_id, to_matrix_id),
          {:ok, %{"room_id" => room_id}} <-
            Kazarma.Matrix.Client.create_direct_room(from_matrix_id, to_matrix_id),
-         {:ok, _} <- insert_bridge_room(room_id, from_ap_id) do
+         {:ok, room} <- insert_bridge_room(room_id, from_ap_id) do
+      Telemetry.log_created_room(room,
+        room_type: :chat,
+        room_id: room_id
+      )
+
       {:ok, room_id}
     else
       {:ok, room_id} -> {:ok, room_id}

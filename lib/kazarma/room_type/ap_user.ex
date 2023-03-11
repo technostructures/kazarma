@@ -206,16 +206,27 @@ defmodule Kazarma.RoomType.ApUser do
                alias
              ) do
           {:ok, %{"room_id" => room_id}} ->
-            {:ok, _room} = insert_bridge_room(room_id, actor.ap_id, matrix_id)
+            {:ok, room} = insert_bridge_room(room_id, actor.ap_id, matrix_id)
+
+            Telemetry.log_created_room(room,
+              room_type: :ap_room,
+              room_id: room_id
+            )
 
           {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}} ->
             {:ok, {room_id, _}} =
               Kazarma.Matrix.Client.get_alias("##{alias}:#{Kazarma.Address.domain()}")
 
-            insert_bridge_room(
-              room_id,
-              actor.ap_id,
-              matrix_id
+            {:ok, room} =
+              insert_bridge_room(
+                room_id,
+                actor.ap_id,
+                matrix_id
+              )
+
+            Telemetry.log_created_room(room,
+              room_type: :ap_room,
+              room_id: room_id
             )
 
             send_emote_bridging_starts(matrix_id, room_id)

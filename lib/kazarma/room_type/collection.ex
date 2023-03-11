@@ -66,8 +66,13 @@ defmodule Kazarma.RoomType.Collection do
     with nil <- Bridge.get_room_by_remote_id(members_ap_id),
          {:ok, %{"room_id" => room_id}} <-
            Client.create_multiuser_room(matrix_id, [], name: name),
-         {:ok, _} <-
+         {:ok, room} <-
            insert_bridge_room(room_id, members_ap_id) do
+      Telemetry.log_created_room(room,
+        room_type: :collection,
+        room_id: room_id
+      )
+
       {:ok, room_id}
     else
       %Room{local_id: local_id} -> {:ok, local_id}
