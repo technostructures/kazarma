@@ -13,19 +13,22 @@ defmodule Kazarma.RoomType.DirectMessage do
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
+  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Room
 
-  def create_from_ap(%{
-        data: %{"to" => to},
-        object: %Object{
-          data:
-            %{
-              "id" => object_id,
-              "actor" => from,
-              "conversation" => conversation
-            } = object_data
-        }
-      }) do
+  def create_from_ap(
+        %{
+          data: %{"to" => to},
+          object: %Object{
+            data:
+              %{
+                "id" => object_id,
+                "actor" => from,
+                "conversation" => conversation
+              } = object_data
+          }
+        } = activity
+      ) do
     Logger.debug("Received private Note activity (direct message)")
 
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
@@ -47,6 +50,12 @@ defmodule Kazarma.RoomType.DirectMessage do
              remote_id: object_id,
              room_id: room_id
            }) do
+      Telemetry.log_bridged_activity(activity,
+        room_type: :direct_message,
+        room_id: room_id,
+        obj_type: "Note"
+      )
+
       :ok
     else
       {:error, _code, %{"error" => error}} -> Logger.error(error)
@@ -90,6 +99,8 @@ defmodule Kazarma.RoomType.DirectMessage do
       context: room.remote_id,
       fallback_reply: fallback_reply
     )
+
+    Telemetry.log_bridged_event(event, room_type: :direct_message, room_id: room.local_id)
   end
 
   def handle_puppet_invite(matrix_id, inviter_id, room_id) do

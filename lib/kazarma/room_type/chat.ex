@@ -9,22 +9,23 @@ defmodule Kazarma.RoomType.Chat do
   alias Kazarma.Address
   alias Kazarma.Logger
   alias Kazarma.Bridge
-  alias MatrixAppService.Bridge.Room
-  alias MatrixAppService.Event
+  alias Kazarma.Telemetry
 
-  def create_from_ap(%{
-        data: %{
-          "actor" => from_id,
-          "to" => [to_id]
-        },
-        object: %Object{
-          data:
-            %{
-              "content" => _body,
-              "id" => object_id
-            } = object_data
-        }
-      }) do
+  def create_from_ap(
+        %{
+          data: %{
+            "actor" => from_id,
+            "to" => [to_id]
+          },
+          object: %Object{
+            data:
+              %{
+                "content" => _body,
+                "id" => object_id
+              } = object_data
+          }
+        } = activity
+      ) do
     Logger.debug("Received ChatMessage activity to forward to Matrix")
 
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from_id),
@@ -39,6 +40,12 @@ defmodule Kazarma.RoomType.Chat do
              remote_id: object_id,
              room_id: room_id
            }) do
+      Telemetry.log_bridged_activity(activity,
+        room_type: :chat,
+        room_id: room_id,
+        obj_type: "ChatMessage"
+      )
+
       :ok
     end
   end
@@ -54,6 +61,8 @@ defmodule Kazarma.RoomType.Chat do
       to: [room.data["to_ap_id"]],
       type: "ChatMessage"
     )
+
+    Telemetry.log_bridged_event(event, room_type: :chat, room_id: room.local_id)
   end
 
   def handle_puppet_invite(user_id, sender_id, room_id) do

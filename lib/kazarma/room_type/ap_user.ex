@@ -10,12 +10,12 @@ defmodule Kazarma.RoomType.ApUser do
     Messages sent by Matrix users are either replies to public activities, or public activities mentioning the actor.
   """
   alias ActivityPub.Object
-  # alias Kazarma.ActivityPub.Collection
   alias Kazarma.Address
   alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
+  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
 
@@ -28,7 +28,7 @@ defmodule Kazarma.RoomType.ApUser do
                 "actor" => from_id
               } = object_data
           }
-        } = _activity
+        } = activity
       ) do
     Logger.debug("Received public Note activity")
 
@@ -45,16 +45,24 @@ defmodule Kazarma.RoomType.ApUser do
              remote_id: object_id,
              room_id: room_id
            }) do
+      Telemetry.log_bridged_activity(activity,
+        room_type: :ap_room,
+        room_id: room_id,
+        obj_type: "Note"
+      )
+
       :ok
     end
   end
 
-  def create_from_ap(%{
-        data: %{"to" => _to_list, "actor" => from_id},
-        object: %Object{
-          data: %{"id" => object_id, "attributedTo" => attributed_to} = object_data
-        }
-      }) do
+  def create_from_ap(
+        %{
+          data: %{"to" => _to_list, "actor" => _from_id},
+          object: %Object{
+            data: %{"id" => object_id, "attributedTo" => attributed_to} = object_data
+          }
+        } = activity
+      ) do
     Logger.debug("Received public Video activity")
 
     with %{"id" => person_sender} <-
@@ -81,6 +89,12 @@ defmodule Kazarma.RoomType.ApUser do
                  remote_id: object_id,
                  room_id: room_id
                }) do
+          Telemetry.log_bridged_activity(activity,
+            room_type: :ap_room,
+            room_id: room_id,
+            obj_type: "Video"
+          )
+
           :ok
         end
       end
@@ -93,7 +107,7 @@ defmodule Kazarma.RoomType.ApUser do
             "to" => _to,
             "object" => %{"id" => object_id, "attributedTo" => attributed_to_id} = object_data
           }
-        } = _activity
+        } = activity
       ) do
     Logger.debug("Received public Event activity")
 
@@ -109,6 +123,12 @@ defmodule Kazarma.RoomType.ApUser do
              remote_id: object_id,
              room_id: room_id
            }) do
+      Telemetry.log_bridged_activity(activity,
+        room_type: :ap_room,
+        room_id: room_id,
+        obj_type: "Event"
+      )
+
       :ok
     end
   end
@@ -150,6 +170,8 @@ defmodule Kazarma.RoomType.ApUser do
       to: ["https://www.w3.org/ns/activitystreams#Public", receiver.ap_id],
       additional_mentions: [receiver]
     )
+
+    Telemetry.log_bridged_event(event, room_type: :ap_room, room_id: room.local_id)
   end
 
   def get_outbox(ap_id) do

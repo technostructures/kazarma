@@ -101,8 +101,6 @@ defmodule Kazarma.ActivityPub.Activity do
         type: "m.room.redaction",
         redacts: event_id
       }) do
-    Logger.debug("Forwarding deletion")
-
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(sender_id),
          %BridgeEvent{remote_id: remote_id} <-
            Bridge.get_event_by_local_id(event_id),
@@ -114,6 +112,12 @@ defmodule Kazarma.ActivityPub.Activity do
         remote_id: delete_remote_id,
         room_id: room_id
       })
+
+      %Room{data: %{"type" => room_type}} = Bridge.get_room_by_local_id(room_id)
+
+      Telemetry.log_bridged_event(event,
+        room_type: room_type
+      )
 
       :ok
     end

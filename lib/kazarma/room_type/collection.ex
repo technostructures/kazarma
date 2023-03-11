@@ -14,20 +14,23 @@ defmodule Kazarma.RoomType.Collection do
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
+  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
 
-  def create_from_ap(%{
-        data: %{"actor" => from},
-        object: %Object{
-          data:
-            %{
-              "id" => object_id,
-              "attributedTo" => group_ap_id,
-              "to" => [group_members]
-            } = object_data
-        }
-      }) do
+  def create_from_ap(
+        %{
+          data: %{"actor" => from},
+          object: %Object{
+            data:
+              %{
+                "id" => object_id,
+                "attributedTo" => group_ap_id,
+                "to" => [group_members]
+              } = object_data
+          }
+        } = activity
+      ) do
     Logger.debug("Received private Note activity (Mobilizon style)")
 
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
@@ -46,6 +49,12 @@ defmodule Kazarma.RoomType.Collection do
              remote_id: object_id,
              room_id: room_id
            }) do
+      Telemetry.log_bridged_activity(activity,
+        room_type: :collection,
+        room_id: room_id,
+        obj_type: "Note"
+      )
+
       :ok
     else
       {:error, _code, %{"error" => error}} -> Logger.error(error)
@@ -75,6 +84,8 @@ defmodule Kazarma.RoomType.Collection do
       sender: sender,
       to: [room.remote_id]
     )
+
+    Telemetry.log_bridged_event(event, room_type: :collection, room_id: room.local_id)
   end
 
   # @TODO destructure event in Matrix.Transaction
