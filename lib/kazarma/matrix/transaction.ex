@@ -71,6 +71,9 @@ defmodule Kazarma.Matrix.Transaction do
         %Room{data: %{"type" => "ap_user"}} = room ->
           Kazarma.RoomType.ApUser.create_from_event(event, room)
 
+        %Room{data: %{"type" => "deactivated_ap_user"}} = room ->
+          Kazarma.RoomType.ApUser.create_from_event(event, room)
+
         %Room{data: %{"type" => "collection"}} = room ->
           Kazarma.RoomType.Collection.create_from_event(event, room)
 
