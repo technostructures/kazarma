@@ -14,6 +14,7 @@ volumes:
   postgres_dendrite_files:
   synapse_files:
   pleroma_uploads:
+  grafana_data:
 
 services:
   
@@ -207,6 +208,7 @@ services:
           - pleroma.local
           - element.local
           - kazarma.local
+          - grafana.local
           - kazarma.kazarma.local
           - matrix.kazarma.local
 
@@ -236,6 +238,27 @@ services:
     volumes:
       - postgres_pleroma_files:/var/lib/postgresql/data
       # - ./pleroma/initdb.sql:/docker-entrypoint-initdb.d/pleroma.sql
+
+  # grafana:
+  #   image: grafana/grafana
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.http.services.grafana.loadbalancer.server.port=3000
+  #     - traefik.http.routers.grafana.entryPoints=http
+  #     - traefik.http.routers.grafana.rule=Host(`grafana.local`)
+  #     # - traefik.http.routers.elements.middlewares=https_redirect
+  #     - traefik.http.routers.grafanas.entryPoints=https
+  #     - traefik.http.routers.grafanas.rule=Host(`grafana.local`)
+  #     - traefik.http.routers.grafanas.tls=true
+  #
+  # prometheus:
+  #   image: bitnami/prometheus
+  #   volumes:
+  #     - ./prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+  #   ports:
+  #     - "9090:9090"
 
   # postgres_synapse:
   #   # image: docker.io/postgres:10-alpine
