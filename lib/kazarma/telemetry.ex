@@ -36,4 +36,13 @@ defmodule Kazarma.Telemetry do
       room_id: Keyword.get(opts, :room_id)
     })
   end
+
+  def log_created_puppet(
+        _room,
+        opts
+      ) do
+    :telemetry.execute([:kazarma, :puppets, :created], %{}, %{
+      type: Keyword.get(opts, :type)
+    })
+  end
 end

@@ -20,6 +20,10 @@ defmodule Kazarma.PromExPlugin do
         counter([:kazarma, :rooms, :created, :total],
           event_name: [:kazarma, :rooms, :created],
           tags: [:room_type]
+        ),
+        counter([:kazarma, :puppets, :created, :total],
+          event_name: [:kazarma, :puppets, :created],
+          tags: [:type]
         )
       ]
     )

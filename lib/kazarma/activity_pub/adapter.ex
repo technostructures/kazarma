@@ -10,6 +10,7 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   alias Kazarma.Address
   alias Kazarma.Bridge
+  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias ActivityPub.Actor
   alias ActivityPub.Object
@@ -97,12 +98,16 @@ defmodule Kazarma.ActivityPub.Adapter do
       avatar_url = get_in(data, ["icon", "url"])
       if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
 
-      {:ok, _bridge_user} =
+      {:ok, user} =
         Bridge.create_user(%{
           local_id: matrix_id,
           remote_id: ap_id,
           data: %{}
         })
+
+      Telemetry.log_created_puppet(user,
+        type: :matrix
+      )
 
       :ok
     else
