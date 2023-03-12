@@ -7,7 +7,6 @@ defmodule Kazarma.RoomType.Chat do
   alias ActivityPub.Object
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Bridge
   alias Kazarma.Telemetry
 
@@ -26,8 +25,6 @@ defmodule Kazarma.RoomType.Chat do
           }
         } = activity
       ) do
-    Logger.debug("Received ChatMessage activity to forward to Matrix")
-
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from_id),
          {:ok, room_id} <-
            get_or_create_direct_room(from_id, to_id),
@@ -51,8 +48,6 @@ defmodule Kazarma.RoomType.Chat do
   end
 
   def create_from_event(event, room) do
-    Logger.debug("Forwarding ChatMessage creation")
-
     {:ok, sender} = Address.matrix_id_to_actor(event.sender)
 
     Activity.create_from_event(
@@ -62,7 +57,7 @@ defmodule Kazarma.RoomType.Chat do
       type: "ChatMessage"
     )
 
-    Telemetry.log_bridged_event(event, room_type: :chat, room_id: room.local_id)
+    Telemetry.log_bridged_event(event, room_type: :chat)
   end
 
   def handle_puppet_invite(user_id, sender_id, room_id) do

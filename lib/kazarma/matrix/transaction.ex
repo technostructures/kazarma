@@ -8,45 +8,53 @@ defmodule Kazarma.Matrix.Transaction do
   alias Kazarma.Address
   alias Kazarma.Logger
   alias Kazarma.Bridge
-  alias MatrixAppService.Bridge.Event, as: BridgeEvent
+  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
 
   @impl MatrixAppService.Adapter.Transaction
-  def new_event(%Event{
-        type: "m.room.create",
-        content: %{"creator" => creator_id}
-      }) do
-    Logger.debug("Room creation by #{creator_id}")
+  def new_event(
+        %Event{
+          type: "m.room.create",
+          content: %{"creator" => _creator_id}
+        } = event
+      ) do
+    Telemetry.log_received_event(event, label: "Room creation")
   end
 
-  def new_event(%Event{
-        type: "m.room.name",
-        content: %{"name" => name}
-      }) do
-    Logger.debug("Attributing name #{name}")
+  def new_event(
+        %Event{
+          type: "m.room.name",
+          content: %{"name" => _name}
+        } = event
+      ) do
+    Telemetry.log_received_event(event, label: "Name change")
   end
 
-  def new_event(%Event{
-        content: %{
-          "m.new_content" => _,
-          "m.relates_to" => %{"rel_type" => "m.replace"},
-          "org.matrix.msc1767.text" => _
-        },
-        type: "m.room.message"
-      }) do
-    Logger.debug("Replace message event")
+  def new_event(
+        %Event{
+          content: %{
+            "m.new_content" => _,
+            "m.relates_to" => %{"rel_type" => "m.replace"},
+            "org.matrix.msc1767.text" => _
+          },
+          type: "m.room.message"
+        } = event
+      ) do
+    Telemetry.log_received_event(event, label: "Replace event")
   end
 
   def new_event(%Event{type: "m.room.message", content: content}) when content == %{}, do: :ok
 
-  def new_event(%Event{
-        type: "m.room.message",
-        room_id: room_id,
-        user_id: user_id,
-        content: %{"body" => "!kazarma" <> rest, "msgtype" => "m.text"}
-      }) do
-    Logger.debug("received a bot command")
+  def new_event(
+        %Event{
+          type: "m.room.message",
+          room_id: room_id,
+          user_id: user_id,
+          content: %{"body" => "!kazarma" <> rest, "msgtype" => "m.text"}
+        } = event
+      ) do
+    Telemetry.log_received_event(event, label: "Bot command")
 
     Kazarma.Commands.handle_command(rest, room_id, user_id)
 
@@ -54,8 +62,7 @@ defmodule Kazarma.Matrix.Transaction do
   end
 
   def new_event(%Event{type: "m.room.message", room_id: room_id} = event) do
-    Logger.info("Received m.room.message from Synapse")
-    Logger.matrix_input(event)
+    Telemetry.log_received_event(event, label: "Message")
 
     if !is_tagged_message(event) do
       case Bridge.get_room_by_local_id(room_id) do
@@ -96,7 +103,7 @@ defmodule Kazarma.Matrix.Transaction do
         } = event
       ) do
     if !is_tagged_redact(event) do
-      Logger.debug("Processing m.room.redaction event")
+      Telemetry.log_received_event(event, label: "Redaction")
 
       Kazarma.ActivityPub.Activity.forward_redaction(event)
     end
@@ -113,6 +120,8 @@ defmodule Kazarma.Matrix.Transaction do
           state_key: user_id
         } = event
       ) do
+    Telemetry.log_received_event(event, label: "Membership")
+
     case Kazarma.Address.parse_matrix_id(user_id) do
       {:activity_pub, _sub_localpart, _sub_domain} ->
         accept_puppet_invitation(user_id, sender_id, room_id, content)
@@ -133,12 +142,9 @@ defmodule Kazarma.Matrix.Transaction do
     :ok
   end
 
-  def new_event(%Event{type: type} = event) do
-    Logger.debug("Received #{type} from Synapse")
-    Logger.debug(inspect(event))
+  def new_event(%Event{} = event) do
+    Telemetry.log_received_event(event, label: "Unhandled")
   end
-
-  defp handle_command(_), do: :ok
 
   defp accept_appservice_bot_invitation(user_id, room_id, %{
          "membership" => "invite"

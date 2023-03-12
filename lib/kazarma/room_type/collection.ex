@@ -10,7 +10,6 @@ defmodule Kazarma.RoomType.Collection do
   """
   alias ActivityPub.Object
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
@@ -31,8 +30,6 @@ defmodule Kazarma.RoomType.Collection do
           }
         } = activity
       ) do
-    Logger.debug("Received private Note activity (Mobilizon style)")
-
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
          {:ok, %{username: group_username, data: %{"name" => group_name}}} <-
            ActivityPub.Actor.get_cached_by_ap_id(group_ap_id),
@@ -56,9 +53,6 @@ defmodule Kazarma.RoomType.Collection do
       )
 
       :ok
-    else
-      {:error, _code, %{"error" => error}} -> Logger.error(error)
-      {:error, error} -> Logger.error(inspect(error))
     end
   end
 
@@ -90,7 +84,7 @@ defmodule Kazarma.RoomType.Collection do
       to: [room.remote_id]
     )
 
-    Telemetry.log_bridged_event(event, room_type: :collection, room_id: room.local_id)
+    Telemetry.log_bridged_event(event, room_type: :collection)
   end
 
   # @TODO destructure event in Matrix.Transaction

@@ -811,6 +811,13 @@ defmodule Kazarma.Matrix.TransactionTest do
           room_id: "!room:kazarma"
         })
 
+      {:ok, _room} =
+        Bridge.create_room(%{
+          local_id: "!room:kazarma",
+          remote_id: nil,
+          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat"}
+        })
+
       :ok
     end
 

@@ -35,7 +35,7 @@ defmodule Kazarma.RoomType.MatrixUser do
       )
     end
 
-    Telemetry.log_bridged_event(event, room_type: :matrix_user, room_id: room.local_id)
+    Telemetry.log_bridged_event(event, room_type: :matrix_user)
   end
 
   def join(actor, follower_ap_id) do

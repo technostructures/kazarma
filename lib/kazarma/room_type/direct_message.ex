@@ -9,7 +9,6 @@ defmodule Kazarma.RoomType.DirectMessage do
   """
   alias ActivityPub.Object
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
@@ -29,8 +28,6 @@ defmodule Kazarma.RoomType.DirectMessage do
           }
         } = activity
       ) do
-    Logger.debug("Received private Note activity (direct message)")
-
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
          to =
            Enum.map(to, fn ap_id ->
@@ -57,9 +54,6 @@ defmodule Kazarma.RoomType.DirectMessage do
       )
 
       :ok
-    else
-      {:error, _code, %{"error" => error}} -> Logger.error(error)
-      {:error, error} -> Logger.error(inspect(error))
     end
   end
 
@@ -105,7 +99,7 @@ defmodule Kazarma.RoomType.DirectMessage do
       fallback_reply: fallback_reply
     )
 
-    Telemetry.log_bridged_event(event, room_type: :direct_message, room_id: room.local_id)
+    Telemetry.log_bridged_event(event, room_type: :direct_message)
   end
 
   def handle_puppet_invite(matrix_id, inviter_id, room_id) do

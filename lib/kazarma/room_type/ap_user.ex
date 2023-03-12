@@ -11,7 +11,6 @@ defmodule Kazarma.RoomType.ApUser do
   """
   alias ActivityPub.Object
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
@@ -30,7 +29,7 @@ defmodule Kazarma.RoomType.ApUser do
           }
         } = activity
       ) do
-    Logger.debug("Received public Note activity")
+    Telemetry.log_received_activity(activity, obj_type: "Note", label: "Public Note activity")
 
     with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
          %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}} <-
@@ -63,7 +62,7 @@ defmodule Kazarma.RoomType.ApUser do
           }
         } = activity
       ) do
-    Logger.debug("Received public Video activity")
+    Telemetry.log_received_activity(activity, obj_type: "Video", label: "Public Video activity")
 
     with %{"id" => person_sender} <-
            Enum.find(attributed_to, fn
@@ -109,7 +108,7 @@ defmodule Kazarma.RoomType.ApUser do
           }
         } = activity
       ) do
-    Logger.debug("Received public Event activity")
+    Telemetry.log_received_activity(activity, obj_type: "Event", label: "Public Event activity")
 
     with {:ok, attributed_to_matrix_id} <- Kazarma.Address.ap_id_to_matrix(attributed_to_id),
          {:ok, %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}}} <-
@@ -171,7 +170,7 @@ defmodule Kazarma.RoomType.ApUser do
       additional_mentions: [receiver]
     )
 
-    Telemetry.log_bridged_event(event, room_type: :ap_room, room_id: room.local_id)
+    Telemetry.log_bridged_event(event, room_type: :ap_room)
   end
 
   def get_outbox(ap_id) do

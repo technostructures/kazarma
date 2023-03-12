@@ -36,18 +36,6 @@ config :logger, :console,
   metadata: [:request_id],
   colors: [enabled: true]
 
-config :logger, :event_log,
-  format: "$message\n",
-  path: "matrix_event.log",
-  level: :debug,
-  metadata_filter: [device: :event]
-
-config :logger, :activity_log,
-  format: "$message\n",
-  path: "activity_pub.log",
-  level: :debug,
-  metadata_filter: [device: :activity]
-
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
