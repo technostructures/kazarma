@@ -141,7 +141,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         local_id: "!room:kazarma",
         remote_id: "http://pleroma/pub/actors/alice",
         data: %{
-          "type" => "outbox",
+          "type" => "ap_user",
           "matrix_id" => "@_ap_alice___pleroma:kazarma"
         }
       }
