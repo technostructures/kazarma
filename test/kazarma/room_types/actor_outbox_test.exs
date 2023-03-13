@@ -8,6 +8,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
   """
   use Kazarma.DataCase
 
+  import Kazarma.ActivityPub.Adapter
   import Kazarma.Matrix.Transaction
   alias Kazarma.Bridge
   alias MatrixAppService.Event
@@ -119,6 +120,296 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       end)
 
       assert :ok == new_event(message_fixture())
+    end
+  end
+
+  describe "activity handler (handle_activity/1) for public Note" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, actor} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://pleroma/pub/actors/alice",
+            "id" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, actor: actor}
+    end
+
+    def public_note_fixture do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://kazarma/-/bob",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Note",
+            "source" => "hello",
+            "id" => "note_id",
+            "actor" => "http://pleroma/pub/actors/alice",
+            "conversation" => "http://pleroma/pub/contexts/context",
+            "attachment" => nil
+          }
+        }
+      }
+    end
+
+    def public_note_fixture_with_content do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://kazarma/-/bob",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Note",
+            "content" => "hello",
+            "id" => "note_id",
+            "actor" => "http://pleroma/pub/actors/alice",
+            "conversation" => "http://pleroma/pub/contexts/context",
+            "attachment" => nil
+          }
+        }
+      }
+    end
+
+    test "receiving a public note forwards it to the puppet's timeline room" do
+      Kazarma.Matrix.TestClient
+      |> expect(:register, fn [
+                                username: "_ap_alice___pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
+                              ] ->
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
+        :ok
+      end)
+      |> expect(:send_message, fn "!room:kazarma",
+                                  {"hello \uFEFF", "hello"},
+                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
+        {:ok, "event_id"}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma/pub/actors/alice",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok = handle_activity(public_note_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "note_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Bridge.list_events()
+    end
+
+    test "receiving a public note forwards it to the puppet's timeline room even without a source part" do
+      Kazarma.Matrix.TestClient
+      |> expect(:register, fn [
+                                username: "_ap_alice___pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
+                              ] ->
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
+        :ok
+      end)
+      |> expect(:send_message, fn "!room:kazarma",
+                                  {"hello \uFEFF", "hello"},
+                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
+        {:ok, "event_id"}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma/pub/actors/alice",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok = handle_activity(public_note_fixture_with_content())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "note_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Bridge.list_events()
+    end
+  end
+
+  describe "activity handler (handle_activity/1) for public Note with reply" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, alice} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://pleroma/pub/actors/alice",
+            "id" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, bob} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://pleroma/pub/actors/bob",
+            "id" => "http://pleroma/pub/actors/bob",
+            "username" => "bob@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/bob"
+        })
+
+      {:ok, _event} =
+        Bridge.create_event(%{
+          local_id: "local_id",
+          remote_id: "note_id",
+          room_id: "!room:kazarma"
+        })
+
+      {:ok, alice: alice, bob: bob}
+    end
+
+    def public_note_with_reply_fixture do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://kazarma/-/bob",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Note",
+            "source" => "hello",
+            "id" => "reply_note_id",
+            "actor" => "http://pleroma/pub/actors/bob",
+            "inReplyTo" => "note_id",
+            "conversation" => "http://pleroma/pub/contexts/context",
+            "attachment" => nil
+          }
+        }
+      }
+    end
+
+    test "when receiving a Note activity with a reply for an existing conversation gets the corresponding room and forwards the message with a reply" do
+      Kazarma.Matrix.TestClient
+      |> expect(:register, fn
+        [
+          username: "_ap_bob___pleroma",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "_ap_bob___pleroma:kazarma"}}
+
+        [
+          username: "_ap_alice___pleroma",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_bob___pleroma:kazarma" ->
+        :ok
+      end)
+      |> expect(:send_message, fn "!room:kazarma",
+                                  %{
+                                    "msgtype" => "m.text",
+                                    "body" => "hello \uFEFF",
+                                    "formatted_body" => "hello",
+                                    "m.relates_to" => %{
+                                      "m.in_reply_to" => %{
+                                        "event_id" => "local_id"
+                                      }
+                                    }
+                                  },
+                                  [user_id: "@_ap_bob___pleroma:kazarma"] ->
+        {:ok, "reply_id"}
+      end)
+
+      %{
+        local_id: "local_id",
+        remote_id: "http://pleroma/pub/actors/alice",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma/pub/actors/bob",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@_ap_bob___pleroma:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok = handle_activity(public_note_with_reply_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "local_id",
+                 remote_id: "note_id",
+                 room_id: "!room:kazarma"
+               },
+               %MatrixAppService.Bridge.Event{
+                 local_id: "reply_id",
+                 remote_id: "reply_note_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Bridge.list_events()
     end
   end
 end

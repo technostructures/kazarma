@@ -10,7 +10,7 @@ defmodule Kazarma.RoomType.ApUser do
     Messages sent by Matrix users are either replies to public activities, or public activities mentioning the actor.
   """
   alias ActivityPub.Object
-  alias Kazarma.ActivityPub.Collection
+  # alias Kazarma.ActivityPub.Collection
   alias Kazarma.Address
   alias Kazarma.Logger
   alias Kazarma.Matrix.Client
@@ -33,7 +33,7 @@ defmodule Kazarma.RoomType.ApUser do
     Logger.debug("Received public Note activity")
 
     with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
-         %MatrixAppService.Bridge.Room{local_id: room_id} <-
+         %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}} <-
            get_room_for_public_create(object_data),
          Client.join(from_matrix_id, room_id),
          attachments = Map.get(object_data, "attachment"),
@@ -50,7 +50,7 @@ defmodule Kazarma.RoomType.ApUser do
   end
 
   def create_from_ap(%{
-        data: %{"to" => to_list, "actor" => from_id},
+        data: %{"to" => _to_list, "actor" => from_id},
         object: %Object{
           data: %{"id" => object_id, "attributedTo" => attributed_to} = object_data
         }
@@ -70,8 +70,8 @@ defmodule Kazarma.RoomType.ApUser do
          attributed_list = [channel_sender, person_sender],
          {:ok, from_matrix_id} <- Address.ap_id_to_matrix(channel_sender) do
       for attributed <- attributed_list do
-        with {:ok, %Room{local_id: room_id}} <-
-               get_outbox(channel_sender),
+        with {:ok, %Room{local_id: room_id, data: %{"type" => "ap_user"}}} <-
+               get_outbox(attributed),
              Client.join(from_matrix_id, room_id),
              {:ok, event_id} =
                Client.send_message_for_video_object(room_id, from_matrix_id, object_data),
@@ -90,7 +90,7 @@ defmodule Kazarma.RoomType.ApUser do
   def create_from_ap(
         %{
           data: %{
-            "to" => to,
+            "to" => _to,
             "object" => %{"id" => object_id, "attributedTo" => attributed_to_id} = object_data
           }
         } = _activity
@@ -98,7 +98,7 @@ defmodule Kazarma.RoomType.ApUser do
     Logger.debug("Received public Event activity")
 
     with {:ok, attributed_to_matrix_id} <- Kazarma.Address.ap_id_to_matrix(attributed_to_id),
-         {:ok, %MatrixAppService.Bridge.Room{local_id: room_id}} <-
+         {:ok, %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}}} <-
            get_outbox(attributed_to_id),
          Kazarma.Matrix.Client.join(attributed_to_matrix_id, room_id),
          {:ok, event_id} <-
@@ -162,50 +162,93 @@ defmodule Kazarma.RoomType.ApUser do
     end
   end
 
-  def create_outbox(ap_id) do
-    with {:ok, %ActivityPub.Actor{username: username} = actor} <-
-           ActivityPub.Actor.get_cached_by_ap_id(ap_id),
-         {:ok, matrix_id} <-
-           Kazarma.Address.ap_username_to_matrix_id(username, [
-             :activity_pub
-           ]) do
-      create_outbox(actor, matrix_id)
+  def create_outbox(ap_id) when is_binary(ap_id) do
+    case ActivityPub.Actor.get_cached_by_ap_id(ap_id) do
+      {:ok, actor} -> create_outbox(actor)
+      error -> error
     end
   end
 
   def create_outbox(
-        %ActivityPub.Actor{ap_id: ap_id, data: %{"name" => name}} = actor,
-        matrix_id
+        %ActivityPub.Actor{username: username, ap_id: ap_id, data: %{"name" => name}} = actor
       ) do
-    alias = Kazarma.Address.get_matrix_id_localpart(matrix_id)
+    case Bridge.get_room_by_remote_id(ap_id) do
+      nil ->
+        {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub])
+        alias = Kazarma.Address.get_matrix_id_localpart(matrix_id)
 
-    with nil <- Bridge.get_room_by_remote_id(ap_id),
-         {:ok, %{"room_id" => room_id}} <-
-           Kazarma.Matrix.Client.create_outbox_room(
-             matrix_id,
-             [],
-             name,
-             alias
-           ),
-         {:ok, room} <- insert_bridge_room(room_id, actor.ap_id, matrix_id) do
-      relay = Address.relay_actor()
-      ActivityPub.follow(relay, actor)
+        case Kazarma.Matrix.Client.create_outbox_room(
+               matrix_id,
+               [],
+               name,
+               alias
+             ) do
+          {:ok, %{"room_id" => room_id}} ->
+            {:ok, _room} = insert_bridge_room(room_id, actor.ap_id, matrix_id)
 
-      {:ok, room}
-    else
-      {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}} ->
-        {:ok, {room_id, _}} =
-          Kazarma.Matrix.Client.get_alias("##{alias}:#{Kazarma.Address.domain()}")
+          {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}} ->
+            {:ok, {room_id, _}} =
+              Kazarma.Matrix.Client.get_alias("##{alias}:#{Kazarma.Address.domain()}")
 
-        insert_bridge_room(
-          room_id,
-          actor.ap_id,
-          matrix_id
-        )
+            insert_bridge_room(
+              room_id,
+              actor.ap_id,
+              matrix_id
+            )
 
-      %MatrixAppService.Bridge.Room{} = room ->
+            send_emote_bridging_starts(matrix_id, room_id)
+        end
+
+      %MatrixAppService.Bridge.Room{data: %{"type" => "ap_user"}} = room ->
+        {:ok, room}
+
+      %MatrixAppService.Bridge.Room{
+        data: %{"type" => "deactivated_ap_user"} = data,
+        local_id: room_id
+      } = room ->
+        Bridge.update_room(room, %{data: %{data | "type" => :ap_user}})
+
+        {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub])
+
+        send_emote_bridging_starts(matrix_id, room_id)
         {:ok, room}
     end
+  end
+
+  def deactivate_outbox(%ActivityPub.Actor{ap_id: ap_id, username: username}) do
+    case Bridge.get_room_by_remote_id(ap_id) do
+      %MatrixAppService.Bridge.Room{data: data, local_id: room_id} = room ->
+        Bridge.update_room(room, %{data: %{data | "type" => :deactivated_ap_user}})
+
+        {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub])
+
+        send_emote_bridging_stops(matrix_id, room_id)
+
+      _ ->
+        :error
+    end
+  end
+
+  defp send_emote_bridging_starts(matrix_id, room_id) do
+    Kazarma.Matrix.Client.send_tagged_message(
+      room_id,
+      matrix_id,
+      %{
+        "msgtype" => "m.emote",
+        "body" => "has started bridging their public activity"
+      }
+    )
+  end
+
+  defp send_emote_bridging_stops(matrix_id, room_id) do
+    Kazarma.Matrix.Client.send_tagged_message(
+      room_id,
+      matrix_id,
+      %{
+        "msgtype" => "m.emote",
+        "body" => "has stopped bridging their public activity"
+      }
+    )
   end
 
   defp insert_bridge_room(room_id, ap_id, matrix_id) do
