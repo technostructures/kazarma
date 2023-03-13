@@ -195,25 +195,60 @@ defmodule Kazarma.RoomType.ApUser do
               actor.ap_id,
               matrix_id
             )
+
+            send_emote_bridging_starts(matrix_id, room_id)
         end
 
       %MatrixAppService.Bridge.Room{data: %{"type" => "ap_user"}} = room ->
         {:ok, room}
 
-      %MatrixAppService.Bridge.Room{data: %{"type" => "deactivated_ap_user"} = data} = room ->
+      %MatrixAppService.Bridge.Room{
+        data: %{"type" => "deactivated_ap_user"} = data,
+        local_id: room_id
+      } = room ->
         Bridge.update_room(room, %{data: %{data | "type" => :ap_user}})
+
+        {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub])
+
+        send_emote_bridging_starts(matrix_id, room_id)
         {:ok, room}
     end
   end
 
-  def deactivate_outbox(%ActivityPub.Actor{ap_id: ap_id}) do
+  def deactivate_outbox(%ActivityPub.Actor{ap_id: ap_id, username: username}) do
     case Bridge.get_room_by_remote_id(ap_id) do
-      %MatrixAppService.Bridge.Room{data: data} = room ->
+      %MatrixAppService.Bridge.Room{data: data, local_id: room_id} = room ->
         Bridge.update_room(room, %{data: %{data | "type" => :deactivated_ap_user}})
+
+        {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub])
+
+        send_emote_bridging_stops(matrix_id, room_id)
 
       _ ->
         :error
     end
+  end
+
+  defp send_emote_bridging_starts(matrix_id, room_id) do
+    Kazarma.Matrix.Client.send_tagged_message(
+      room_id,
+      matrix_id,
+      %{
+        "msgtype" => "m.emote",
+        "body" => "has started bridging their public activity"
+      }
+    )
+  end
+
+  defp send_emote_bridging_stops(matrix_id, room_id) do
+    Kazarma.Matrix.Client.send_tagged_message(
+      room_id,
+      matrix_id,
+      %{
+        "msgtype" => "m.emote",
+        "body" => "has stopped bridging their public activity"
+      }
+    )
   end
 
   defp insert_bridge_room(room_id, ap_id, matrix_id) do
