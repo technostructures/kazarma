@@ -259,6 +259,13 @@ services:
   #     - ./prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
   #   ports:
   #     - "9090:9090"
+  #
+  # loki:
+  #   image: grafana/loki
+  #   # volumes:
+  #   #   - ./loki.yml:/etc/loki/local-config.yaml
+  #   ports:
+  #     - "3100:3100"
 
   # postgres_synapse:
   #   # image: docker.io/postgres:10-alpine

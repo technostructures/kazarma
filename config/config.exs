@@ -24,12 +24,7 @@ config :kazarma, KazarmaWeb.Endpoint,
 
 # Configures Elixir's Logger
 config :logger,
-  backends: [
-    :console,
-    Sentry.LoggerBackend,
-    {LoggerFileBackend, :event_log},
-    {LoggerFileBackend, :activity_log}
-  ]
+  backends: [:console]
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

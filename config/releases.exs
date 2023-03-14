@@ -17,7 +17,13 @@ log_level =
     _ -> :info
   end
 
-config :logger, level: log_level
+config :logger,
+  level: log_level,
+  backends: [
+    :console,
+    Sentry.LoggerBackend,
+    Svadilfari
+  ]
 
 config :logger, Sentry.LoggerBackend,
   # Also send warn messages

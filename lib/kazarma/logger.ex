@@ -133,6 +133,10 @@ defmodule Kazarma.Logger do
     |> Logger.debug()
   end
 
+  def derive_level(level, _message, {_date, _time}, _metadata) do
+    [{"level", Atom.to_string(level)}]
+  end
+
   defp activity_type(%{data: %{"type" => type}}) when is_binary(type), do: type
   defp activity_type(_), do: nil
 

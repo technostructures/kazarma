@@ -169,7 +169,7 @@ FROM compile_app AS mix_release
 
 WORKDIR /src
 
-COPY --link --from=digest /src/priv/static ./priv/static
+COPY --link --from=digest /src/priv ./priv
 
 RUN mix release --path /app --quiet
 

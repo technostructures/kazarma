@@ -93,12 +93,13 @@ defmodule Kazarma.PromEx do
       {:prom_ex, "phoenix.json"},
       {:prom_ex, "ecto.json"},
       {:prom_ex, "oban.json"},
-      {:prom_ex, "phoenix_live_view.json"}
+      {:prom_ex, "phoenix_live_view.json"},
       # {:prom_ex, "absinthe.json"},
       # {:prom_ex, "broadway.json"},
 
       # Add your dashboard definitions here with the format: {:otp_app, "path_in_priv"}
-      # {:kazarma, "/grafana_dashboards/user_metrics.json"}
+      {:kazarma, "dashboard_metrics.json"},
+      {:kazarma, "dashboard_logs.json"}
     ]
   end
 end
