@@ -4,18 +4,18 @@ defmodule Kazarma.ActivityPub.Adapter do
   @moduledoc """
   Implementation of `ActivityPub.Adapter`.
   """
-  alias Kazarma.Logger
   use Kazarma.Config
   @behaviour ActivityPub.Adapter
 
   alias Kazarma.Address
   alias Kazarma.Bridge
-  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias ActivityPub.Actor
   alias ActivityPub.Object
   alias KazarmaWeb.Endpoint
   alias KazarmaWeb.Router.Helpers, as: Routes
+
+  require Logger
 
   @impl ActivityPub.Adapter
   def actor_url(actor) do
@@ -107,7 +107,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           data: %{}
         })
 
-      Telemetry.log_created_puppet(user,
+      Kazarma.Logger.log_created_puppet(user,
         type: :matrix
       )
 
@@ -171,7 +171,7 @@ defmodule Kazarma.ActivityPub.Adapter do
               }
             }
           } ->
-            Telemetry.log_received_activity(activity, label: "Chat")
+            Kazarma.Logger.log_received_activity(activity, label: "Chat")
             Kazarma.RoomType.Chat.create_from_ap(activity)
 
           %{
@@ -184,7 +184,7 @@ defmodule Kazarma.ActivityPub.Adapter do
               }
             }
           } ->
-            Telemetry.log_received_activity(activity, label: "Direct message")
+            Kazarma.Logger.log_received_activity(activity, label: "Direct message")
             Kazarma.RoomType.DirectMessage.create_from_ap(activity)
 
           %{
@@ -197,7 +197,7 @@ defmodule Kazarma.ActivityPub.Adapter do
               }
             }
           } ->
-            Telemetry.log_received_activity(activity, label: "To collection")
+            Kazarma.Logger.log_received_activity(activity, label: "To collection")
             Kazarma.RoomType.Collection.create_from_ap(activity)
         end
       end
@@ -230,7 +230,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Telemetry.log_received_activity(activity)
+    Kazarma.Logger.log_received_activity(activity)
 
     with {:ok, sender_matrix_id} <- Address.ap_id_to_matrix(sender_ap_id),
          %BridgeEvent{local_id: event_id, room_id: room_id} <-
@@ -266,7 +266,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Telemetry.log_received_activity(activity)
+    Kazarma.Logger.log_received_activity(activity)
 
     with {:ok, invitee_matrix_id} <- Address.ap_id_to_matrix(invitee),
          {:ok,
@@ -302,7 +302,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Telemetry.log_received_activity(activity, label: "Follow")
+    Kazarma.Logger.log_received_activity(activity, label: "Follow")
 
     case ActivityPub.Actor.get_cached_by_ap_id(followed) do
       {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
@@ -333,7 +333,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Telemetry.log_received_activity(activity, label: "Unfollow")
+    Kazarma.Logger.log_received_activity(activity, label: "Unfollow")
 
     case ActivityPub.Actor.get_cached_by_ap_id(followed) do
       {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
@@ -350,7 +350,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   def handle_activity(%Object{} = activity) do
-    Telemetry.log_received_activity(activity, label: "Unhandled activity")
+    Kazarma.Logger.log_received_activity(activity, label: "Unhandled activity")
 
     :ok
     # raise "handle_activity/1: not implemented"

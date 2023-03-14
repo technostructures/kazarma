@@ -7,12 +7,12 @@ defmodule Kazarma.ActivityPub.Actor do
   alias ActivityPub.Actor
   alias Kazarma.Address
   alias Kazarma.Bridge
-  alias Kazarma.Logger
-  alias Kazarma.Telemetry
   alias KazarmaWeb.Endpoint
   alias KazarmaWeb.Router.Helpers, as: Routes
 
   import Ecto.Query
+
+  require Logger
 
   def build_actor_from_data(
         %{"id" => ap_id, "preferredUsername" => local_username} = ap_data,
@@ -131,7 +131,7 @@ defmodule Kazarma.ActivityPub.Actor do
              remote_id: actor.ap_id,
              data: %{"ap_data" => actor.data, "keys" => actor.keys}
            }) do
-      Telemetry.log_created_puppet(user,
+      Kazarma.Logger.log_created_puppet(user,
         type: :ap
       )
 
@@ -165,7 +165,7 @@ defmodule Kazarma.ActivityPub.Actor do
                      remote_id: actor.ap_id,
                      data: %{"ap_data" => actor.data, "keys" => actor.keys}
                    }) do
-              Telemetry.log_created_puppet(user,
+              Kazarma.Logger.log_created_puppet(user,
                 type: :ap
               )
 

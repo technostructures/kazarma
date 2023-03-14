@@ -8,7 +8,6 @@ defmodule Kazarma.RoomType.Chat do
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Address
   alias Kazarma.Bridge
-  alias Kazarma.Telemetry
 
   def create_from_ap(
         %{
@@ -37,7 +36,7 @@ defmodule Kazarma.RoomType.Chat do
              remote_id: object_id,
              room_id: room_id
            }) do
-      Telemetry.log_bridged_activity(activity,
+      Kazarma.Logger.log_bridged_activity(activity,
         room_type: :chat,
         room_id: room_id,
         obj_type: "ChatMessage"
@@ -57,7 +56,7 @@ defmodule Kazarma.RoomType.Chat do
       type: "ChatMessage"
     )
 
-    Telemetry.log_bridged_event(event, room_type: :chat)
+    Kazarma.Logger.log_bridged_event(event, room_type: :chat)
   end
 
   def handle_puppet_invite(user_id, sender_id, room_id) do
@@ -75,7 +74,7 @@ defmodule Kazarma.RoomType.Chat do
   defp create_bridge_room(user_id, room_id) do
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),
          {:ok, room} <- insert_bridge_room(room_id, actor.ap_id) do
-      Telemetry.log_created_room(room,
+      Kazarma.Logger.log_created_room(room,
         room_type: :chat,
         room_id: room_id
       )
@@ -94,7 +93,7 @@ defmodule Kazarma.RoomType.Chat do
          {:ok, %{"room_id" => room_id}} <-
            Kazarma.Matrix.Client.create_direct_room(from_matrix_id, to_matrix_id),
          {:ok, room} <- insert_bridge_room(room_id, from_ap_id) do
-      Telemetry.log_created_room(room,
+      Kazarma.Logger.log_created_room(room,
         room_type: :chat,
         room_id: room_id
       )

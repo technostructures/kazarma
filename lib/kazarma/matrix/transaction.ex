@@ -6,11 +6,11 @@ defmodule Kazarma.Matrix.Transaction do
   """
   @behaviour MatrixAppService.Adapter.Transaction
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Bridge
-  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Room
   alias MatrixAppService.Event
+
+  require Logger
 
   @impl MatrixAppService.Adapter.Transaction
   def new_event(
@@ -19,7 +19,7 @@ defmodule Kazarma.Matrix.Transaction do
           content: %{"creator" => _creator_id}
         } = event
       ) do
-    Telemetry.log_received_event(event, label: "Room creation")
+    Kazarma.Logger.log_received_event(event, label: "Room creation")
   end
 
   def new_event(
@@ -28,7 +28,7 @@ defmodule Kazarma.Matrix.Transaction do
           content: %{"name" => _name}
         } = event
       ) do
-    Telemetry.log_received_event(event, label: "Name change")
+    Kazarma.Logger.log_received_event(event, label: "Name change")
   end
 
   def new_event(
@@ -41,7 +41,7 @@ defmodule Kazarma.Matrix.Transaction do
           type: "m.room.message"
         } = event
       ) do
-    Telemetry.log_received_event(event, label: "Replace event")
+    Kazarma.Logger.log_received_event(event, label: "Replace event")
   end
 
   def new_event(%Event{type: "m.room.message", content: content}) when content == %{}, do: :ok
@@ -54,7 +54,7 @@ defmodule Kazarma.Matrix.Transaction do
           content: %{"body" => "!kazarma" <> rest, "msgtype" => "m.text"}
         } = event
       ) do
-    Telemetry.log_received_event(event, label: "Bot command")
+    Kazarma.Logger.log_received_event(event, label: "Bot command")
 
     Kazarma.Commands.handle_command(rest, room_id, user_id)
 
@@ -62,7 +62,7 @@ defmodule Kazarma.Matrix.Transaction do
   end
 
   def new_event(%Event{type: "m.room.message", room_id: room_id} = event) do
-    Telemetry.log_received_event(event, label: "Message")
+    Kazarma.Logger.log_received_event(event, label: "Message")
 
     if !is_tagged_message(event) do
       case Bridge.get_room_by_local_id(room_id) do
@@ -103,7 +103,7 @@ defmodule Kazarma.Matrix.Transaction do
         } = event
       ) do
     if !is_tagged_redact(event) do
-      Telemetry.log_received_event(event, label: "Redaction")
+      Kazarma.Logger.log_received_event(event, label: "Redaction")
 
       Kazarma.ActivityPub.Activity.forward_redaction(event)
     end
@@ -120,7 +120,7 @@ defmodule Kazarma.Matrix.Transaction do
           state_key: user_id
         } = event
       ) do
-    Telemetry.log_received_event(event, label: "Membership")
+    Kazarma.Logger.log_received_event(event, label: "Membership")
 
     case Kazarma.Address.parse_matrix_id(user_id) do
       {:activity_pub, _sub_localpart, _sub_domain} ->
@@ -143,7 +143,7 @@ defmodule Kazarma.Matrix.Transaction do
   end
 
   def new_event(%Event{} = event) do
-    Telemetry.log_received_event(event, label: "Unhandled")
+    Kazarma.Logger.log_received_event(event, label: "Unhandled")
   end
 
   defp accept_appservice_bot_invitation(user_id, room_id, %{

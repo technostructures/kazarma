@@ -12,7 +12,6 @@ defmodule Kazarma.RoomType.DirectMessage do
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
-  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Room
 
   def create_from_ap(
@@ -47,7 +46,7 @@ defmodule Kazarma.RoomType.DirectMessage do
              remote_id: object_id,
              room_id: room_id
            }) do
-      Telemetry.log_bridged_activity(activity,
+      Kazarma.Logger.log_bridged_activity(activity,
         room_type: :direct_message,
         room_id: room_id,
         obj_type: "Note"
@@ -65,7 +64,7 @@ defmodule Kazarma.RoomType.DirectMessage do
            insert_bridge_room(room_id, conversation, [
              creator | invites
            ]) do
-      Telemetry.log_created_room(room,
+      Kazarma.Logger.log_created_room(room,
         room_type: :direct_message,
         room_id: room_id
       )
@@ -99,7 +98,7 @@ defmodule Kazarma.RoomType.DirectMessage do
       fallback_reply: fallback_reply
     )
 
-    Telemetry.log_bridged_event(event, room_type: :direct_message)
+    Kazarma.Logger.log_bridged_event(event, room_type: :direct_message)
   end
 
   def handle_puppet_invite(matrix_id, inviter_id, room_id) do
@@ -131,7 +130,7 @@ defmodule Kazarma.RoomType.DirectMessage do
               matrix_id
             ])
 
-          Telemetry.log_created_room(room,
+          Kazarma.Logger.log_created_room(room,
             room_type: :direct_message,
             room_id: room_id
           )

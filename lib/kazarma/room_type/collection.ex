@@ -13,7 +13,6 @@ defmodule Kazarma.RoomType.Collection do
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
-  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
 
@@ -46,7 +45,7 @@ defmodule Kazarma.RoomType.Collection do
              remote_id: object_id,
              room_id: room_id
            }) do
-      Telemetry.log_bridged_activity(activity,
+      Kazarma.Logger.log_bridged_activity(activity,
         room_type: :collection,
         room_id: room_id,
         obj_type: "Note"
@@ -62,7 +61,7 @@ defmodule Kazarma.RoomType.Collection do
            Client.create_multiuser_room(matrix_id, [], name: name),
          {:ok, room} <-
            insert_bridge_room(room_id, members_ap_id) do
-      Telemetry.log_created_room(room,
+      Kazarma.Logger.log_created_room(room,
         room_type: :collection,
         room_id: room_id
       )
@@ -84,7 +83,7 @@ defmodule Kazarma.RoomType.Collection do
       to: [room.remote_id]
     )
 
-    Telemetry.log_bridged_event(event, room_type: :collection)
+    Kazarma.Logger.log_bridged_event(event, room_type: :collection)
   end
 
   # @TODO destructure event in Matrix.Transaction

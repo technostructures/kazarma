@@ -5,7 +5,7 @@ defmodule Kazarma.Matrix.Room do
   Implementation of `MatrixAppService.Adapter.Room`.
   """
   @behaviour MatrixAppService.Adapter.Room
-  alias Kazarma.Logger
+  require Logger
 
   @impl MatrixAppService.Adapter.Room
   def query_alias(room_alias) do

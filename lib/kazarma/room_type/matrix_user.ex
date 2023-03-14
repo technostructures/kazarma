@@ -12,7 +12,6 @@ defmodule Kazarma.RoomType.MatrixUser do
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
-  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Room
 
   def create_from_event(event, room) do
@@ -35,7 +34,7 @@ defmodule Kazarma.RoomType.MatrixUser do
       )
     end
 
-    Telemetry.log_bridged_event(event, room_type: :matrix_user)
+    Kazarma.Logger.log_bridged_event(event, room_type: :matrix_user)
   end
 
   def join(actor, follower_ap_id) do
@@ -55,7 +54,7 @@ defmodule Kazarma.RoomType.MatrixUser do
         {:ok, %Actor{ap_id: ap_id}} ->
           {:ok, room} = insert_bridge_room(room_id, user_id, ap_id)
 
-          Telemetry.log_created_room(room,
+          Kazarma.Logger.log_created_room(room,
             room_type: :matrix_user,
             room_id: room_id
           )

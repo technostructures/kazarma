@@ -7,7 +7,6 @@ defmodule Kazarma.ActivityPub.Activity do
   alias ActivityPub.Object
   alias Kazarma.Address
   alias Kazarma.Bridge
-  alias Kazarma.Telemetry
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias Kazarma.Matrix.Client
   alias MatrixAppService.Event
@@ -116,7 +115,7 @@ defmodule Kazarma.ActivityPub.Activity do
 
       %Room{data: %{"type" => room_type}} = Bridge.get_room_by_local_id(room_id)
 
-      Telemetry.log_bridged_event(event,
+      Kazarma.Logger.log_bridged_event(event,
         room_type: room_type
       )
 
