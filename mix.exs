@@ -18,7 +18,8 @@ defmodule Kazarma.MixProject do
       docs: [
         assets: "doc_diagrams"
       ],
-      test_coverage: [tool: :covertool, summary: true]
+      test_coverage: [tool: :covertool, summary: true],
+      releases: [kazarma: [applications: [svadilfari: :permanent, prom_ex: :permanent]]]
     ]
   end
 

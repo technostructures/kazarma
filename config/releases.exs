@@ -133,17 +133,45 @@ log_level =
     _ -> :info
   end
 
+sentry_enabled = System.get_env("SENTRY_ENABLED") == "true"
+loki_enabled = System.get_env("LOKI_ENABLED") == "true"
+metrics_enabled = System.get_env("METRICS_ENABLED") == "true"
+grafana_enabled = System.get_env("GRAFANA_ENABLED") == "true"
+
+logger_backends =
+  case {sentry_enabled, loki_enabled} do
+    {true, true} ->
+      [
+        :console,
+        Sentry.LoggerBackend,
+        Svadilfari
+      ]
+
+    {true, false} ->
+      [
+        :console,
+        Sentry.LoggerBackend
+      ]
+
+    {false, true} ->
+      [
+        :console,
+        Svadilfari
+      ]
+
+    {false, false} ->
+      [
+        :console
+      ]
+  end
+
 config :logger,
   level: log_level,
-  backends: [
-    :console,
-    Sentry.LoggerBackend,
-    Svadilfari
-  ]
+  backends: logger_backends
 
 config :logger, Sentry.LoggerBackend,
   # Also send warn messages
-  level: :warn,
+  level: log_level,
   # Send messages from Plug/Cowboy
   excluded_domains: [],
   # Include metadata added with `Logger.metadata([foo_bar: "value"])`
@@ -161,17 +189,50 @@ if sentry_dsn do
     enable_source_code_context: true,
     root_source_code_path: File.cwd!(),
     tags: %{
-      env: "production"
+      env: release_level
     },
     included_environments: [release_level]
 end
 
+prom_ex_grafana =
+  if grafana_enabled do
+    [
+      host: System.fetch_env!("GRAFANA_HOST"),
+      auth_token: System.fetch_env!("GRAFANA_TOKEN"),
+      upload_dashboards_on_start: true,
+      folder_name: "Kazarma",
+      annotate_app_lifecycle: true
+    ]
+  else
+    :disabled
+  end
+
 config :kazarma, Kazarma.PromEx,
-  disabled: System.get_env("ENABLE_PROM_EX") != "true",
+  disabled: !metrics_enabled,
   manual_metrics_start_delay: :no_delay,
   drop_metrics_groups: [],
-  grafana: :disabled,
+  grafana: prom_ex_grafana,
   metrics_server: :disabled
+
+org_id = System.get_env("LOKI_ORG_ID")
+
+loki_client_opts = if org_id, do: [org_id: org_id], else: []
+
+if loki_enabled do
+  config :logger, :svadilfari,
+    metadata: [:request_id],
+    max_buffer: 10,
+    client: [
+      url: System.fetch_env!("LOKI_HOST"),
+      opts: loki_client_opts
+    ],
+    format: "\n[$metadata] $message\n",
+    labels: [
+      {"service", "kazarma"},
+      {"env", release_level}
+    ],
+    derived_labels: {Kazarma.Logger, :derive_level}
+end
 
 # ## Using releases (Elixir v1.9+)
 #
