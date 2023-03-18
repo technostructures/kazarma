@@ -150,12 +150,19 @@ prom_ex_grafana =
     :disabled
   end
 
+prom_ex_server =
+  if System.get_env("METRICS_PORT") do
+    [port: String.to_integer(System.get_env("METRICS_PORT"))]
+  else
+    :disabled
+  end
+
 config :kazarma, Kazarma.PromEx,
   disabled: !metrics_enabled,
   manual_metrics_start_delay: :no_delay,
   drop_metrics_groups: [],
   grafana: prom_ex_grafana,
-  metrics_server: :disabled
+  metrics_server: prom_ex_server
 
 org_id = System.get_env("LOKI_ORG_ID")
 
