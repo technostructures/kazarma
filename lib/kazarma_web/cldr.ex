@@ -8,6 +8,5 @@ defmodule KazarmaWeb.Cldr do
   use Cldr,
     providers: [Cldr.Number, Cldr.Calendar, Cldr.DateTime],
     locales: ["en", "fr"],
-    default_locale: "en",
     gettext: KazarmaWeb.Gettext
 end
