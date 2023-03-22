@@ -14,15 +14,17 @@ defmodule KazarmaWeb.Actor do
   end
 
   @impl true
-  def mount(%{"localpart" => localpart, "server" => "-"} = params, session, socket) do
+  def mount(%{"localpart" => localpart, "server" => "-"}, session, socket) do
     mount(%{"username" => "#{localpart}@#{Kazarma.Address.domain()}"}, session, socket)
   end
 
-  def mount(%{"localpart" => localpart, "server" => server} = params, session, socket) do
+  def mount(%{"localpart" => localpart, "server" => server}, session, socket) do
     mount(%{"username" => "#{localpart}@#{server}"}, session, socket)
   end
 
-  def mount(%{"username" => username}, _session, socket) do
+  def mount(%{"username" => username}, session, socket) do
+    put_session_locale(session)
+
     {:ok, actor} = get_actor(username)
 
     public_activities =

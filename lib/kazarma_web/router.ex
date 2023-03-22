@@ -25,7 +25,9 @@ defmodule KazarmaWeb.Router do
 
     plug Cldr.Plug.PutLocale,
       apps: [cldr: KazarmaWeb.Cldr, gettext: KazarmaWeb.Gettext],
-      from: [:query, :path, :body, :cookie, :accept_language]
+      from: [:query, :path, :body, :session]
+
+    plug Cldr.Plug.PutSession
 
     plug Cldr.Plug.AcceptLanguage,
       cldr_backend: KazarmaWeb.Cldr

@@ -43,6 +43,9 @@ config :mime, :types, %{
   "application/ld+json" => ["activity+json"]
 }
 
+config :ex_cldr,
+  default_backend: KazarmaWeb.Cldr
+
 # ActivityPub configuration
 config :activity_pub, :adapter, Kazarma.ActivityPub.Adapter
 config :activity_pub, :repo, Kazarma.Repo

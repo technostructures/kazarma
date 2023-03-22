@@ -1,0 +1,15 @@
+<div class="dropdown dropdown-hover">
+  <label tabindex="0" class="p-2 lg:p-4">
+    <%= String.upcase(@current_locale) %>
+  </label>
+  <ul tabindex="0" class="dropdown-content menu mt-2 p-2 shadow bg-base-100 rounded-box">
+    <li :for={locale <- List.delete(@locales, @current_locale)}>
+      <%= link(
+        [
+          to: "?locale=#{locale}"
+        ],
+        do: String.upcase(locale)
+      ) %>
+    </li>
+  </ul>
+</div>

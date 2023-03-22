@@ -17,9 +17,11 @@ defmodule KazarmaWeb.Object do
 
   def mount(
         %ActivityPub.Object{data: %{"actor" => actor_id, "id" => ap_id}} = object,
-        _session,
+        session,
         socket
       ) do
+    put_session_locale(session)
+
     if is_bridged(object) do
       {:ok, actor} = ActivityPub.Actor.get_or_fetch_by_ap_id(actor_id)
 

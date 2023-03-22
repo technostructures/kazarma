@@ -12,7 +12,7 @@ msgstr ""
 
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:73
-#: lib/kazarma_web/live/index.ex:30
+#: lib/kazarma_web/live/index.ex:33
 #: lib/kazarma_web/live/object.ex:64
 #, elixir-autogen, elixir-format
 msgid "User not found"
@@ -94,8 +94,8 @@ msgstr ""
 msgid "their ActivityPub username, in the form user@server;"
 msgstr ""
 
-#: lib/kazarma_web/components/layouts/app.html.heex:19
-#: lib/kazarma_web/components/layouts/app.html.heex:20
+#: lib/kazarma_web/components/layouts/app.html.heex:23
+#: lib/kazarma_web/components/layouts/app.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "Help"
 msgstr ""
