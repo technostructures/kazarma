@@ -183,3 +183,14 @@ if loki_enabled do
     ],
     derived_labels: {Kazarma.Logger, :derive_level}
 end
+
+default_locale = System.get_env("DEFAULT_LOCALE")
+
+if default_locale in ["fr", "es"] do
+  config :gettext, :default_locale, default_locale
+
+  config :ex_cldr,
+    default_locale: default_locale
+
+  config :kazarma, KazarmaWeb.Gettext, default_locale: default_locale
+end

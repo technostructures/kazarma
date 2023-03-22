@@ -4,11 +4,12 @@
 defmodule KazarmaWeb.Index do
   @moduledoc false
 
-  alias Kazarma.Address
   use KazarmaWeb, :live_view
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
+    put_session_locale(session)
+
     {:ok,
      socket
      |> assign(help: Kazarma.Config.frontpage_help())

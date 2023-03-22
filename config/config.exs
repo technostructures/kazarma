@@ -43,6 +43,12 @@ config :mime, :types, %{
   "application/ld+json" => ["activity+json"]
 }
 
+config :gettext, :default_locale, "en"
+
+config :ex_cldr,
+  default_backend: KazarmaWeb.Cldr,
+  default_locale: "en"
+
 # ActivityPub configuration
 config :activity_pub, :adapter, Kazarma.ActivityPub.Adapter
 config :activity_pub, :repo, Kazarma.Repo
@@ -83,7 +89,7 @@ config :kazarma, Oban,
 config :kazarma, :matrix, client: MatrixAppService.Client
 config :kazarma, :activity_pub, server: ActivityPub
 
-config :kazarma, KazarmaWeb.Gettext, default_locale: "en", locales: ~w(en fr)
+config :kazarma, KazarmaWeb.Gettext, default_locale: "en", locales: ~w(en fr es)
 
 # @TODO not implemented
 config :kazarma, bridge_remote_matrix_users: false

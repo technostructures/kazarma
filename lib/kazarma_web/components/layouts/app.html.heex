@@ -9,16 +9,20 @@
       kazarma
     </.link>
   </div>
-  <div class="flex-grow lg:max-w-3xl m-2 mt-0 lg:mt-2 lg:mx-auto lg:inset-x-0 order-3 sm:order-2">
+  <div class="flex-grow lg:max-w-3xl m-2 mt-0 lg:mt-2 lg:mx-auto lg:inset-x-0 order-4 sm:order-2">
     <.search socket={@socket} />
   </div>
-  <div class="flex-none m-2 lg:m-4 lg:flex order-2 sm:order-3">
+  <div class="flex-none lg:flex order-3 sm:order-4">
+    <._locale_dropdown
+      current_locale={Gettext.get_locale(KazarmaWeb.Gettext)}
+      locales={Gettext.known_locales(KazarmaWeb.Gettext)}
+    />
     <%= link [
           to: "https://docs.kazar.ma",
           target: "_blank",
           aria_label: gettext("Help"),
           title: gettext("Help"),
-          class: "text-2xl font-bold"
+          class: "p-2 lg:p-4 text-2xl font-bold"
 ] do %>
       <KazarmaWeb.Components.Icon.help_icon />
     <% end %>

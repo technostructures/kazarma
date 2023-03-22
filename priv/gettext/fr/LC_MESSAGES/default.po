@@ -9,48 +9,48 @@
 msgid ""
 msgstr ""
 "Language: fr\n"
-"Plural-Forms: nplurals=2\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 #: lib/kazarma_web/controllers/search_controller.ex:17
-#: lib/kazarma_web/live/actor.ex:57
-#: lib/kazarma_web/live/index.ex:28
-#: lib/kazarma_web/live/object.ex:46
+#: lib/kazarma_web/live/actor.ex:73
+#: lib/kazarma_web/live/index.ex:33
+#: lib/kazarma_web/live/object.ex:64
 #, elixir-autogen, elixir-format
 msgid "User not found"
 msgstr "Utilisateur non trouvé"
 
-#: lib/kazarma_web/live/components/button.ex:14
-#: lib/kazarma_web/live/components/button.ex:15
-#: lib/kazarma_web/live/components/profile.ex:94
-#: lib/kazarma_web/live/components/profile.ex:95
+#: lib/kazarma_web/components/button.ex:14
+#: lib/kazarma_web/components/button.ex:15
+#: lib/kazarma_web/components/profile.ex:55
 #, elixir-autogen, elixir-format
 msgid "Copy"
 msgstr "Copier"
 
-#: lib/kazarma_web/live/components/profile.ex:55
-#: lib/kazarma_web/live/components/profile.ex:56
+#: lib/kazarma_web/components/object.ex:70
+#: lib/kazarma_web/components/object.ex:71
+#: lib/kazarma_web/components/profile.ex:45
 #, elixir-autogen, elixir-format
 msgid "Open"
 msgstr "Ouvrir"
 
-#: lib/kazarma_web/templates/layout/_search.html.heex:29
-#: lib/kazarma_web/templates/layout/_search.html.heex:30
+#: lib/kazarma_web/components/layouts/search.html.heex:29
+#: lib/kazarma_web/components/layouts/search.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr "Rechercher"
 
-#: lib/kazarma_web/live/components/object.ex:36
-#: lib/kazarma_web/live/components/profile.ex:18
+#: lib/kazarma_web/components/object.ex:97
+#: lib/kazarma_web/components/profile.ex:74
 #, elixir-autogen, elixir-format
 msgid "%{actor_name}'s avatar"
 msgstr "Avatar de %{actor_name}"
 
-#: lib/kazarma_web/templates/layout/root.html.heex:16
+#: lib/kazarma_web/components/layouts/app.html.heex:1
 #, elixir-autogen, elixir-format
 msgid "Skip to content"
 msgstr "Aller au contenu"
 
-#: lib/kazarma_web/templates/layout/root.html.heex:17
+#: lib/kazarma_web/components/layouts/app.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "Skip to search"
 msgstr "Aller à la recherche"
@@ -95,15 +95,50 @@ msgstr ""
 msgid "their ActivityPub username, in the form user@server;"
 msgstr ""
 
-#: lib/kazarma_web/templates/layout/root.html.heex:34
-#: lib/kazarma_web/templates/layout/root.html.heex:35
+#: lib/kazarma_web/components/layouts/app.html.heex:23
+#: lib/kazarma_web/components/layouts/app.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "Help"
 msgstr ""
 
-#: lib/kazarma_web/templates/layout/_search.html.heex:13
-#: lib/kazarma_web/templates/layout/_search.html.heex:14
-#: lib/kazarma_web/templates/layout/_search.html.heex:23
+#: lib/kazarma_web/components/layouts/search.html.heex:13
+#: lib/kazarma_web/components/layouts/search.html.heex:14
+#: lib/kazarma_web/components/layouts/search.html.heex:23
 #, elixir-autogen, elixir-format
 msgid "Matrix or ActivityPub identifier"
+msgstr ""
+
+#: lib/kazarma_web/components/core_components.ex:480
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr ""
+
+#: lib/kazarma_web/components/layouts/_log_level.html.heex:11
+#, elixir-autogen, elixir-format
+msgid "Bridge logs can include metadata"
+msgstr ""
+
+#: lib/kazarma_web/components/layouts/_log_level.html.heex:14
+#, elixir-autogen, elixir-format
+msgid "Bridge logs can include metadata and content"
+msgstr ""
+
+#: lib/kazarma_web/live/actor.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "No activity yet."
+msgstr ""
+
+#: lib/kazarma_web/live/actor.html.heex:15
+#, elixir-autogen, elixir-format
+msgid "They can follow the relay actor to start being bridged over Matrix: %{relay}."
+msgstr ""
+
+#: lib/kazarma_web/live/actor.html.heex:14
+#, elixir-autogen, elixir-format
+msgid "This user is not bridged."
+msgstr ""
+
+#: lib/kazarma_web/components/core_components.ex:83
+#, elixir-autogen, elixir-format
+msgid "close"
 msgstr ""
