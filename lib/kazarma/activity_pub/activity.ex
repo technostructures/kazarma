@@ -6,11 +6,11 @@ defmodule Kazarma.ActivityPub.Activity do
   """
   alias ActivityPub.Object
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias Kazarma.Matrix.Client
   alias MatrixAppService.Event
+  alias MatrixAppService.Bridge.Room
 
   import Ecto.Query
 
@@ -89,20 +89,18 @@ defmodule Kazarma.ActivityPub.Activity do
       object: object
     }
 
-    Logger.ap_output(object)
-
     {:ok, _activity} = Kazarma.ActivityPub.create(create_params)
   end
 
-  def forward_redaction(%Event{
-        room_id: room_id,
-        event_id: delete_event_id,
-        sender: sender_id,
-        type: "m.room.redaction",
-        redacts: event_id
-      }) do
-    Logger.debug("Forwarding deletion")
-
+  def forward_redaction(
+        %Event{
+          room_id: room_id,
+          event_id: delete_event_id,
+          sender: sender_id,
+          type: "m.room.redaction",
+          redacts: event_id
+        } = event
+      ) do
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(sender_id),
          %BridgeEvent{remote_id: remote_id} <-
            Bridge.get_event_by_local_id(event_id),
@@ -114,6 +112,12 @@ defmodule Kazarma.ActivityPub.Activity do
         remote_id: delete_remote_id,
         room_id: room_id
       })
+
+      %Room{data: %{"type" => room_type}} = Bridge.get_room_by_local_id(room_id)
+
+      Kazarma.Logger.log_bridged_event(event,
+        room_type: room_type
+      )
 
       :ok
     end
@@ -138,7 +142,7 @@ defmodule Kazarma.ActivityPub.Activity do
 
   def make_in_reply_to(_), do: nil
 
-  def make_context(%Object{data: %{"context" => context}}, actor), do: context
+  def make_context(%Object{data: %{"context" => context}}, _actor), do: context
 
   def make_context(_, actor), do: ActivityPub.Utils.generate_context_id(actor)
 

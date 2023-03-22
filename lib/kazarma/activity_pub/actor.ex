@@ -7,11 +7,12 @@ defmodule Kazarma.ActivityPub.Actor do
   alias ActivityPub.Actor
   alias Kazarma.Address
   alias Kazarma.Bridge
-  alias Kazarma.Logger
   alias KazarmaWeb.Endpoint
   alias KazarmaWeb.Router.Helpers, as: Routes
 
   import Ecto.Query
+
+  require Logger
 
   def build_actor_from_data(
         %{"id" => ap_id, "preferredUsername" => local_username} = ap_data,
@@ -124,12 +125,16 @@ defmodule Kazarma.ActivityPub.Actor do
 
     with nil <- Bridge.get_user_by_local_id(matrix_id),
          actor <- build_relay_actor(),
-         {:ok, _} <-
+         {:ok, user} <-
            Bridge.create_user(%{
              local_id: matrix_id,
              remote_id: actor.ap_id,
              data: %{"ap_data" => actor.data, "keys" => actor.keys}
            }) do
+      Kazarma.Logger.log_created_puppet(user,
+        type: :ap
+      )
+
       {:ok, actor}
     else
       %{data: %{"ap_data" => ap_data, "keys" => keys}} ->
@@ -141,8 +146,6 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_puppet_actor(username) do
-    matrix_id = Address.relay_matrix_id()
-
     case Kazarma.Address.ap_username_to_matrix_id(username, [:remote_matrix, :local_matrix]) do
       {:ok, matrix_id} ->
         case Bridge.get_user_by_local_id(matrix_id) do
@@ -156,12 +159,16 @@ defmodule Kazarma.ActivityPub.Actor do
             with {:ok, profile} <- Kazarma.Matrix.Client.get_profile(matrix_id),
                  Logger.debug("user found in Matrix"),
                  actor <- build_actor_from_profile(username, profile),
-                 {:ok, _} <-
+                 {:ok, user} <-
                    Bridge.create_user(%{
                      local_id: matrix_id,
                      remote_id: actor.ap_id,
                      data: %{"ap_data" => actor.data, "keys" => actor.keys}
                    }) do
+              Kazarma.Logger.log_created_puppet(user,
+                type: :ap
+              )
+
               {:ok, actor}
             else
               _ -> {:error, :not_found}

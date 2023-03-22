@@ -8,9 +8,7 @@ defmodule Kazarma.RoomType.MatrixUser do
   Users can declare a public room as an outbox room by using the appservice bot
   """
   alias ActivityPub.Actor
-  alias ActivityPub.Object
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
@@ -35,6 +33,8 @@ defmodule Kazarma.RoomType.MatrixUser do
         additional_mentions: [receiver]
       )
     end
+
+    Kazarma.Logger.log_bridged_event(event, room_type: :matrix_user)
   end
 
   def join(actor, follower_ap_id) do
@@ -52,7 +52,14 @@ defmodule Kazarma.RoomType.MatrixUser do
     if Client.is_administrator(room_id, user_id) do
       case Address.matrix_id_to_actor(user_id) do
         {:ok, %Actor{ap_id: ap_id}} ->
-          insert_bridge_room(room_id, user_id, ap_id)
+          {:ok, room} = insert_bridge_room(room_id, user_id, ap_id)
+
+          Kazarma.Logger.log_created_room(room,
+            room_type: :matrix_user,
+            room_id: room_id
+          )
+
+          {:ok, room}
 
         _ ->
           nil

@@ -10,26 +10,25 @@ defmodule Kazarma.RoomType.Collection do
   """
   alias ActivityPub.Object
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
 
-  def create_from_ap(%{
-        data: %{"actor" => from},
-        object: %Object{
-          data:
-            %{
-              "id" => object_id,
-              "attributedTo" => group_ap_id,
-              "to" => [group_members]
-            } = object_data
-        }
-      }) do
-    Logger.debug("Received private Note activity (Mobilizon style)")
-
+  def create_from_ap(
+        %{
+          data: %{"actor" => from},
+          object: %Object{
+            data:
+              %{
+                "id" => object_id,
+                "attributedTo" => group_ap_id,
+                "to" => [group_members]
+              } = object_data
+          }
+        } = activity
+      ) do
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
          {:ok, %{username: group_username, data: %{"name" => group_name}}} <-
            ActivityPub.Actor.get_cached_by_ap_id(group_ap_id),
@@ -46,10 +45,13 @@ defmodule Kazarma.RoomType.Collection do
              remote_id: object_id,
              room_id: room_id
            }) do
+      Kazarma.Logger.log_bridged_activity(activity,
+        room_type: :collection,
+        room_id: room_id,
+        obj_type: "Note"
+      )
+
       :ok
-    else
-      {:error, _code, %{"error" => error}} -> Logger.error(error)
-      {:error, error} -> Logger.error(inspect(error))
     end
   end
 
@@ -57,8 +59,13 @@ defmodule Kazarma.RoomType.Collection do
     with nil <- Bridge.get_room_by_remote_id(members_ap_id),
          {:ok, %{"room_id" => room_id}} <-
            Client.create_multiuser_room(matrix_id, [], name: name),
-         {:ok, _} <-
+         {:ok, room} <-
            insert_bridge_room(room_id, members_ap_id) do
+      Kazarma.Logger.log_created_room(room,
+        room_type: :collection,
+        room_id: room_id
+      )
+
       {:ok, room_id}
     else
       %Room{local_id: local_id} -> {:ok, local_id}
@@ -75,6 +82,8 @@ defmodule Kazarma.RoomType.Collection do
       sender: sender,
       to: [room.remote_id]
     )
+
+    Kazarma.Logger.log_bridged_event(event, room_type: :collection)
   end
 
   # @TODO destructure event in Matrix.Transaction

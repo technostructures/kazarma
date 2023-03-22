@@ -18,7 +18,8 @@ defmodule Kazarma.MixProject do
       docs: [
         assets: "doc_diagrams"
       ],
-      test_coverage: [tool: :covertool, summary: true]
+      test_coverage: [tool: :covertool, summary: true],
+      releases: [kazarma: [applications: [svadilfari: :permanent, prom_ex: :permanent]]]
     ]
   end
 
@@ -73,7 +74,8 @@ defmodule Kazarma.MixProject do
       {:phoenix_live_view, "~> 0.18.3"},
       {:phoenix_live_reload, "~> 1.4.1"},
       {:html_sanitize_ex, "~> 1.4"},
-      {:ex_cldr_dates_times, "~> 2.0"}
+      {:ex_cldr_dates_times, "~> 2.0"},
+      {:svadilfari, github: "akasprzok/svadilfari", ref: "6e55a2f"}
     ]
   end
 

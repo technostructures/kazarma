@@ -29,7 +29,7 @@ variables:
   interruptible: true
   script:
     - apk update
-    - apk add git
+    - apk add git cmake g++
     - mix local.hex --force
     - mix local.rebar --force
     - mix deps.get
@@ -52,7 +52,7 @@ build_plt:
         - mix.lock
   script:
     - apk update
-    - apk add git
+    - apk add git cmake g++
     - mix local.hex --force
     - mix local.rebar --force
     - mix deps.get
@@ -185,7 +185,7 @@ deploy_staging:
 .mix:
   before_script:
     - apk update
-    - apk add git
+    - apk add git cmake g++
     - mix local.hex --force
     - mix deps.get
     - mix compile
@@ -205,7 +205,7 @@ test:
     MIX_ENV: test
   before_script:
     - apk update
-    - apk add git
+    - apk add git cmake g++
     - mix local.hex --force
     - mix deps.get
     - mix compile

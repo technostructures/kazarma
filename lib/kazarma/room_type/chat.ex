@@ -7,26 +7,23 @@ defmodule Kazarma.RoomType.Chat do
   alias ActivityPub.Object
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Bridge
-  alias MatrixAppService.Bridge.Room
-  alias MatrixAppService.Event
 
-  def create_from_ap(%{
-        data: %{
-          "actor" => from_id,
-          "to" => [to_id]
-        },
-        object: %Object{
-          data:
-            %{
-              "content" => _body,
-              "id" => object_id
-            } = object_data
-        }
-      }) do
-    Logger.debug("Received ChatMessage activity to forward to Matrix")
-
+  def create_from_ap(
+        %{
+          data: %{
+            "actor" => from_id,
+            "to" => [to_id]
+          },
+          object: %Object{
+            data:
+              %{
+                "content" => _body,
+                "id" => object_id
+              } = object_data
+          }
+        } = activity
+      ) do
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from_id),
          {:ok, room_id} <-
            get_or_create_direct_room(from_id, to_id),
@@ -39,13 +36,17 @@ defmodule Kazarma.RoomType.Chat do
              remote_id: object_id,
              room_id: room_id
            }) do
+      Kazarma.Logger.log_bridged_activity(activity,
+        room_type: :chat,
+        room_id: room_id,
+        obj_type: "ChatMessage"
+      )
+
       :ok
     end
   end
 
   def create_from_event(event, room) do
-    Logger.debug("Forwarding ChatMessage creation")
-
     {:ok, sender} = Address.matrix_id_to_actor(event.sender)
 
     Activity.create_from_event(
@@ -54,6 +55,8 @@ defmodule Kazarma.RoomType.Chat do
       to: [room.data["to_ap_id"]],
       type: "ChatMessage"
     )
+
+    Kazarma.Logger.log_bridged_event(event, room_type: :chat)
   end
 
   def handle_puppet_invite(user_id, sender_id, room_id) do
@@ -70,11 +73,12 @@ defmodule Kazarma.RoomType.Chat do
 
   defp create_bridge_room(user_id, room_id) do
     with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),
-         {:ok, _room} <-
-           Bridge.create_room(%{
-             local_id: room_id,
-             data: %{"type" => "chat", "to_ap_id" => actor.ap_id}
-           }) do
+         {:ok, room} <- insert_bridge_room(room_id, actor.ap_id) do
+      Kazarma.Logger.log_created_room(room,
+        room_type: :chat,
+        room_id: room_id
+      )
+
       :ok
     else
       _ -> :error
@@ -88,7 +92,12 @@ defmodule Kazarma.RoomType.Chat do
            Kazarma.Matrix.Client.get_direct_room(from_matrix_id, to_matrix_id),
          {:ok, %{"room_id" => room_id}} <-
            Kazarma.Matrix.Client.create_direct_room(from_matrix_id, to_matrix_id),
-         {:ok, _} <- insert_bridge_room(room_id, from_ap_id) do
+         {:ok, room} <- insert_bridge_room(room_id, from_ap_id) do
+      Kazarma.Logger.log_created_room(room,
+        room_type: :chat,
+        room_id: room_id
+      )
+
       {:ok, room_id}
     else
       {:ok, room_id} -> {:ok, room_id}

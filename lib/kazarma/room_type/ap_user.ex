@@ -10,9 +10,7 @@ defmodule Kazarma.RoomType.ApUser do
     Messages sent by Matrix users are either replies to public activities, or public activities mentioning the actor.
   """
   alias ActivityPub.Object
-  # alias Kazarma.ActivityPub.Collection
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
@@ -28,9 +26,9 @@ defmodule Kazarma.RoomType.ApUser do
                 "actor" => from_id
               } = object_data
           }
-        } = _activity
+        } = activity
       ) do
-    Logger.debug("Received public Note activity")
+    Kazarma.Logger.log_received_activity(activity, obj_type: "Note", label: "Public Note activity")
 
     with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
          %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}} <-
@@ -45,17 +43,28 @@ defmodule Kazarma.RoomType.ApUser do
              remote_id: object_id,
              room_id: room_id
            }) do
+      Kazarma.Logger.log_bridged_activity(activity,
+        room_type: :ap_room,
+        room_id: room_id,
+        obj_type: "Note"
+      )
+
       :ok
     end
   end
 
-  def create_from_ap(%{
-        data: %{"to" => _to_list, "actor" => from_id},
-        object: %Object{
-          data: %{"id" => object_id, "attributedTo" => attributed_to} = object_data
-        }
-      }) do
-    Logger.debug("Received public Video activity")
+  def create_from_ap(
+        %{
+          data: %{"to" => _to_list, "actor" => _from_id},
+          object: %Object{
+            data: %{"id" => object_id, "attributedTo" => attributed_to} = object_data
+          }
+        } = activity
+      ) do
+    Kazarma.Logger.log_received_activity(activity,
+      obj_type: "Video",
+      label: "Public Video activity"
+    )
 
     with %{"id" => person_sender} <-
            Enum.find(attributed_to, fn
@@ -81,6 +90,12 @@ defmodule Kazarma.RoomType.ApUser do
                  remote_id: object_id,
                  room_id: room_id
                }) do
+          Kazarma.Logger.log_bridged_activity(activity,
+            room_type: :ap_room,
+            room_id: room_id,
+            obj_type: "Video"
+          )
+
           :ok
         end
       end
@@ -93,9 +108,12 @@ defmodule Kazarma.RoomType.ApUser do
             "to" => _to,
             "object" => %{"id" => object_id, "attributedTo" => attributed_to_id} = object_data
           }
-        } = _activity
+        } = activity
       ) do
-    Logger.debug("Received public Event activity")
+    Kazarma.Logger.log_received_activity(activity,
+      obj_type: "Event",
+      label: "Public Event activity"
+    )
 
     with {:ok, attributed_to_matrix_id} <- Kazarma.Address.ap_id_to_matrix(attributed_to_id),
          {:ok, %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}}} <-
@@ -109,6 +127,12 @@ defmodule Kazarma.RoomType.ApUser do
              remote_id: object_id,
              room_id: room_id
            }) do
+      Kazarma.Logger.log_bridged_activity(activity,
+        room_type: :ap_room,
+        room_id: room_id,
+        obj_type: "Event"
+      )
+
       :ok
     end
   end
@@ -150,6 +174,8 @@ defmodule Kazarma.RoomType.ApUser do
       to: ["https://www.w3.org/ns/activitystreams#Public", receiver.ap_id],
       additional_mentions: [receiver]
     )
+
+    Kazarma.Logger.log_bridged_event(event, room_type: :ap_room)
   end
 
   def get_outbox(ap_id) do
@@ -184,16 +210,28 @@ defmodule Kazarma.RoomType.ApUser do
                alias
              ) do
           {:ok, %{"room_id" => room_id}} ->
-            {:ok, _room} = insert_bridge_room(room_id, actor.ap_id, matrix_id)
+            {:ok, room} = insert_bridge_room(room_id, actor.ap_id, matrix_id)
 
+            Kazarma.Logger.log_created_room(room,
+              room_type: :ap_room,
+              room_id: room_id
+            )
+
+          # @TODO use the Bridge.Room to know if the room already exists
           {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}} ->
             {:ok, {room_id, _}} =
               Kazarma.Matrix.Client.get_alias("##{alias}:#{Kazarma.Address.domain()}")
 
-            insert_bridge_room(
-              room_id,
-              actor.ap_id,
-              matrix_id
+            {:ok, room} =
+              insert_bridge_room(
+                room_id,
+                actor.ap_id,
+                matrix_id
+              )
+
+            Kazarma.Logger.log_created_room(room,
+              room_type: :ap_room,
+              room_id: room_id
             )
 
             send_emote_bridging_starts(matrix_id, room_id)

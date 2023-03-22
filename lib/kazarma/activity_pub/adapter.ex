@@ -4,7 +4,6 @@ defmodule Kazarma.ActivityPub.Adapter do
   @moduledoc """
   Implementation of `ActivityPub.Adapter`.
   """
-  alias Kazarma.Logger
   use Kazarma.Config
   @behaviour ActivityPub.Adapter
 
@@ -15,6 +14,8 @@ defmodule Kazarma.ActivityPub.Adapter do
   alias ActivityPub.Object
   alias KazarmaWeb.Endpoint
   alias KazarmaWeb.Router.Helpers, as: Routes
+
+  require Logger
 
   @impl ActivityPub.Adapter
   def actor_url(actor) do
@@ -81,11 +82,13 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl ActivityPub.Adapter
-  def maybe_create_remote_actor(%Actor{
-        username: username,
-        ap_id: ap_id,
-        data: %{"name" => name} = data
-      }) do
+  def maybe_create_remote_actor(
+        %Actor{
+          username: username,
+          ap_id: ap_id,
+          data: %{"name" => name} = data
+        } = _actor
+      ) do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
@@ -97,12 +100,16 @@ defmodule Kazarma.ActivityPub.Adapter do
       avatar_url = get_in(data, ["icon", "url"])
       if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
 
-      {:ok, _bridge_user} =
+      {:ok, user} =
         Bridge.create_user(%{
           local_id: matrix_id,
           remote_id: ap_id,
           data: %{}
         })
+
+      Kazarma.Logger.log_created_puppet(user,
+        type: :matrix
+      )
 
       :ok
     else
@@ -164,6 +171,7 @@ defmodule Kazarma.ActivityPub.Adapter do
               }
             }
           } ->
+            Kazarma.Logger.log_received_activity(activity, label: "Chat")
             Kazarma.RoomType.Chat.create_from_ap(activity)
 
           %{
@@ -176,6 +184,7 @@ defmodule Kazarma.ActivityPub.Adapter do
               }
             }
           } ->
+            Kazarma.Logger.log_received_activity(activity, label: "Direct message")
             Kazarma.RoomType.DirectMessage.create_from_ap(activity)
 
           %{
@@ -188,6 +197,7 @@ defmodule Kazarma.ActivityPub.Adapter do
               }
             }
           } ->
+            Kazarma.Logger.log_received_activity(activity, label: "To collection")
             Kazarma.RoomType.Collection.create_from_ap(activity)
         end
       end
@@ -220,9 +230,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Logger.debug("Forwarding to Matrix delete activity")
-    Logger.ap_input(activity)
-    Logger.ap_input(object_ap_id)
+    Kazarma.Logger.log_received_activity(activity)
 
     with {:ok, sender_matrix_id} <- Address.ap_id_to_matrix(sender_ap_id),
          %BridgeEvent{local_id: event_id, room_id: room_id} <-
@@ -256,8 +264,10 @@ defmodule Kazarma.ActivityPub.Adapter do
             "actor" => _inviter,
             "target" => invitee
           }
-        } = _activity
+        } = activity
       ) do
+    Kazarma.Logger.log_received_activity(activity)
+
     with {:ok, invitee_matrix_id} <- Address.ap_id_to_matrix(invitee),
          {:ok,
           %{
@@ -292,7 +302,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Logger.debug("received Follow")
+    Kazarma.Logger.log_received_activity(activity, label: "Follow")
 
     case ActivityPub.Actor.get_cached_by_ap_id(followed) do
       {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
@@ -323,7 +333,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           }
         } = activity
       ) do
-    Logger.debug("received Undo/Follow")
+    Kazarma.Logger.log_received_activity(activity, label: "Unfollow")
 
     case ActivityPub.Actor.get_cached_by_ap_id(followed) do
       {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
@@ -339,10 +349,8 @@ defmodule Kazarma.ActivityPub.Adapter do
     end
   end
 
-  def handle_activity(%Object{} = object) do
-    Logger.debug("Kazarma.ActivityPub.Adapter.handle_activity/1 (other activity)")
-    Logger.ap_input(object)
-    Logger.debug(inspect(object))
+  def handle_activity(%Object{} = activity) do
+    Kazarma.Logger.log_received_activity(activity, label: "Unhandled activity")
 
     :ok
     # raise "handle_activity/1: not implemented"

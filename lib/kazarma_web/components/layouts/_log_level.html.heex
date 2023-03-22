@@ -1,0 +1,21 @@
+<div
+  :if={@level in [:info, :debug]}
+  class={[
+    "fixed top-2 right-32 tooltip tooltip-bottom",
+    @level == :info && "",
+    @level == :debug && ""
+  ]}
+  data-tip={
+    case @level do
+      :info ->
+        gettext("Bridge logs can include metadata")
+
+      :debug ->
+        gettext("Bridge logs can include metadata and content")
+    end
+  }
+>
+  <p>
+    Log level: <%= @level |> to_string() |> String.upcase() %>
+  </p>
+</div>

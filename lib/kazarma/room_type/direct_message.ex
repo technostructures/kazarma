@@ -9,25 +9,24 @@ defmodule Kazarma.RoomType.DirectMessage do
   """
   alias ActivityPub.Object
   alias Kazarma.Address
-  alias Kazarma.Logger
   alias Kazarma.Matrix.Client
   alias Kazarma.ActivityPub.Activity
   alias Kazarma.Bridge
   alias MatrixAppService.Bridge.Room
 
-  def create_from_ap(%{
-        data: %{"to" => to},
-        object: %Object{
-          data:
-            %{
-              "id" => object_id,
-              "actor" => from,
-              "conversation" => conversation
-            } = object_data
-        }
-      }) do
-    Logger.debug("Received private Note activity (direct message)")
-
+  def create_from_ap(
+        %{
+          data: %{"to" => to},
+          object: %Object{
+            data:
+              %{
+                "id" => object_id,
+                "actor" => from,
+                "conversation" => conversation
+              } = object_data
+          }
+        } = activity
+      ) do
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
          to =
            Enum.map(to, fn ap_id ->
@@ -47,10 +46,13 @@ defmodule Kazarma.RoomType.DirectMessage do
              remote_id: object_id,
              room_id: room_id
            }) do
+      Kazarma.Logger.log_bridged_activity(activity,
+        room_type: :direct_message,
+        room_id: room_id,
+        obj_type: "Note"
+      )
+
       :ok
-    else
-      {:error, _code, %{"error" => error}} -> Logger.error(error)
-      {:error, error} -> Logger.error(inspect(error))
     end
   end
 
@@ -58,10 +60,15 @@ defmodule Kazarma.RoomType.DirectMessage do
     with nil <- Bridge.get_room_by_remote_id(conversation),
          {:ok, %{"room_id" => room_id}} <-
            Client.create_multiuser_room(creator, invites, opts),
-         {:ok, _} <-
+         {:ok, room} <-
            insert_bridge_room(room_id, conversation, [
              creator | invites
            ]) do
+      Kazarma.Logger.log_created_room(room,
+        room_type: :direct_message,
+        room_id: room_id
+      )
+
       {:ok, room_id}
     else
       %Room{local_id: local_id} -> {:ok, local_id}
@@ -90,6 +97,8 @@ defmodule Kazarma.RoomType.DirectMessage do
       context: room.remote_id,
       fallback_reply: fallback_reply
     )
+
+    Kazarma.Logger.log_bridged_event(event, room_type: :direct_message)
   end
 
   def handle_puppet_invite(matrix_id, inviter_id, room_id) do
@@ -120,6 +129,11 @@ defmodule Kazarma.RoomType.DirectMessage do
             insert_bridge_room(room_id, ActivityPub.Utils.generate_context_id(inviter_actor), [
               matrix_id
             ])
+
+          Kazarma.Logger.log_created_room(room,
+            room_type: :direct_message,
+            room_id: room_id
+          )
 
           {:ok, room}
 
