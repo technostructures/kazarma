@@ -4,7 +4,6 @@ defmodule KazarmaWeb.Components.Profile do
   @moduledoc false
   use Phoenix.Component
   use Phoenix.HTML
-  import KazarmaWeb.Components.Icon
   import KazarmaWeb.Helpers
   import KazarmaWeb.Gettext
 
@@ -41,7 +40,7 @@ defmodule KazarmaWeb.Components.Profile do
 
   defp address_that_opens(assigns) do
     ~H"""
-    <div class="tooltip" data-tip="Click to open">
+    <div class="tooltip" data-tip={gettext("Click to open")}>
       <.link href={@to} target="_blank" aria-label={gettext("Open")} class="link link-hover">
         <%= @address %>
       </.link>
@@ -51,7 +50,7 @@ defmodule KazarmaWeb.Components.Profile do
 
   defp address_that_copies(assigns) do
     ~H"""
-    <div class="tooltip" data-tip="Click to copy">
+    <div class="tooltip" data-tip={gettext("Click to copy")}>
       <.link href="#" aria-label={gettext("Copy")} data-copy={@address} class="link link-hover">
         <%= @address %>
       </.link>
