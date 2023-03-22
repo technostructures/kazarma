@@ -1,0 +1,144 @@
+## "msgid"s in this file come from POT (.pot) files.
+##
+## Do not add, change, or remove "msgid"s manually here as
+## they're tied to the ones in the corresponding POT file
+## (with the same domain).
+##
+## Use "mix gettext.extract --merge" or "mix gettext.merge"
+## to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/kazarma_web/controllers/search_controller.ex:17
+#: lib/kazarma_web/live/actor.ex:73
+#: lib/kazarma_web/live/index.ex:33
+#: lib/kazarma_web/live/object.ex:64
+#, elixir-autogen, elixir-format
+msgid "User not found"
+msgstr ""
+
+#: lib/kazarma_web/components/button.ex:14
+#: lib/kazarma_web/components/button.ex:15
+#: lib/kazarma_web/components/profile.ex:55
+#, elixir-autogen, elixir-format
+msgid "Copy"
+msgstr ""
+
+#: lib/kazarma_web/components/object.ex:70
+#: lib/kazarma_web/components/object.ex:71
+#: lib/kazarma_web/components/profile.ex:45
+#, elixir-autogen, elixir-format
+msgid "Open"
+msgstr ""
+
+#: lib/kazarma_web/components/layouts/search.html.heex:29
+#: lib/kazarma_web/components/layouts/search.html.heex:30
+#, elixir-autogen, elixir-format
+msgid "Search"
+msgstr ""
+
+#: lib/kazarma_web/components/object.ex:97
+#: lib/kazarma_web/components/profile.ex:74
+#, elixir-autogen, elixir-format
+msgid "%{actor_name}'s avatar"
+msgstr ""
+
+#: lib/kazarma_web/components/layouts/app.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Skip to content"
+msgstr ""
+
+#: lib/kazarma_web/components/layouts/app.html.heex:2
+#, elixir-autogen, elixir-format
+msgid "Skip to search"
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:38
+#, elixir-autogen, elixir-format
+msgid "Also see the rest of the documentation."
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "Quick guide"
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:11
+#, elixir-autogen, elixir-format
+msgid "Search for a Matrix user"
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:20
+#, elixir-autogen, elixir-format
+msgid "Search for an ActivityPub user"
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:14
+#, elixir-autogen, elixir-format
+msgid "To search for a Matrix user, enter their Matrix username, in the form @user:server."
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "To search for an ActivityPub user, you can use two types of address:"
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:31
+#, elixir-autogen, elixir-format
+msgid "their ActivityPub ID, which is often the URL of their profile page (https://server/@user)."
+msgstr ""
+
+#: lib/kazarma_web/live/index.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "their ActivityPub username, in the form user@server;"
+msgstr ""
+
+#: lib/kazarma_web/components/layouts/app.html.heex:23
+#: lib/kazarma_web/components/layouts/app.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "Help"
+msgstr ""
+
+#: lib/kazarma_web/components/layouts/search.html.heex:13
+#: lib/kazarma_web/components/layouts/search.html.heex:14
+#: lib/kazarma_web/components/layouts/search.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "Matrix or ActivityPub identifier"
+msgstr ""
+
+#: lib/kazarma_web/components/core_components.ex:480
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr ""
+
+#: lib/kazarma_web/components/layouts/_log_level.html.heex:11
+#, elixir-autogen, elixir-format
+msgid "Bridge logs can include metadata"
+msgstr ""
+
+#: lib/kazarma_web/components/layouts/_log_level.html.heex:14
+#, elixir-autogen, elixir-format
+msgid "Bridge logs can include metadata and content"
+msgstr ""
+
+#: lib/kazarma_web/live/actor.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "No activity yet."
+msgstr ""
+
+#: lib/kazarma_web/live/actor.html.heex:15
+#, elixir-autogen, elixir-format
+msgid "They can follow the relay actor to start being bridged over Matrix: %{relay}."
+msgstr ""
+
+#: lib/kazarma_web/live/actor.html.heex:14
+#, elixir-autogen, elixir-format
+msgid "This user is not bridged."
+msgstr ""
+
+#: lib/kazarma_web/components/core_components.ex:83
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr ""
