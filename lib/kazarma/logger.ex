@@ -29,7 +29,9 @@ defmodule Kazarma.Logger do
       obj_type: obj_type
     })
 
-    Logger.info("Received #{display_activity_type(type, obj_type)} activity")
+    "Received #{display_activity_type(type, obj_type)} activity"
+    |> add_label(Keyword.get(opts, :label))
+    |> Logger.info()
 
     inspect(activity, pretty: true)
     |> Logger.debug()
@@ -70,7 +72,9 @@ defmodule Kazarma.Logger do
       room_id: room_id
     })
 
-    Logger.info("Received #{type} event")
+    "Received #{type} event"
+    |> add_label(Keyword.get(opts, :label))
+    |> Logger.info()
 
     inspect(event, pretty: true)
     |> Logger.debug()
@@ -147,4 +151,7 @@ defmodule Kazarma.Logger do
 
   defp display_activity_type(type, nil), do: type
   defp display_activity_type(type, obj_type), do: "#{type}/#{obj_type}"
+
+  defp add_label(message, nil), do: message
+  defp add_label(message, label), do: "#{message} (#{label})"
 end
