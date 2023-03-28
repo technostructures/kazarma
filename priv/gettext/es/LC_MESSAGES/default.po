@@ -8,8 +8,15 @@
 ## to merge POT files into PO files.
 msgid ""
 msgstr ""
+"PO-Revision-Date: 2023-03-27 20:37+0000\n"
+"Last-Translator: gallegonovato <fran-carro@hotmail.es>\n"
+"Language-Team: Spanish <https://hosted.weblate.org/projects/kazarma/kazarma/"
+"es/>\n"
 "Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.17-dev\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:73
@@ -17,128 +24,135 @@ msgstr ""
 #: lib/kazarma_web/live/object.ex:64
 #, elixir-autogen, elixir-format
 msgid "User not found"
-msgstr ""
+msgstr "Usuario no encontrado"
 
 #: lib/kazarma_web/components/button.ex:14
 #: lib/kazarma_web/components/button.ex:15
 #: lib/kazarma_web/components/profile.ex:55
 #, elixir-autogen, elixir-format
 msgid "Copy"
-msgstr ""
+msgstr "Copiar"
 
 #: lib/kazarma_web/components/object.ex:70
 #: lib/kazarma_web/components/object.ex:71
 #: lib/kazarma_web/components/profile.ex:45
 #, elixir-autogen, elixir-format
 msgid "Open"
-msgstr ""
+msgstr "Abrir"
 
 #: lib/kazarma_web/components/layouts/search.html.heex:29
 #: lib/kazarma_web/components/layouts/search.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Search"
-msgstr ""
+msgstr "Buscar"
 
 #: lib/kazarma_web/components/object.ex:97
 #: lib/kazarma_web/components/profile.ex:74
 #, elixir-autogen, elixir-format
 msgid "%{actor_name}'s avatar"
-msgstr ""
+msgstr "avatar de %{actor_name}"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:1
 #, elixir-autogen, elixir-format
 msgid "Skip to content"
-msgstr ""
+msgstr "Saltar al contenido"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "Skip to search"
-msgstr ""
+msgstr "Pasar a la búsqueda"
 
 #: lib/kazarma_web/live/index.html.heex:38
 #, elixir-autogen, elixir-format
 msgid "Also see the rest of the documentation."
-msgstr ""
+msgstr "Consulta también el resto de la documentación."
 
 #: lib/kazarma_web/live/index.html.heex:8
 #, elixir-autogen, elixir-format
 msgid "Quick guide"
-msgstr ""
+msgstr "Guía rápida"
 
 #: lib/kazarma_web/live/index.html.heex:11
 #, elixir-autogen, elixir-format
 msgid "Search for a Matrix user"
-msgstr ""
+msgstr "Buscar un usuario de Matrix"
 
 #: lib/kazarma_web/live/index.html.heex:20
 #, elixir-autogen, elixir-format
 msgid "Search for an ActivityPub user"
-msgstr ""
+msgstr "Buscar un usuario de ActivityPub"
 
 #: lib/kazarma_web/live/index.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "To search for a Matrix user, enter their Matrix username, in the form @user:server."
 msgstr ""
+"Para buscar un usuario de Matrix, introduzca su nombre de usuario de Matrix, "
+"de la forma @user:server."
 
 #: lib/kazarma_web/live/index.html.heex:23
 #, elixir-autogen, elixir-format
 msgid "To search for an ActivityPub user, you can use two types of address:"
 msgstr ""
+"Para buscar un usuario de ActivityPub, puede utilizar dos tipos de dirección:"
 
 #: lib/kazarma_web/live/index.html.heex:31
 #, elixir-autogen, elixir-format
 msgid "their ActivityPub ID, which is often the URL of their profile page (https://server/@user)."
 msgstr ""
+"Tú Identificación de ActivityPub, que suele ser la URL de tú página del "
+"perfil (https://server/@user)."
 
 #: lib/kazarma_web/live/index.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "their ActivityPub username, in the form user@server;"
-msgstr ""
+msgstr "tú nombre de usuario de ActivityPub, en la forma user@server;"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:23
 #: lib/kazarma_web/components/layouts/app.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "Help"
-msgstr ""
+msgstr "Ayuda"
 
 #: lib/kazarma_web/components/layouts/search.html.heex:13
 #: lib/kazarma_web/components/layouts/search.html.heex:14
 #: lib/kazarma_web/components/layouts/search.html.heex:23
 #, elixir-autogen, elixir-format
 msgid "Matrix or ActivityPub identifier"
-msgstr ""
+msgstr "Matrix o identificador de ActivityPub"
 
 #: lib/kazarma_web/components/core_components.ex:480
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr ""
+msgstr "Acciones"
 
 #: lib/kazarma_web/components/layouts/_log_level.html.heex:11
 #, elixir-autogen, elixir-format
 msgid "Bridge logs can include metadata"
-msgstr ""
+msgstr "Los registros de los puentes pueden incluir metadatos"
 
 #: lib/kazarma_web/components/layouts/_log_level.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "Bridge logs can include metadata and content"
-msgstr ""
+msgstr "Los registros puente pueden incluir metadatos y contenidos"
 
 #: lib/kazarma_web/live/actor.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "No activity yet."
-msgstr ""
+msgstr "Aún no hay actividad."
 
 #: lib/kazarma_web/live/actor.html.heex:15
 #, elixir-autogen, elixir-format
 msgid "They can follow the relay actor to start being bridged over Matrix: %{relay}."
 msgstr ""
+"Pueden seguir al actor de relevo para comenzar a conectarse en Matrix: "
+"%{relay}."
 
 #: lib/kazarma_web/live/actor.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "This user is not bridged."
-msgstr ""
+msgstr "Este usuario no tiene puente."
 
 #: lib/kazarma_web/components/core_components.ex:83
 #, elixir-autogen, elixir-format
 msgid "close"
-msgstr ""
+msgstr "cerrar"
