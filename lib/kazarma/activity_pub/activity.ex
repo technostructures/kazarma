@@ -33,15 +33,13 @@ defmodule Kazarma.ActivityPub.Activity do
 
     attachment = attachment_from_matrix_event_content(event.content)
 
-    # @TODO
-    # mentions = get_mentions_from_event(event) ++ Keyword.get(params, :additional_mentions, [])
-    mentions = Keyword.get(params, :additional_mentions, [])
+    manual_mentions = Kazarma.Matrix.Transaction.get_mentions_from_event_content(event.content)
 
-    # @TODO
-    # content = Kazarma.Matrix.Transaction.build_text_content(event.content, mentions)
-    content = Kazarma.Matrix.Transaction.build_text_content(event.content)
+    additional_mentions = Keyword.get(params, :additional_mentions, [])
 
-    tags = Enum.map(mentions, &mention_tag_for_actor/1)
+    content = Kazarma.Matrix.Transaction.build_text_content(event.content, additional_mentions)
+
+    tags = Enum.map(manual_mentions ++ additional_mentions, &mention_tag_for_actor/1)
 
     case create(
            type: type,
@@ -149,10 +147,13 @@ defmodule Kazarma.ActivityPub.Activity do
   def mention_tag_for_actor(actor) do
     %{
       "href" => actor.ap_id,
-      "name" => "@#{actor.data["preferredUsername"]}",
+      "name" => "@#{mention_name(actor)}",
       "type" => "Mention"
     }
   end
+
+  def mention_name(%{local: true, data: %{"preferredUsername" => name}}), do: name
+  def mention_name(%{local: false, username: name}), do: name
 
   def attachment_from_matrix_event_content(%{"msgtype" => "m.text"}), do: nil
 
@@ -290,8 +291,7 @@ defmodule Kazarma.ActivityPub.Activity do
         current_content,
         username_without_at,
         ap_id,
-        matrix_id,
-        display_name
+        {"a", [{"href", "https://matrix.to/#/" <> matrix_id}], [display_name]}
       )
     end)
   end
@@ -312,10 +312,10 @@ defmodule Kazarma.ActivityPub.Activity do
     end)
   end
 
-  defp convert_mentions(content, nil, _), do: content
+  def convert_mentions(content, nil, _), do: content
 
   # @TODO stop using tags since Mobilizon does mentions without tags
-  defp convert_mentions(content, tags, convert_fun) do
+  def convert_mentions(content, tags, convert_fun) do
     Enum.reduce(tags, content, fn
       %{"type" => "Mention", "href" => ap_id, "name" => username}, content ->
         with {:ok, actor} <- ActivityPub.Actor.get_cached_by_ap_id(ap_id),
@@ -330,12 +330,12 @@ defmodule Kazarma.ActivityPub.Activity do
     end)
   end
 
-  defp parse_and_update_content(content, username_without_at, ap_id, matrix_id, display_name) do
+  def parse_and_update_content(content, username_without_at, ap_id, replacement) do
     update_fun = fn
       {"span", span_attrs, [{"a", a_attrs, ["@", {"span", _, [^username_without_at]}]}]} = elem ->
         if {"class", "h-card"} in span_attrs && {"href", ap_id} in a_attrs &&
              {"class", "u-url mention"} in a_attrs do
-          {"a", [{"href", "https://matrix.to/#/" <> matrix_id}], [display_name]}
+          replacement
         else
           elem
         end

@@ -153,13 +153,13 @@ defmodule KazarmaWeb.CoreComponents do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class={[
-        "alert w-full rounded-none m-0 cursor-pointer shadow-lg flex-col",
+        "hidden alert w-full rounded-none m-0 cursor-pointer shadow-lg flex-col !p-0",
         @kind == :info && "alert-error",
         @kind == :error && "alert-info"
       ]}
       {@rest}
     >
-      <p class=""><%= msg %></p>
+      <p class="p-4"><%= msg %></p>
     </div>
     """
   end
@@ -186,7 +186,7 @@ defmodule KazarmaWeb.CoreComponents do
       phx-disconnected={show("#disconnected")}
       phx-connected={hide("#disconnected")}
     >
-      <!-- Attempting to reconnect <Heroicons.arrow_path class="ml-1 w-3 h-3 inline animate-spin" /> -->
+      <%= gettext("Attempting to reconnect") %>
     </.flash>
     """
   end
@@ -572,10 +572,7 @@ defmodule KazarmaWeb.CoreComponents do
   def show(js \\ %JS{}, selector) do
     JS.show(js,
       to: selector,
-      transition:
-        {"transition-all transform ease-out duration-300",
-         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
-         "opacity-100 translate-y-0 sm:scale-100"}
+      transition: {"transition-all transform ease-out duration-300", "h-0", "h-14"}
     )
   end
 
@@ -583,10 +580,7 @@ defmodule KazarmaWeb.CoreComponents do
     JS.hide(js,
       to: selector,
       time: 200,
-      transition:
-        {"transition-all transform ease-in duration-200",
-         "opacity-100 translate-y-0 sm:scale-100",
-         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
+      transition: {"transition-all transform ease-in duration-200", "h-14", "h-0"}
     )
   end
 

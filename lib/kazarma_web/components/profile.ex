@@ -104,7 +104,8 @@ defmodule KazarmaWeb.Components.Profile do
       <div class="card-body p-6">
         <div class="flex flex-row">
           <div class="mr-2"><%= opposite_type_icon(@actor) %></div>
-          via Kazarma
+          via
+          <div class="ml-2"><KazarmaWeb.Components.Icon.kazarma_icon /></div>
         </div>
         <div class="">
           <.puppet_addresses actor={@actor} />

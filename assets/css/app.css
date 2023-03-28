@@ -33,3 +33,7 @@ header {
         #ff7b52,
         #ff2ef0);
 }
+
+.object-content a {
+  @apply text-primary;
+}

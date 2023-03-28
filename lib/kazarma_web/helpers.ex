@@ -63,15 +63,25 @@ defmodule KazarmaWeb.Helpers do
   def avatar_url(%ActivityPub.Actor{data: data}), do: data["icon"]["url"]
 
   def text_content(%ActivityPub.Object{
-        data: %{"content" => content}
+        data: %{"content" => content} = data
       }) do
-    HtmlSanitizeEx.markdown_html(content)
+    tag = Map.get(data, "tag")
+
+    content
+    |> format_mentions_html(tag)
+    |> format_mentions_text(tag)
+    |> HtmlSanitizeEx.html5()
   end
 
   def text_content(%ActivityPub.Object{
-        data: %{"source" => source}
+        data: %{"source" => source} = data
       }) do
-    HtmlSanitizeEx.markdown_html(source)
+    tag = Map.get(data, "tag")
+
+    source
+    |> format_mentions_html(tag)
+    |> format_mentions_text(tag)
+    |> HtmlSanitizeEx.html5()
   end
 
   def text_content(_) do
@@ -98,4 +108,54 @@ defmodule KazarmaWeb.Helpers do
     do: Gettext.put_locale(KazarmaWeb.Gettext, String.slice(locale, 0, 2))
 
   def put_session_locale(_), do: nil
+
+  defp format_mentions_html(content, nil), do: content
+
+  defp format_mentions_html(content, tags) do
+    Kazarma.ActivityPub.Activity.convert_mentions(content, tags, fn current_content,
+                                                                    actor,
+                                                                    ap_id,
+                                                                    username,
+                                                                    _matrix_id ->
+      "@" <> username_without_at = username
+
+      Kazarma.ActivityPub.Activity.parse_and_update_content(
+        current_content,
+        username_without_at,
+        ap_id,
+        {"a",
+         [
+           {"href", Kazarma.ActivityPub.Adapter.actor_path(actor)},
+           {"data-phx-link", "redirect"},
+           {"data-phx-link-state", "push"}
+         ], [username]}
+      )
+    end)
+  end
+
+  defp format_mentions_text(content, nil), do: content
+
+  defp format_mentions_text(content, tags) do
+    Kazarma.ActivityPub.Activity.convert_mentions(content, tags, fn current_content,
+                                                                    actor,
+                                                                    _ap_id,
+                                                                    username,
+                                                                    _matrix_id ->
+      String.replace(
+        current_content,
+        username,
+        mention_tag(Kazarma.ActivityPub.Adapter.actor_path(actor), username)
+      )
+    end)
+  end
+
+  defp mention_tag(url, name) do
+    """
+    <a href="<%= url %>" data-phx-link="redirect" data-phx-link-state="push"><%= name %></a>
+    """
+    |> EEx.eval_string(
+      url: url,
+      name: name
+    )
+  end
 end

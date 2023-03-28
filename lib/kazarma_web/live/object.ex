@@ -31,8 +31,12 @@ defmodule KazarmaWeb.Object do
       next_objects =
         Kazarma.ActivityPub.Activity.get_replies_for(object) |> Enum.map(&maybe_redirect_link/1)
 
+      stripped_content =
+        object.data["content"]
+        |> HtmlSanitizeEx.strip_tags()
+
       page_title =
-        "#{String.replace(object.data["content"], ~r/(?<=.{20})(.+)/s, "...")} – #{actor.data["name"]}"
+        "#{String.replace(stripped_content, ~r/(?<=.{20})(.+)/s, "...")} – #{actor.data["name"]}"
 
       {
         :ok,

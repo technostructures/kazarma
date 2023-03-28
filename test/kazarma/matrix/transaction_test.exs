@@ -566,11 +566,19 @@ defmodule Kazarma.Matrix.TransactionTest do
           object: %{
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",
-            "content" => "hello",
+            "content" =>
+              "<span class=\"h-card\"><a href=\"https://pleroma.interhacker.space/users/test_user_bob2\" class=\"u-url mention\">@<span>test_user_bob2@pleroma.interhacker.space</span></a></span>hello",
             "context" => "http://pleroma/contexts/context",
             "conversation" => "http://pleroma/contexts/context",
             "to" => ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"],
-            "type" => "Note"
+            "type" => "Note",
+            "tag" => [
+              %{
+                "href" => "https://#{@pleroma_user_server}/users/#{@pleroma_user_name}",
+                "name" => "@#{@pleroma_user_name}@#{@pleroma_user_server}",
+                "type" => "Mention"
+              }
+            ]
           },
           to: ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"]
         },
@@ -767,12 +775,20 @@ defmodule Kazarma.Matrix.TransactionTest do
           object: %{
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",
-            "content" => "hello",
+            "content" =>
+              "<span class=\"h-card\"><a href=\"https://pleroma.interhacker.space/users/test_user_bob2\" class=\"u-url mention\">@<span>test_user_bob2@pleroma.interhacker.space</span></a></span>hello",
             "context" => "http://pleroma/contexts/context",
             "conversation" => "http://pleroma/contexts/context",
             "to" => ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"],
             "type" => "Note",
-            "inReplyTo" => "http://pleroma/objects/reply_to"
+            "inReplyTo" => "http://pleroma/objects/reply_to",
+            "tag" => [
+              %{
+                "href" => "https://#{@pleroma_user_server}/users/#{@pleroma_user_name}",
+                "name" => "@#{@pleroma_user_name}@#{@pleroma_user_server}",
+                "type" => "Mention"
+              }
+            ]
           },
           to: ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"]
         },
@@ -967,10 +983,13 @@ defmodule Kazarma.Matrix.TransactionTest do
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",
             "content" => """
-            Hello <span class="h-card"><a href="http://kazarma/-/alice" class="u-url mention">@<span>alice@kazarma</span></a></span>!
+            Hello <span class="h-card"><a href="http://kazarma/-/alice" class="u-url mention">@<span>alice</span></a></span>!
             """,
             "to" => ["alice@pleroma"],
-            "type" => "ChatMessage"
+            "type" => "ChatMessage",
+            "tag" => [
+              %{"href" => "http://kazarma/-/alice", "name" => "@alice", "type" => "Mention"}
+            ]
           },
           to: ["alice@pleroma"]
         },
@@ -1007,7 +1026,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "it removes mx-reply tags and convert mentions" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, 2, fn
+      |> expect(:get_profile, 3, fn
         "@bob:kazarma" ->
           {:ok, %{"displayname" => "Bob"}}
 
