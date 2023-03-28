@@ -3,14 +3,16 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-03-28 16:03+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2023-03-28 14:26+0000\n"
+"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
+"Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/kazarma/"
+"kazarma/nb_NO/>\n"
 "Language: nb_NO\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 3.8.6\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.17-dev\n"
 
 ## This file is a PO Template file.
 ##
@@ -21,135 +23,140 @@ msgstr ""
 ## Run "mix gettext.extract" to bring this file up to
 ## date. Leave "msgstr"s empty as changing them here as no
 ## effect: edit them in PO (.po) files instead.
-
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:73
 #: lib/kazarma_web/live/index.ex:33
 #: lib/kazarma_web/live/object.ex:64
 #, elixir-autogen, elixir-format
 msgid "User not found"
-msgstr ""
+msgstr "Fant ikke brukeren"
 
 #: lib/kazarma_web/components/button.ex:14
 #: lib/kazarma_web/components/button.ex:15
 #: lib/kazarma_web/components/profile.ex:55
 #, elixir-autogen, elixir-format
 msgid "Copy"
-msgstr ""
+msgstr "Kopier"
 
 #: lib/kazarma_web/components/object.ex:70
 #: lib/kazarma_web/components/object.ex:71
 #: lib/kazarma_web/components/profile.ex:45
 #, elixir-autogen, elixir-format
 msgid "Open"
-msgstr ""
+msgstr "Åpne"
 
 #: lib/kazarma_web/components/layouts/search.html.heex:29
 #: lib/kazarma_web/components/layouts/search.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Search"
-msgstr ""
+msgstr "Søk"
 
 #: lib/kazarma_web/components/object.ex:97
 #: lib/kazarma_web/components/profile.ex:74
 #, elixir-autogen, elixir-format
 msgid "%{actor_name}'s avatar"
-msgstr ""
+msgstr "%{actor_name} sin avatar"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:1
 #, elixir-autogen, elixir-format
 msgid "Skip to content"
-msgstr ""
+msgstr "Hopp till innhold"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "Skip to search"
-msgstr ""
+msgstr "Hopp til søk"
 
 #: lib/kazarma_web/live/index.html.heex:38
 #, elixir-autogen, elixir-format
 msgid "Also see the rest of the documentation."
-msgstr ""
+msgstr "Ta også en titt på resten av dokumentasjonen."
 
 #: lib/kazarma_web/live/index.html.heex:8
 #, elixir-autogen, elixir-format
 msgid "Quick guide"
-msgstr ""
+msgstr "Hurtigveiledning"
 
 #: lib/kazarma_web/live/index.html.heex:11
 #, elixir-autogen, elixir-format
 msgid "Search for a Matrix user"
-msgstr ""
+msgstr "Søk etter en Matrix-bruker"
 
 #: lib/kazarma_web/live/index.html.heex:20
 #, elixir-autogen, elixir-format
 msgid "Search for an ActivityPub user"
-msgstr ""
+msgstr "Søk etter en ActivityPub-bruker"
 
 #: lib/kazarma_web/live/index.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "To search for a Matrix user, enter their Matrix username, in the form @user:server."
 msgstr ""
+"Skriv inn et Matrix-brukernavn i form av «@bruker:tjener» for å søke etter "
+"en Matrix-bruker."
 
 #: lib/kazarma_web/live/index.html.heex:23
 #, elixir-autogen, elixir-format
 msgid "To search for an ActivityPub user, you can use two types of address:"
-msgstr ""
+msgstr "Du kan bruke to typer adresser for å søke etter en ActivityPub-bruker:"
 
 #: lib/kazarma_web/live/index.html.heex:31
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "their ActivityPub ID, which is often the URL of their profile page (https://server/@user)."
 msgstr ""
+"ActivityPub-ID, som ofte er nettadressen til vedkommendes profilside "
+"(https://tjener/@bruker)."
 
 #: lib/kazarma_web/live/index.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "their ActivityPub username, in the form user@server;"
-msgstr ""
+msgstr "deres ActivityPub-brukernavn, i form av bruker@tjener;"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:23
 #: lib/kazarma_web/components/layouts/app.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "Help"
-msgstr ""
+msgstr "Hjelp"
 
 #: lib/kazarma_web/components/layouts/search.html.heex:13
 #: lib/kazarma_web/components/layouts/search.html.heex:14
 #: lib/kazarma_web/components/layouts/search.html.heex:23
 #, elixir-autogen, elixir-format
 msgid "Matrix or ActivityPub identifier"
-msgstr ""
+msgstr "Matrix eller ActivityPub-identifikator"
 
 #: lib/kazarma_web/components/core_components.ex:480
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr ""
+msgstr "Handlinger"
 
 #: lib/kazarma_web/components/layouts/_log_level.html.heex:11
 #, elixir-autogen, elixir-format
 msgid "Bridge logs can include metadata"
-msgstr ""
+msgstr "Brologger kan inneholde metadata"
 
 #: lib/kazarma_web/components/layouts/_log_level.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "Bridge logs can include metadata and content"
-msgstr ""
+msgstr "Brologger kan inneholde metadata og innhold"
 
 #: lib/kazarma_web/live/actor.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "No activity yet."
-msgstr ""
+msgstr "Ingen aktivitet enda."
 
 #: lib/kazarma_web/live/actor.html.heex:15
 #, elixir-autogen, elixir-format
 msgid "They can follow the relay actor to start being bridged over Matrix: %{relay}."
 msgstr ""
+"De kan følge videresendelsesaktøren for å starte brotilknytning over Matrix: "
+"%{relay}."
 
 #: lib/kazarma_web/live/actor.html.heex:14
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "This user is not bridged."
-msgstr ""
+msgstr "Denne brukeren har ingen broer."
 
 #: lib/kazarma_web/components/core_components.ex:83
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "close"
-msgstr ""
+msgstr "lukk"
