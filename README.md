@@ -6,6 +6,7 @@
 [![REUSE status](https://api.reuse.software/badge/gitlab.com/kazarma/kazarma)](https://api.reuse.software/info/gitlab.com/kazarma/kazarma)
 [![Gitlab pipeline status](https://img.shields.io/gitlab/pipeline-status/kazarma/kazarma?branch=main)](https://gitlab.com/kazarma/kazarma/-/pipelines)
 [![coverage report](https://gitlab.com/kazarma/kazarma/badges/main/coverage.svg)](https://gitlab.com/kazarma/kazarma/-/commits/main)
+[![translation status](https://hosted.weblate.org/widgets/kazarma/-/kazarma/svg-badge.svg)](https://hosted.weblate.org/engage/kazarma/)
 
 A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://github.com/commonspub/ActivityPub) and [those](https://gitlab.com/kazarma/matrix_app_service.ex) Matrix [libraries](https://gitlab.com/uhoreg/polyjuice_client).
 
@@ -20,6 +21,12 @@ A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://githu
 ### [Docker Compose](https://docs.kazar.ma/administrator-guide/docker-compose)
 
 ### [Helm](https://docs.kazar.ma/administrator-guide/helm)
+
+## Translation
+
+Translation happens on [Hosted Weblate](https://hosted.weblate.org/engage/kazarma/).
+
+[![translation status](https://hosted.weblate.org/widgets/kazarma/-/kazarma/horizontal-auto.svg)](https://hosted.weblate.org/engage/kazarma/)
 
 ## Development environment
 
