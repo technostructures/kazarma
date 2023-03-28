@@ -79,7 +79,7 @@ defmodule KazarmaWeb.Actor do
       %MatrixAppService.Bridge.Room{data: %{"type" => "matrix_user"}} ->
         Kazarma.ActivityPub.Actor.public_activites_for_actor(actor)
 
-      nil ->
+      _ ->
         :unbridged_matrix
     end
   end
@@ -89,7 +89,7 @@ defmodule KazarmaWeb.Actor do
       %MatrixAppService.Bridge.Room{data: %{"type" => "ap_user"}} ->
         Kazarma.ActivityPub.Actor.public_activites_for_actor(actor)
 
-      nil ->
+      _ ->
         :unbridged_ap
     end
   end
