@@ -8,13 +8,22 @@
   <:page>
     <div class="mx-4 lg:mx-12 col-span-2">
       <%= case @activities do %>
-        <% :unbridged -> %>
+        <% :unbridged_ap -> %>
           <div id="unbridged" class="card mx-auto my-4 shadow-lg side bg-base-100 prose">
             <div class="card-body">
               <%= gettext("This user is not bridged.") %>
               <%= gettext(
                 "They can follow the relay actor to start being bridged over Matrix: %{relay}.",
                 relay: Kazarma.Address.relay_username()
+              ) %>
+            </div>
+          </div>
+        <% :unbridged_matrix -> %>
+          <div id="unbridged" class="card mx-auto my-4 shadow-lg side bg-base-100 prose">
+            <div class="card-body">
+              <%= gettext("This user is not bridged.") %>
+              <%= gettext(
+                "They can create an outbox room to start being bridged over ActivityPub."
               ) %>
             </div>
           </div>

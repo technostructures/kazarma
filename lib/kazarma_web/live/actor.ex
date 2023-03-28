@@ -27,14 +27,7 @@ defmodule KazarmaWeb.Actor do
 
     {:ok, actor} = get_actor(username)
 
-    public_activities =
-      case Kazarma.Bridge.get_room_by_remote_id(actor.ap_id) do
-        %MatrixAppService.Bridge.Room{} ->
-          Kazarma.ActivityPub.Actor.public_activites_for_actor(actor)
-
-        nil ->
-          :unbridged
-      end
+    public_activities = public_activities(actor)
 
     page_title = String.replace(actor.data["name"], ~r/(?<=.{20})(.+)/s, "...")
 
@@ -79,5 +72,25 @@ defmodule KazarmaWeb.Actor do
   @impl true
   def handle_info({:redirect, to}, socket) do
     {:noreply, push_navigate(socket, to: to)}
+  end
+
+  defp public_activities(%ActivityPub.Actor{local: true, ap_id: ap_id} = actor) do
+    case Kazarma.Bridge.get_room_by_remote_id(ap_id) do
+      %MatrixAppService.Bridge.Room{data: %{"type" => "matrix_user"}} ->
+        Kazarma.ActivityPub.Actor.public_activites_for_actor(actor)
+
+      nil ->
+        :unbridged_matrix
+    end
+  end
+
+  defp public_activities(%ActivityPub.Actor{local: false, ap_id: ap_id} = actor) do
+    case Kazarma.Bridge.get_room_by_remote_id(ap_id) do
+      %MatrixAppService.Bridge.Room{data: %{"type" => "ap_user"}} ->
+        Kazarma.ActivityPub.Actor.public_activites_for_actor(actor)
+
+      nil ->
+        :unbridged_ap
+    end
   end
 end
