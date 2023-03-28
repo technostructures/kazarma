@@ -33,15 +33,13 @@ defmodule Kazarma.ActivityPub.Activity do
 
     attachment = attachment_from_matrix_event_content(event.content)
 
-    # @TODO
-    # mentions = get_mentions_from_event(event) ++ Keyword.get(params, :additional_mentions, [])
-    mentions = Keyword.get(params, :additional_mentions, [])
+    manual_mentions = Kazarma.Matrix.Transaction.get_mentions_from_event_content(event.content)
 
-    # @TODO
-    # content = Kazarma.Matrix.Transaction.build_text_content(event.content, mentions)
-    content = Kazarma.Matrix.Transaction.build_text_content(event.content)
+    additional_mentions = Keyword.get(params, :additional_mentions, [])
 
-    tags = Enum.map(mentions, &mention_tag_for_actor/1)
+    content = Kazarma.Matrix.Transaction.build_text_content(event.content, additional_mentions)
+
+    tags = Enum.map(manual_mentions ++ additional_mentions, &mention_tag_for_actor/1)
 
     case create(
            type: type,
@@ -154,8 +152,8 @@ defmodule Kazarma.ActivityPub.Activity do
     }
   end
 
-  defp mention_name(%{local: true, data: %{"preferredUsername" => name}}), do: name
-  defp mention_name(%{local: false, username: name}), do: name
+  def mention_name(%{local: true, data: %{"preferredUsername" => name}}), do: name
+  def mention_name(%{local: false, username: name}), do: name
 
   def attachment_from_matrix_event_content(%{"msgtype" => "m.text"}), do: nil
 

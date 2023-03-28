@@ -12,6 +12,8 @@ defmodule Kazarma.Matrix.Transaction do
 
   require Logger
 
+  @matrix_mention_regex ~r/<a href="https:\/\/matrix\.to\/#\/(?<matrix_id>.+?)">(?<display_name>.*?)<\/a>/
+
   @impl MatrixAppService.Adapter.Transaction
   def new_event(
         %Event{
@@ -269,26 +271,48 @@ defmodule Kazarma.Matrix.Transaction do
 
   defp is_tagged_redact(_), do: false
 
-  def build_text_content(%{
+  def get_mentions_from_event_content(%{
         "msgtype" => "m.text",
         "format" => "org.matrix.custom.html",
         "formatted_body" => formatted_body
       }) do
+    Regex.scan(@matrix_mention_regex, formatted_body, capture: :all_names)
+    |> Enum.map(fn [_display_name, matrix_id] ->
+      case Address.matrix_id_to_actor(matrix_id) do
+        {:ok, actor} -> actor
+        _ -> nil
+      end
+    end)
+    |> Enum.filter(fn actor -> !is_nil(actor) end)
+  end
+
+  def get_mentions_from_event_content(_), do: []
+
+  def build_text_content(
+        %{
+          "msgtype" => "m.text",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" => formatted_body
+        },
+        additional_mentions
+      ) do
     formatted_body
     |> remove_mx_reply
     |> convert_mentions
+    |> add_additional_mentions(additional_mentions)
 
     # |> HtmlSanitizeEx.Scrubber.scrub(Kazarma.Matrix.Scrubber) # we may need an ActivityPub.Scrubber
   end
 
-  def build_text_content(%{"msgtype" => "m.text", "body" => body}), do: body
+  def build_text_content(%{"msgtype" => "m.text", "body" => body}, additional_mentions),
+    do: add_additional_mentions(body, additional_mentions)
 
-  def build_text_content(_), do: ""
+  def build_text_content(_, _), do: ""
 
   defp ap_mention_from_matrix_id(matrix_id) do
     case Address.matrix_id_to_actor(matrix_id) do
       {:ok, actor} ->
-        ~s(<span class="h-card"><a href="#{actor.ap_id}" class="u-url mention">@<span>#{actor.username}</span></a></span>)
+        ~s(<span class="h-card"><a href="#{actor.ap_id}" class="u-url mention">@<span>#{Kazarma.ActivityPub.Activity.mention_name(actor)}</span></a></span>)
 
       _ ->
         case Address.matrix_id_to_ap_username(matrix_id) do
@@ -303,10 +327,7 @@ defmodule Kazarma.Matrix.Transaction do
   end
 
   def convert_mentions(content) do
-    ap_mention_regex =
-      ~r/<a href="https:\/\/matrix\.to\/#\/(?<matrix_id>.+?)">(?<display_name>.*?)<\/a>/
-
-    Regex.replace(ap_mention_regex, content, fn _, matrix_id, _display_name ->
+    Regex.replace(@matrix_mention_regex, content, fn _, matrix_id, _display_name ->
       ap_mention_from_matrix_id(matrix_id)
     end)
   end
@@ -314,4 +335,16 @@ defmodule Kazarma.Matrix.Transaction do
   defp remove_mx_reply(content) do
     Regex.replace(~r/\<mx\-reply\>.*\<\/mx\-reply\>/s, content, "")
   end
+
+  defp add_additional_mentions(content, []), do: content
+
+  defp add_additional_mentions(content, [
+         %ActivityPub.Actor{ap_id: ap_id, username: username} | rest
+       ]),
+       do:
+         add_additional_mentions(
+           ~s(<span class="h-card"><a href="#{ap_id}" class="u-url mention">@<span>#{username}</span></a></span>) <>
+             content,
+           rest
+         )
 end

@@ -94,13 +94,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           object: %{
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",
-            "content" => "hello",
+            "content" =>
+              "<span class=\"h-card\"><a href=\"https://pleroma.interhacker.space/users/test_user_bob2\" class=\"u-url mention\">@<span>test_user_bob2@pleroma.interhacker.space</span></a></span>hello",
             "context" => _,
             "conversation" => _,
             "tag" => [
               %{
                 "href" => "https://pleroma.interhacker.space/users/test_user_bob2",
-                "name" => "@test_user_bob2",
+                "name" => "@test_user_bob2@pleroma.interhacker.space",
                 "type" => "Mention"
               }
             ],
