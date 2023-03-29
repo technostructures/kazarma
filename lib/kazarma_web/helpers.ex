@@ -104,8 +104,11 @@ defmodule KazarmaWeb.Helpers do
     end
   end
 
-  def put_session_locale(%{"cldr_locale" => locale}),
-    do: Gettext.put_locale(KazarmaWeb.Gettext, String.slice(locale, 0, 2))
+  def put_session_locale(%{"cldr_locale" => cldr_locale}) do
+    {:ok, locale} = KazarmaWeb.Cldr.validate_locale(cldr_locale)
+
+    Gettext.put_locale(KazarmaWeb.Gettext, locale.gettext_locale_name)
+  end
 
   def put_session_locale(_), do: nil
 
