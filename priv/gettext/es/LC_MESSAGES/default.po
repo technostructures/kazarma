@@ -19,23 +19,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: lib/kazarma_web/controllers/search_controller.ex:17
-#: lib/kazarma_web/live/actor.ex:73
-#: lib/kazarma_web/live/index.ex:33
-#: lib/kazarma_web/live/object.ex:64
+#: lib/kazarma_web/live/actor.ex:68
+#: lib/kazarma_web/live/index.ex:31
+#: lib/kazarma_web/live/object.ex:70
 #, elixir-autogen, elixir-format
 msgid "User not found"
 msgstr "Usuario no encontrado"
 
 #: lib/kazarma_web/components/button.ex:14
 #: lib/kazarma_web/components/button.ex:15
-#: lib/kazarma_web/components/profile.ex:55
+#: lib/kazarma_web/components/profile.ex:54
 #, elixir-autogen, elixir-format
 msgid "Copy"
 msgstr "Copiar"
 
 #: lib/kazarma_web/components/object.ex:70
 #: lib/kazarma_web/components/object.ex:71
-#: lib/kazarma_web/components/profile.ex:45
+#: lib/kazarma_web/components/profile.ex:44
 #, elixir-autogen, elixir-format
 msgid "Open"
 msgstr "Abrir"
@@ -47,7 +47,7 @@ msgid "Search"
 msgstr "Buscar"
 
 #: lib/kazarma_web/components/object.ex:97
-#: lib/kazarma_web/components/profile.ex:74
+#: lib/kazarma_web/components/profile.ex:73
 #, elixir-autogen, elixir-format
 msgid "%{actor_name}'s avatar"
 msgstr "avatar de %{actor_name}"
@@ -135,7 +135,7 @@ msgstr "Los registros de los puentes pueden incluir metadatos"
 msgid "Bridge logs can include metadata and content"
 msgstr "Los registros puente pueden incluir metadatos y contenidos"
 
-#: lib/kazarma_web/live/actor.html.heex:24
+#: lib/kazarma_web/live/actor.html.heex:33
 #, elixir-autogen, elixir-format
 msgid "No activity yet."
 msgstr "Aún no hay actividad."
@@ -148,6 +148,7 @@ msgstr ""
 "%{relay}."
 
 #: lib/kazarma_web/live/actor.html.heex:14
+#: lib/kazarma_web/live/actor.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "This user is not bridged."
 msgstr "Este usuario no tiene puente."
@@ -156,3 +157,43 @@ msgstr "Este usuario no tiene puente."
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr "cerrar"
+
+#: lib/kazarma_web/components/core_components.ex:189
+#, elixir-autogen, elixir-format
+msgid "Attempting to reconnect"
+msgstr ""
+
+#: lib/kazarma_web/components/layouts/root.html.heex:9
+#, elixir-autogen, elixir-format
+msgid "Bridge Matrix and ActivityPub"
+msgstr ""
+
+#: lib/kazarma_web/components/profile.ex:53
+#, elixir-autogen, elixir-format
+msgid "Click to copy"
+msgstr ""
+
+#: lib/kazarma_web/components/profile.ex:43
+#, elixir-autogen, elixir-format
+msgid "Click to open"
+msgstr ""
+
+#: lib/kazarma_web/components/core_components.ex:179
+#, elixir-autogen, elixir-format
+msgid "Error!"
+msgstr ""
+
+#: lib/kazarma_web/components/core_components.ex:178
+#, elixir-autogen, elixir-format
+msgid "Success!"
+msgstr ""
+
+#: lib/kazarma_web/live/actor.html.heex:25
+#, elixir-autogen, elixir-format
+msgid "They can create an outbox room to start being bridged over ActivityPub."
+msgstr ""
+
+#: lib/kazarma_web/components/core_components.ex:183
+#, elixir-autogen, elixir-format
+msgid "We can't find the internet"
+msgstr ""
