@@ -89,7 +89,7 @@ config :kazarma, Oban,
 config :kazarma, :matrix, client: MatrixAppService.Client
 config :kazarma, :activity_pub, server: ActivityPub
 
-config :kazarma, KazarmaWeb.Gettext, default_locale: "en", locales: ~w(en fr es)
+config :kazarma, KazarmaWeb.Gettext, default_locale: "en", locales: ~w(en fr es nb)
 
 # @TODO not implemented
 config :kazarma, bridge_remote_matrix_users: false
