@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-03-28 16:03+0200\n"
-"PO-Revision-Date: 2023-03-28 14:26+0000\n"
+"PO-Revision-Date: 2023-03-31 00:39+0000\n"
 "Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/kazarma/"
 "kazarma/nb_NO/>\n"
@@ -165,39 +165,40 @@ msgstr "lukk"
 #: lib/kazarma_web/components/core_components.ex:189
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
-msgstr ""
+msgstr "Prøver å koble til igjen …"
 
 #: lib/kazarma_web/components/layouts/root.html.heex:9
 #, elixir-autogen, elixir-format
 msgid "Bridge Matrix and ActivityPub"
-msgstr ""
+msgstr "Lag bro fra Matrix til ActivityPub"
 
 #: lib/kazarma_web/components/profile.ex:53
 #, elixir-autogen, elixir-format
 msgid "Click to copy"
-msgstr ""
+msgstr "Klikk for å kopiere"
 
 #: lib/kazarma_web/components/profile.ex:43
 #, elixir-autogen, elixir-format
 msgid "Click to open"
-msgstr ""
+msgstr "Klikk for å åpne"
 
 #: lib/kazarma_web/components/core_components.ex:179
 #, elixir-autogen, elixir-format
 msgid "Error!"
-msgstr ""
+msgstr "Feil."
 
 #: lib/kazarma_web/components/core_components.ex:178
 #, elixir-autogen, elixir-format
 msgid "Success!"
-msgstr ""
+msgstr "Vellykket."
 
 #: lib/kazarma_web/live/actor.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "They can create an outbox room to start being bridged over ActivityPub."
 msgstr ""
+"De kan opprette et utboks-rom for å begynne brotilknytning over ActivityPub."
 
 #: lib/kazarma_web/components/core_components.ex:183
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
-msgstr ""
+msgstr "Kan ikke koble til Internett"
