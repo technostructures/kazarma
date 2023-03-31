@@ -98,17 +98,114 @@ defmodule KazarmaWeb.Components.Profile do
     """
   end
 
+  def actions_modal(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
+    ~H"""
+    <KazarmaWeb.CoreComponents.modal id="actions-modal">
+      <h2>
+        <%= gettext("Interact with %{name}", name: display_name(@actor)) %>
+      </h2>
+      <h3>
+        <%= gettext("Send a Direct Message (DM)") %>
+      </h3>
+      <p>
+        <%= gettext("Compatible platform: Mastodon, Pleroma.") %>
+      </p>
+      <p>
+        <%= gettext("This user can receive direct messages (posts with a \"private\" visibility.") %>
+      </p>
+      <h3>
+        <%= gettext("Start a 1-to-1 chat") %>
+      </h3>
+      <p>
+        <%= gettext("Compatible platform: Pleroma.") %>
+      </p>
+      <p>
+        <%= gettext("Start a new chat with this user by entering their ActivityPub address.") %>
+      </p>
+      <h3>
+        <%= gettext("Mention this user") %>
+      </h3>
+      <p>
+        <%= gettext("This user can be mentioned in a public post.") %>
+        <%= gettext("If you are bridged, they will be invited to your room to see your mention.") %>
+      </p>
+      <h3>
+        <%= gettext("Add in a group") %>
+      </h3>
+      <p>
+        <%= gettext("Compatible platform: Mobilizon.") %>
+      </p>
+      <p>
+        <%= gettext(
+          "If your Mobilizon intance federates with Kazarma, you can add this user to a group."
+        ) %>
+        <%= gettext("They will be able to participate in group discussions.") %>
+      </p>
+    </KazarmaWeb.CoreComponents.modal>
+    """
+  end
+
+  def actions_modal(%{actor: %ActivityPub.Actor{local: false}} = assigns) do
+    assigns = assign(assigns, :outbox_room, outbox_room(assigns.actor))
+
+    ~H"""
+    <KazarmaWeb.CoreComponents.modal id="actions-modal">
+      <h2>
+        <%= gettext("Interact with %{name}", name: display_name(@actor)) %>
+      </h2>
+      <h3>
+        <%= gettext("Send a Direct Message (DM)") %>
+      </h3>
+      <p>
+        <%= gettext("Compatible platform: Mastodon, Pleroma.") %>
+      </p>
+      <p>
+        <%= gettext("Start a DM with this user by inviting them to a private non-encrypted room.") %>
+      </p>
+      <h3>
+        <%= gettext("Start a 1-to-1 chat") %>
+      </h3>
+      <p>
+        <%= gettext("Compatible platform: Pleroma.") %>
+      </p>
+      <p>
+        <%= gettext("Start a 1-to-1 chat with this user by starting a new direct conversation.") %>
+      </p>
+      <h3 :if={@outbox_room}>
+        <%= gettext("See their public activity") %>
+      </h3>
+      <p :if={@outbox_room}>
+        <%= gettext("This user has opted-in to public activity bridging.") %>
+        <%= gettext("You can join their room and reply to their posts.") %>
+        <%= gettext(
+          "If you send a message to their room that is not a reply, it will send a public post mentioning them."
+        ) %>
+      </p>
+    </KazarmaWeb.CoreComponents.modal>
+    """
+  end
+
   def puppet_profile(assigns) do
     ~H"""
     <div class="card shadow-lg bg-accent base-100 mt-4">
       <div class="card-body p-6">
-        <div class="flex flex-row">
+        <div class="flex flex-row justify-center">
           <div class="mr-2"><%= opposite_type_icon(@actor) %></div>
           via
           <div class="ml-2"><KazarmaWeb.Components.Icon.kazarma_icon /></div>
         </div>
-        <div class="">
-          <.puppet_addresses actor={@actor} />
+        <div class="flex flex-row items-center justify-center">
+          <div class="grid">
+            <.puppet_addresses actor={@actor} />
+          </div>
+          <div class="">
+            <button
+              class="btn btn-circle btn-primary min-h-0 h-6 w-6 ml-4"
+              phx-click={KazarmaWeb.CoreComponents.show_modal("actions-modal")}
+            >
+              <%= gettext("?") %>
+            </button>
+          </div>
         </div>
       </div>
     </div>
