@@ -1,3 +1,4 @@
+<KazarmaWeb.Components.Profile.actions_modal actor={@actor} />
 <KazarmaWeb.Components.Drawer.drawer>
   <:sidebar>
     <KazarmaWeb.Components.Profile.show actor={@actor} />
@@ -11,20 +12,35 @@
         <% :unbridged_ap -> %>
           <div id="unbridged" class="card mx-auto my-4 shadow-lg side bg-base-100 prose">
             <div class="card-body">
-              <%= gettext("This user is not bridged.") %>
-              <%= gettext(
-                "They can follow the relay actor to start being bridged over Matrix: %{relay}.",
-                relay: Kazarma.Address.relay_username()
-              ) %>
+              <p>
+                <%= gettext("This user is not bridged.") %>
+              </p>
+              <p>
+                <%= gettext("If this is your account, you can") %>
+                <a
+                  class="link link-primary"
+                  phx-click={KazarmaWeb.CoreComponents.show_modal("bridge-ap-modal")}
+                >
+                  <%= gettext("opt-in to public bridging.") %>
+                </a>
+              </p>
             </div>
           </div>
         <% :unbridged_matrix -> %>
           <div id="unbridged" class="card mx-auto my-4 shadow-lg side bg-base-100 prose">
             <div class="card-body">
-              <%= gettext("This user is not bridged.") %>
-              <%= gettext(
-                "They can create an outbox room to start being bridged over ActivityPub."
-              ) %>
+              <p>
+                <%= gettext("This user is not bridged.") %>
+              </p>
+              <p>
+                <%= gettext("If this is your account, you can") %>
+                <a
+                  class="link link-primary"
+                  phx-click={KazarmaWeb.CoreComponents.show_modal("bridge-matrix-modal")}
+                >
+                  <%= gettext("opt-in to public bridging.") %>
+                </a>
+              </p>
             </div>
           </div>
         <% [] -> %>

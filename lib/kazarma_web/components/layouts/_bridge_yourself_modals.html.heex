@@ -1,0 +1,55 @@
+<KazarmaWeb.CoreComponents.modal id="bridge-matrix-modal">
+  <h3>
+    <%= gettext("Bridge yourself from Matrix") %>
+  </h3>
+  <p>
+    <%= gettext(
+      "You can publish posts on the ActivityPub network by following these instructions:"
+    ) %>
+  </p>
+  <ol>
+    <li>
+      <%= gettext("Create a public room") %>
+    </li>
+    <li>
+      <%= gettext("Invite the bridge bot: ") %>
+      <pre class="inline p-2"><%= Kazarma.Address.bot_matrix_id() %></pre>
+    </li>
+    <li>
+      <%= gettext("Send the following message: ") %>
+      <pre><%= "!kazarma outbox" %></pre>
+    </li>
+  </ol>
+  <p>
+    <%= gettext(
+      "All messages that you send in this room will be published with a \"public\" visibility."
+    ) %>
+    <%= gettext(
+      "This means that they will appear on the timeline of anyone following you, and on federated timelines."
+    ) %>
+  </p>
+  <p>
+    <%= gettext(
+      "Matrix users sending a message in your outbox room will create a public post that mentions you."
+    ) %>
+  </p>
+</KazarmaWeb.CoreComponents.modal>
+<KazarmaWeb.CoreComponents.modal id="bridge-ap-modal">
+  <h3>
+    <%= gettext("Bridge yourself from ActivityPub") %>
+  </h3>
+  <p>
+    <%= gettext("To bridge your public posts, you need to follow the relay actor: ") %>
+    <pre class="inline p-2"><%= Kazarma.Address.relay_username() %></pre>
+  </p>
+  <p>
+    <%= gettext(
+      "Kazarma will create a public Matrix room where your public activities will be bridged."
+    ) %>
+  </p>
+  <p>
+    <%= gettext(
+      "Matrix users sending a message in this room will create a public post that mentions you."
+    ) %>
+  </p>
+</KazarmaWeb.CoreComponents.modal>

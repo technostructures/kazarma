@@ -5,39 +5,51 @@
     </div>
     <div :if={@help} class="card-body">
       <h2>
-        <%= gettext("Quick guide") %>
+        <!-- @TODO: add a title config -->
+        <%= gettext("Kazarma") %>
       </h2>
-      <h3>
-        <%= gettext("Search for a Matrix user") %>
-      </h3>
       <p>
+        <%= gettext("Kazarma is a bridge between Matrix and ActivityPub.") %>
         <%= gettext(
-          "To search for a Matrix user, enter their Matrix username, in the form @user:server."
+          "It currently supports the following ActivityPub servers: Mastodon, Pleroma, PeerTube, Mobilizon."
         ) %>
       </p>
-
       <h3>
-        <%= gettext("Search for an ActivityPub user") %>
+        <%= gettext("Find someone") %>
       </h3>
       <p>
-        <%= gettext("To search for an ActivityPub user, you can use two types of address:") %>
+        <%= gettext("Use the search field to lookup for someone, and see how to reach them.") %>
       </p>
-
       <ul>
+        <li><%= gettext("For a Matrix user, use their Matrix ID (@user:server)") %></li>
         <li>
-          <%= gettext("their ActivityPub username, in the form user@server;") %>
-        </li>
-        <li>
-          <%= gettext(
-            "their ActivityPub ID, which is often the URL of their profile page (https://server/@user)."
-          ) %>
+          <%= gettext("For an ActivityPub user, user either:") %>
+          <ul>
+            <li>
+              <%= gettext("their ActivityPub username, in the form user@server;") %>
+            </li>
+            <li>
+              <%= gettext(
+                "their ActivityPub ID, which is often the URL of their profile page (https://server/@user)."
+              ) %>
+            </li>
+          </ul>
         </li>
       </ul>
-      <p>
-        <.link href="https://docs.kazar.ma/category/user-guide" target="_blank" class="link">
-          <%= gettext("Also see the rest of the documentation.") %>
-        </.link>
-      </p>
+      <h3>
+        <%= gettext("Bridge yourself") %>
+      </h3>
+      <div class="text-center">
+        <button
+          class="btn"
+          phx-click={KazarmaWeb.CoreComponents.show_modal("bridge-matrix-modal")}
+        >
+          <%= gettext("From Matrix") %>
+        </button>
+        <button class="btn" phx-click={KazarmaWeb.CoreComponents.show_modal("bridge-ap-modal")}>
+          <%= gettext("From ActivityPub") %>
+        </button>
+      </div>
     </div>
     <div :if={@after_text} class="card-body">
       <%= @after_text %>

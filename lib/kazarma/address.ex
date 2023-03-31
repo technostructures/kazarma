@@ -16,9 +16,15 @@ defmodule Kazarma.Address do
   @matrix_puppet_separation "___"
   @ap_puppet_separation "___"
 
+  # @TODO: use different configurable domain for Matrix
   def domain, do: Application.fetch_env!(:activity_pub, :domain)
 
   def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "_ap_")
+
+  # @TODO: make configurable
+  def bot_localpart, do: "_kazarma"
+
+  def bot_matrix_id, do: "@#{bot_localpart()}:#{domain()}"
 
   # @TODO: make configurable
   def relay_localpart, do: "relay"
