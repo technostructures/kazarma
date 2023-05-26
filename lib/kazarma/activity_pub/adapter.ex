@@ -306,14 +306,16 @@ defmodule Kazarma.ActivityPub.Adapter do
 
     case ActivityPub.Actor.get_cached_by_ap_id(followed) do
       {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
-        ActivityPub.accept(%{to: [follower], actor: followed_actor, object: activity.data})
+        Kazarma.ActivityPub.accept(%{to: [follower], actor: followed_actor, object: activity.data})
 
         if followed == Address.relay_ap_id() do
           Logger.debug("follow back remote actor")
           {:ok, follower_actor} = ActivityPub.Actor.get_cached_by_ap_id(follower)
-          ActivityPub.follow(followed_actor, follower_actor)
+          Kazarma.ActivityPub.follow(followed_actor, follower_actor)
           {:ok, _} = Kazarma.RoomType.ApUser.create_outbox(follower_actor)
         end
+
+        :ok
 
       _ ->
         :error
@@ -340,8 +342,10 @@ defmodule Kazarma.ActivityPub.Adapter do
         if followed == Address.relay_ap_id() do
           Logger.debug("unfollow back remote actor")
           {:ok, follower_actor} = ActivityPub.Actor.get_cached_by_ap_id(follower)
-          ActivityPub.unfollow(followed_actor, follower_actor)
+          Kazarma.ActivityPub.unfollow(followed_actor, follower_actor)
           {:ok, _} = Kazarma.RoomType.ApUser.deactivate_outbox(follower_actor)
+
+          :ok
         end
 
       _ ->

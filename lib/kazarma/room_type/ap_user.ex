@@ -217,6 +217,10 @@ defmodule Kazarma.RoomType.ApUser do
               room_id: room_id
             )
 
+            send_emote_bridging_starts(matrix_id, room_id)
+
+            {:ok, room}
+
           # @TODO use the Bridge.Room to know if the room already exists
           {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}} ->
             {:ok, {room_id, _}} =
@@ -235,6 +239,8 @@ defmodule Kazarma.RoomType.ApUser do
             )
 
             send_emote_bridging_starts(matrix_id, room_id)
+
+            {:ok, room}
         end
 
       %MatrixAppService.Bridge.Room{data: %{"type" => "ap_user"}} = room ->
@@ -261,6 +267,8 @@ defmodule Kazarma.RoomType.ApUser do
         {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub])
 
         send_emote_bridging_stops(matrix_id, room_id)
+
+        {:ok, room}
 
       _ ->
         :error

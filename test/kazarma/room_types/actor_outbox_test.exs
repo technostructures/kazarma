@@ -413,4 +413,501 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
              ] = Bridge.list_events()
     end
   end
+
+  describe "When an actor follows the relay actor" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, actor} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://pleroma/pub/actors/alice",
+            "id" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, actor: actor}
+    end
+
+    def follow_fixture do
+      %{
+        data: %{
+          "type" => "Follow",
+          "actor" => "http://pleroma/pub/actors/alice",
+          "object" => "http://kazarma/-/relay"
+        }
+      }
+    end
+
+    def unfollow_fixture do
+      %{
+        data: %{
+          "type" => "Undo",
+          "actor" => "http://pleroma/pub/actors/alice",
+          "object" => %{
+            "type" => "Follow",
+            "object" => "http://kazarma/-/relay"
+          }
+        }
+      }
+    end
+
+    test "following the relay actor makes it accept, follow back and creates the actor room" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@relay:kazarma" ->
+        {:ok, %{"displayname" => "Relay"}}
+      end)
+      |> expect(:register, fn
+        [
+          username: "_ap_alice___pleroma",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "@_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:put_displayname, fn
+        "@_ap_alice___pleroma:kazarma", "Alice", user_id: "@_ap_alice___pleroma:kazarma" ->
+          :ok
+      end)
+      |> expect(:create_room, fn
+        [
+          visibility: :public,
+          name: "Alice",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: "_ap_alice___pleroma",
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
+        ],
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, %{"room_id" => "!room:kazarma"}}
+      end)
+      |> expect(:send_message, fn
+        "!room:kazarma",
+        %{"body" => "has started bridging their public activity \uFEFF", "msgtype" => "m.emote"},
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          :ok
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:accept, fn
+        %{
+          actor: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://kazarma/-/relay",
+              "name" => "Relay",
+              "preferredUsername" => "relay",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/relay",
+            username: "relay@kazarma",
+            deactivated: false
+          },
+          object: %{
+            "actor" => "http://pleroma/pub/actors/alice",
+            "object" => "http://kazarma/-/relay",
+            "type" => "Follow"
+          },
+          to: ["http://pleroma/pub/actors/alice"]
+        } ->
+          :ok
+      end)
+      |> expect(:follow, fn
+        %ActivityPub.Actor{
+          id: nil,
+          data: %{
+            "id" => "http://kazarma/-/relay",
+            "name" => "Relay",
+            "preferredUsername" => "relay",
+            "type" => "Person"
+          },
+          local: true,
+          ap_id: "http://kazarma/-/relay",
+          username: "relay@kazarma"
+        },
+        %ActivityPub.Actor{
+          data: %{
+            "id" => "http://pleroma/pub/actors/alice",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "type" => "Person",
+            "url" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          local: false,
+          ap_id: "http://pleroma/pub/actors/alice",
+          username: "alice@pleroma"
+        } ->
+          :ok
+      end)
+
+      assert :ok = handle_activity(follow_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Room{
+                 data: %{"matrix_id" => "@_ap_alice___pleroma:kazarma", "type" => "ap_user"},
+                 local_id: "!room:kazarma",
+                 remote_id: "http://pleroma/pub/actors/alice"
+               }
+             ] = Bridge.list_rooms()
+    end
+
+    test "following the relay actor makes it accept, follow back and gets the actor room by alias if it already exists" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@relay:kazarma" ->
+        {:ok, %{"displayname" => "Relay"}}
+      end)
+      |> expect(:register, fn
+        [
+          username: "_ap_alice___pleroma",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "@_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:put_displayname, fn
+        "@_ap_alice___pleroma:kazarma", "Alice", user_id: "@_ap_alice___pleroma:kazarma" ->
+          :ok
+      end)
+      |> expect(:create_room, fn
+        [
+          visibility: :public,
+          name: "Alice",
+          topic: nil,
+          is_direct: false,
+          invite: [],
+          room_version: "5",
+          room_alias_name: "_ap_alice___pleroma",
+          initial_state: [
+            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+          ]
+        ],
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}}
+      end)
+      |> expect(:get_alias, fn
+        "#_ap_alice___pleroma:kazarma" ->
+          {:ok, {"!room:kazarma", nil}}
+      end)
+      |> expect(:send_message, fn
+        "!room:kazarma",
+        %{"body" => "has started bridging their public activity \uFEFF", "msgtype" => "m.emote"},
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          :ok
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:accept, fn
+        %{
+          actor: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://kazarma/-/relay",
+              "name" => "Relay",
+              "preferredUsername" => "relay",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/relay",
+            username: "relay@kazarma",
+            deactivated: false
+          },
+          object: %{
+            "actor" => "http://pleroma/pub/actors/alice",
+            "object" => "http://kazarma/-/relay",
+            "type" => "Follow"
+          },
+          to: ["http://pleroma/pub/actors/alice"]
+        } ->
+          :ok
+      end)
+      |> expect(:follow, fn
+        %ActivityPub.Actor{
+          id: nil,
+          data: %{
+            "id" => "http://kazarma/-/relay",
+            "name" => "Relay",
+            "preferredUsername" => "relay",
+            "type" => "Person"
+          },
+          local: true,
+          ap_id: "http://kazarma/-/relay",
+          username: "relay@kazarma"
+        },
+        %ActivityPub.Actor{
+          data: %{
+            "id" => "http://pleroma/pub/actors/alice",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "type" => "Person",
+            "url" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          local: false,
+          ap_id: "http://pleroma/pub/actors/alice",
+          username: "alice@pleroma"
+        } ->
+          :ok
+      end)
+
+      assert :ok = handle_activity(follow_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Room{
+                 data: %{"matrix_id" => "@_ap_alice___pleroma:kazarma", "type" => "ap_user"},
+                 local_id: "!room:kazarma",
+                 remote_id: "http://pleroma/pub/actors/alice"
+               }
+             ] = Bridge.list_rooms()
+    end
+
+    test "following the relay actor makes it accept, follow back and starts bridging again is relay had previously been unfollowed" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@relay:kazarma" ->
+        {:ok, %{"displayname" => "Relay"}}
+      end)
+      |> expect(:register, fn
+        [
+          username: "_ap_alice___pleroma",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "@_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:put_displayname, fn
+        "@_ap_alice___pleroma:kazarma", "Alice", user_id: "@_ap_alice___pleroma:kazarma" ->
+          :ok
+      end)
+      |> expect(:send_message, fn
+        "!room:kazarma",
+        %{"body" => "has started bridging their public activity \uFEFF", "msgtype" => "m.emote"},
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          :ok
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:accept, fn
+        %{
+          actor: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://kazarma/-/relay",
+              "name" => "Relay",
+              "preferredUsername" => "relay",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/relay",
+            username: "relay@kazarma",
+            deactivated: false
+          },
+          object: %{
+            "actor" => "http://pleroma/pub/actors/alice",
+            "object" => "http://kazarma/-/relay",
+            "type" => "Follow"
+          },
+          to: ["http://pleroma/pub/actors/alice"]
+        } ->
+          :ok
+      end)
+      |> expect(:follow, fn
+        %ActivityPub.Actor{
+          id: nil,
+          data: %{
+            "id" => "http://kazarma/-/relay",
+            "name" => "Relay",
+            "preferredUsername" => "relay",
+            "type" => "Person"
+          },
+          local: true,
+          ap_id: "http://kazarma/-/relay",
+          username: "relay@kazarma"
+        },
+        %ActivityPub.Actor{
+          data: %{
+            "id" => "http://pleroma/pub/actors/alice",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "type" => "Person",
+            "url" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          local: false,
+          ap_id: "http://pleroma/pub/actors/alice",
+          username: "alice@pleroma"
+        } ->
+          :ok
+      end)
+
+      {:ok, _room} =
+        Bridge.create_room(%{
+          local_id: "!room:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice",
+          data: %{"type" => "deactivated_ap_user", "matrix_id" => "@_ap_alice___pleroma:kazarma"}
+        })
+
+      assert :ok = handle_activity(follow_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Room{
+                 data: %{"matrix_id" => "@_ap_alice___pleroma:kazarma", "type" => "ap_user"},
+                 local_id: "!room:kazarma",
+                 remote_id: "http://pleroma/pub/actors/alice"
+               }
+             ] = Bridge.list_rooms()
+    end
+  end
+
+  describe "When an actor unfollows the relay actor" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, actor} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://pleroma/pub/actors/alice",
+            "id" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, relay} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Relay",
+            "preferredUsername" => "relay",
+            "url" => "http://kazarma/-/relay",
+            "id" => "http://kazarma/-/relay",
+            "username" => "relay@kazarma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://kazarma/-/relay"
+        })
+
+      {:ok, actor: actor, relay: relay}
+    end
+
+    def follow_fixture do
+      %{
+        data: %{
+          "type" => "Follow",
+          "actor" => "http://pleroma/pub/actors/alice",
+          "object" => "http://kazarma/-/relay"
+        }
+      }
+    end
+
+    def unfollow_fixture do
+      %{
+        data: %{
+          "type" => "Undo",
+          "actor" => "http://pleroma/pub/actors/alice",
+          "object" => %{
+            "type" => "Follow",
+            "object" => "http://kazarma/-/relay"
+          }
+        }
+      }
+    end
+
+    test "unfollowing the relay actor makes it unfollow back and deactivates the actor room" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@relay:kazarma" ->
+        {:ok, %{"displayname" => "Relay"}}
+      end)
+      |> expect(:register, fn
+        [
+          username: "_ap_alice___pleroma",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "@_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:put_displayname, fn
+        "@_ap_alice___pleroma:kazarma", "Alice", user_id: "@_ap_alice___pleroma:kazarma" ->
+          :ok
+      end)
+      |> expect(:send_message, fn
+        "!room:kazarma",
+        %{"body" => "has stopped bridging their public activity \uFEFF", "msgtype" => "m.emote"},
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          :ok
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:unfollow, fn
+        %ActivityPub.Actor{
+          id: nil,
+          data: %{
+            "id" => "http://kazarma/-/relay",
+            "name" => "Relay",
+            "preferredUsername" => "relay",
+            "type" => "Person"
+          },
+          local: true,
+          ap_id: "http://kazarma/-/relay",
+          username: "relay@kazarma"
+        },
+        %ActivityPub.Actor{
+          data: %{
+            "id" => "http://pleroma/pub/actors/alice",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "type" => "Person",
+            "url" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          local: false,
+          ap_id: "http://pleroma/pub/actors/alice",
+          username: "alice@pleroma"
+        } ->
+          :ok
+      end)
+
+      {:ok, _room} =
+        Bridge.create_room(%{
+          local_id: "!room:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice",
+          data: %{"type" => "ap_user", "matrix_id" => "@_ap_alice___pleroma:kazarma"}
+        })
+
+      assert :ok = handle_activity(unfollow_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Room{
+                 data: %{
+                   "matrix_id" => "@_ap_alice___pleroma:kazarma",
+                   "type" => "deactivated_ap_user"
+                 },
+                 local_id: "!room:kazarma",
+                 remote_id: "http://pleroma/pub/actors/alice"
+               }
+             ] = Bridge.list_rooms()
+    end
+  end
 end
