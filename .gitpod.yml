@@ -1,0 +1,18 @@
+tasks:
+  - before: |
+      sudo apt install -y elixir
+  - init: |
+      docker-compose pull kazarma postgres_kazarma
+      docker-compose run --rm kazarma mix do deps.get, ecto.setup
+      docker-compose run --rm kazarma npm --prefix assets install
+    command: |
+      docker-compose up kazarma
+
+ports:
+  - port: 4000
+    onOpen: open-browser
+
+vscode:
+  extensions:
+    - ms-azuretools.vscode-docker
+    - elixir-lsp.elixir-ls

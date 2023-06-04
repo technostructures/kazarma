@@ -7,6 +7,7 @@
 [![Gitlab pipeline status](https://img.shields.io/gitlab/pipeline-status/kazarma/kazarma?branch=main)](https://gitlab.com/kazarma/kazarma/-/pipelines)
 [![coverage report](https://gitlab.com/kazarma/kazarma/badges/main/coverage.svg)](https://gitlab.com/kazarma/kazarma/-/commits/main)
 [![translation status](https://hosted.weblate.org/widgets/kazarma/-/kazarma/svg-badge.svg)](https://hosted.weblate.org/engage/kazarma/)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://gitlab.com/kazarma/kazarma)
 
 A Matrix bridge to ActivityPub. It uses [this ActivityPub library](https://github.com/commonspub/ActivityPub) and [those](https://gitlab.com/kazarma/matrix_app_service.ex) Matrix [libraries](https://gitlab.com/uhoreg/polyjuice_client).
 

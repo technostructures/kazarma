@@ -21,8 +21,8 @@ services:
   kazarma:
     build: .
     # hostname: kazarma.kazarma.local
-    # ports:
-    #   - "4000:4000"
+    ports:
+      - "4000:4000"
     volumes:
       - ./:/opt/app:rw
       - kazarma_deps:/opt/app/deps
