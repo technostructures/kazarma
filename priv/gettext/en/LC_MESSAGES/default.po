@@ -8,8 +8,15 @@
 ## to merge POT files into PO files.
 msgid ""
 msgstr ""
+"PO-Revision-Date: 2023-06-04 14:10+0000\n"
+"Last-Translator: Pierre de Lacroix <pierre@pdelacroix.com>\n"
+"Language-Team: English <https://hosted.weblate.org/projects/kazarma/kazarma/"
+"en/>\n"
 "Language: en\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.18-dev\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:68
@@ -142,7 +149,7 @@ msgstr ""
 #: lib/kazarma_web/components/core_components.ex:177
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
-msgstr ""
+msgstr "Disconnected"
 
 #: lib/kazarma_web/components/profile.ex:206
 #, elixir-autogen, elixir-format
