@@ -8,143 +8,145 @@
 ## to merge POT files into PO files.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2023-06-04 14:10+0000\n"
+"PO-Revision-Date: 2023-06-05 09:09+0000\n"
 "Last-Translator: Pierre de Lacroix <pierre@pdelacroix.com>\n"
 "Language-Team: English <https://hosted.weblate.org/projects/kazarma/kazarma/"
 "en/>\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 4.18-dev\n"
-"Content-Transfer-Encoding: 8bit\n"
 
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:68
 #: lib/kazarma_web/live/index.ex:31
 #: lib/kazarma_web/live/object.ex:70
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "User not found"
-msgstr ""
+msgstr "User not found"
 
 #: lib/kazarma_web/components/button.ex:14
 #: lib/kazarma_web/components/button.ex:15
 #: lib/kazarma_web/components/profile.ex:54
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Copy"
-msgstr ""
+msgstr "Copy"
 
 #: lib/kazarma_web/components/object.ex:70
 #: lib/kazarma_web/components/object.ex:71
 #: lib/kazarma_web/components/profile.ex:44
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Open"
-msgstr ""
+msgstr "Open"
 
 #: lib/kazarma_web/components/layouts/search.html.heex:29
 #: lib/kazarma_web/components/layouts/search.html.heex:30
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Search"
-msgstr ""
+msgstr "Search"
 
 #: lib/kazarma_web/components/object.ex:97
 #: lib/kazarma_web/components/profile.ex:73
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "%{actor_name}'s avatar"
-msgstr ""
+msgstr "%{actor_name}'s avatar"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:1
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Skip to content"
-msgstr ""
+msgstr "Skip to content"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:2
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Skip to search"
-msgstr ""
+msgstr "Skip to search"
 
 #: lib/kazarma_web/live/index.html.heex:32
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "their ActivityPub ID, which is often the URL of their profile page (https://server/@user)."
 msgstr ""
+"their ActivityPub ID, which is often the URL of their profile page (https://"
+"server/@user)."
 
 #: lib/kazarma_web/live/index.html.heex:29
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "their ActivityPub username, in the form user@server;"
-msgstr ""
+msgstr "their ActivityPub username, in the form user@server;"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:23
 #: lib/kazarma_web/components/layouts/app.html.heex:24
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Help"
-msgstr ""
+msgstr "Help"
 
 #: lib/kazarma_web/components/layouts/search.html.heex:13
 #: lib/kazarma_web/components/layouts/search.html.heex:14
 #: lib/kazarma_web/components/layouts/search.html.heex:23
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Matrix or ActivityPub identifier"
-msgstr ""
+msgstr "Matrix or ActivityPub identifier"
 
 #: lib/kazarma_web/components/core_components.ex:474
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Actions"
-msgstr ""
+msgstr "Actions"
 
 #: lib/kazarma_web/components/layouts/_log_level.html.heex:11
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Bridge logs can include metadata"
-msgstr ""
+msgstr "Bridge logs can include metadata"
 
 #: lib/kazarma_web/components/layouts/_log_level.html.heex:14
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Bridge logs can include metadata and content"
-msgstr ""
+msgstr "Bridge logs can include metadata and content"
 
 #: lib/kazarma_web/live/actor.html.heex:49
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "No activity yet."
-msgstr ""
+msgstr "No activity yet."
 
 #: lib/kazarma_web/live/actor.html.heex:16
 #: lib/kazarma_web/live/actor.html.heex:33
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "This user is not bridged."
-msgstr ""
+msgstr "This user is not bridged."
 
 #: lib/kazarma_web/components/core_components.ex:77
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "close"
-msgstr ""
+msgstr "close"
 
 #: lib/kazarma_web/components/core_components.ex:183
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Attempting to reconnect"
-msgstr ""
+msgstr "Attempting to reconnect"
 
 #: lib/kazarma_web/components/layouts/root.html.heex:9
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Bridge Matrix and ActivityPub"
-msgstr ""
+msgstr "Bridge Matrix and ActivityPub"
 
 #: lib/kazarma_web/components/profile.ex:53
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Click to copy"
-msgstr ""
+msgstr "Click to copy"
 
 #: lib/kazarma_web/components/profile.ex:43
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Click to open"
-msgstr ""
+msgstr "Click to open"
 
 #: lib/kazarma_web/components/core_components.ex:173
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Error!"
-msgstr ""
+msgstr "Error!"
 
 #: lib/kazarma_web/components/core_components.ex:172
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Success!"
-msgstr ""
+msgstr "Success!"
 
 #: lib/kazarma_web/components/core_components.ex:177
 #, elixir-autogen, elixir-format
@@ -152,233 +154,255 @@ msgid "We can't find the internet"
 msgstr "Disconnected"
 
 #: lib/kazarma_web/components/profile.ex:206
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "?"
-msgstr ""
+msgstr "?"
 
 #: lib/kazarma_web/components/profile.ex:133
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Add in a group"
-msgstr ""
+msgstr "Add in a group"
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:24
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "All messages that you send in this room will be published with a \"public\" visibility."
 msgstr ""
+"All messages that you send in this room will be published with a \"public\" "
+"visibility."
 
 #: lib/kazarma_web/live/index.html.heex:40
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Bridge yourself"
-msgstr ""
+msgstr "Bridge yourself"
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:39
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Bridge yourself from ActivityPub"
-msgstr ""
+msgstr "Bridge yourself from ActivityPub"
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:3
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Bridge yourself from Matrix"
-msgstr ""
+msgstr "Bridge yourself from Matrix"
 
 #: lib/kazarma_web/components/profile.ex:111
 #: lib/kazarma_web/components/profile.ex:160
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Compatible platform: Mastodon, Pleroma."
-msgstr ""
+msgstr "Compatible platform: Mastodon, Pleroma."
 
 #: lib/kazarma_web/components/profile.ex:136
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Compatible platform: Mobilizon."
-msgstr ""
+msgstr "Compatible platform: Mobilizon."
 
 #: lib/kazarma_web/components/profile.ex:120
 #: lib/kazarma_web/components/profile.ex:169
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Compatible platform: Pleroma."
-msgstr ""
+msgstr "Compatible platform: Pleroma."
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:12
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Create a public room"
-msgstr ""
+msgstr "Create a public room"
 
 #: lib/kazarma_web/live/index.html.heex:18
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Find someone"
-msgstr ""
+msgstr "Find someone"
 
 #: lib/kazarma_web/live/index.html.heex:24
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "For a Matrix user, use their Matrix ID (@user:server)"
-msgstr ""
+msgstr "For a Matrix user, use their Matrix ID (@user:server)"
 
 #: lib/kazarma_web/live/index.html.heex:26
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "For an ActivityPub user, user either:"
-msgstr ""
+msgstr "For an ActivityPub user, user either:"
 
 #: lib/kazarma_web/live/index.html.heex:50
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "From ActivityPub"
-msgstr ""
+msgstr "From ActivityPub"
 
 #: lib/kazarma_web/live/index.html.heex:47
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "From Matrix"
-msgstr ""
+msgstr "From Matrix"
 
 #: lib/kazarma_web/live/actor.html.heex:19
 #: lib/kazarma_web/live/actor.html.heex:36
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "If this is your account, you can"
-msgstr ""
+msgstr "If this is your account, you can"
 
 #: lib/kazarma_web/components/profile.ex:130
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "If you are bridged, they will be invited to your room to see your mention."
 msgstr ""
+"If you are bridged, they will be invited to your room to see your mention."
 
 #: lib/kazarma_web/components/profile.ex:180
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "If you send a message to their room that is not a reply, it will send a public post mentioning them."
 msgstr ""
+"If you send a message to their room that is not a reply, it will send a "
+"public post mentioning them."
 
 #: lib/kazarma_web/components/profile.ex:139
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "If your Mobilizon intance federates with Kazarma, you can add this user to a group."
 msgstr ""
+"If your Mobilizon intance federates with Kazarma, you can add this user to a "
+"group."
 
 #: lib/kazarma_web/components/profile.ex:105
 #: lib/kazarma_web/components/profile.ex:154
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Interact with %{name}"
-msgstr ""
+msgstr "Interact with %{name}"
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:15
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Invite the bridge bot: "
-msgstr ""
+msgstr "Invite the bridge bot: "
 
 #: lib/kazarma_web/live/index.html.heex:13
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "It currently supports the following ActivityPub servers: Mastodon, Pleroma, PeerTube, Mobilizon."
 msgstr ""
+"It currently supports the following ActivityPub servers: Mastodon, Pleroma, "
+"PeerTube, Mobilizon."
 
 #: lib/kazarma_web/live/index.html.heex:9
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Kazarma"
-msgstr ""
+msgstr "Kazarma"
 
 #: lib/kazarma_web/live/index.html.heex:12
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Kazarma is a bridge between Matrix and ActivityPub."
-msgstr ""
+msgstr "Kazarma is a bridge between Matrix and ActivityPub."
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:46
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Kazarma will create a public Matrix room where your public activities will be bridged."
 msgstr ""
+"Kazarma will create a public Matrix room where your public activities will "
+"be bridged."
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:51
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Matrix users sending a message in this room will create a public post that mentions you."
 msgstr ""
+"Matrix users sending a message in this room will create a public post that "
+"mentions you."
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:32
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Matrix users sending a message in your outbox room will create a public post that mentions you."
 msgstr ""
+"Matrix users sending a message in your outbox room will create a public post "
+"that mentions you."
 
 #: lib/kazarma_web/components/profile.ex:126
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Mention this user"
-msgstr ""
+msgstr "Mention this user"
 
 #: lib/kazarma_web/components/profile.ex:175
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "See their public activity"
-msgstr ""
+msgstr "See their public activity"
 
 #: lib/kazarma_web/components/profile.ex:108
 #: lib/kazarma_web/components/profile.ex:157
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Send a Direct Message (DM)"
-msgstr ""
+msgstr "Send a Direct Message (DM)"
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:19
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Send the following message: "
-msgstr ""
+msgstr "Send the following message: "
 
 #: lib/kazarma_web/components/profile.ex:117
 #: lib/kazarma_web/components/profile.ex:166
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Start a 1-to-1 chat"
-msgstr ""
+msgstr "Start a 1-to-1 chat"
 
 #: lib/kazarma_web/components/profile.ex:172
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Start a 1-to-1 chat with this user by starting a new direct conversation."
 msgstr ""
+"Start a 1-to-1 chat with this user by starting a new direct conversation."
 
 #: lib/kazarma_web/components/profile.ex:163
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Start a DM with this user by inviting them to a private non-encrypted room."
 msgstr ""
+"Start a DM with this user by inviting them to a private non-encrypted room."
 
 #: lib/kazarma_web/components/profile.ex:123
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Start a new chat with this user by entering their ActivityPub address."
-msgstr ""
+msgstr "Start a new chat with this user by entering their ActivityPub address."
 
 #: lib/kazarma_web/components/profile.ex:142
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "They will be able to participate in group discussions."
-msgstr ""
+msgstr "They will be able to participate in group discussions."
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:27
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "This means that they will appear on the timeline of anyone following you, and on federated timelines."
 msgstr ""
+"This means that they will appear on the timeline of anyone following you, "
+"and on federated timelines."
 
 #: lib/kazarma_web/components/profile.ex:129
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "This user can be mentioned in a public post."
-msgstr ""
+msgstr "This user can be mentioned in a public post."
 
 #: lib/kazarma_web/components/profile.ex:114
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "This user can receive direct messages (posts with a \"private\" visibility."
 msgstr ""
+"This user can receive direct messages (posts with a \"private\" visibility."
 
 #: lib/kazarma_web/components/profile.ex:178
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "This user has opted-in to public activity bridging."
-msgstr ""
+msgstr "This user has opted-in to public activity bridging."
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:42
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "To bridge your public posts, you need to follow the relay actor: "
-msgstr ""
+msgstr "To bridge your public posts, you need to follow the relay actor: "
 
 #: lib/kazarma_web/live/index.html.heex:21
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "Use the search field to lookup for someone, and see how to reach them."
-msgstr ""
+msgstr "Use the search field to lookup for someone, and see how to reach them."
 
 #: lib/kazarma_web/components/profile.ex:179
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "You can join their room and reply to their posts."
-msgstr ""
+msgstr "You can join their room and reply to their posts."
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:6
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "You can publish posts on the ActivityPub network by following these instructions:"
 msgstr ""
+"You can publish posts on the ActivityPub network by following these "
+"instructions:"
 
 #: lib/kazarma_web/live/actor.html.heex:24
 #: lib/kazarma_web/live/actor.html.heex:41
-#, elixir-autogen, elixir-format
+#, elixir-autogen, elixir-format, fuzzy
 msgid "opt-in to public bridging."
-msgstr ""
+msgstr "opt-in to public bridging."
