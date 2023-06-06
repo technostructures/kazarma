@@ -412,6 +412,47 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
                }
              ] = Bridge.list_events()
     end
+
+    test "when receiving a Note activity with a reply for an existing conversation do nothing if the replying actor is not bridged" do
+      Kazarma.Matrix.TestClient
+      |> expect(:register, fn
+        [
+          username: "_ap_bob___pleroma",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "_ap_bob___pleroma:kazarma"}}
+
+        [
+          username: "_ap_alice___pleroma",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
+      end)
+
+      %{
+        local_id: "local_id",
+        remote_id: "http://pleroma/pub/actors/alice",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok = handle_activity(public_note_with_reply_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "local_id",
+                 remote_id: "note_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Bridge.list_events()
+    end
   end
 
   describe "When an actor follows the relay actor" do
