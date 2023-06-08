@@ -210,11 +210,10 @@ defmodule Kazarma.RoomTypes.ChatTest do
           msgtype: "m.image"
         ],
         user_id: "@_ap_alice___pleroma:kazarma" ->
-          {:ok,
-           %{
-             msgtype: "m.image",
-             info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}
-           }}
+          %{
+            msgtype: "m.image",
+            info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}
+          }
       end)
       |> expect(:send_message, 2, fn
         "!room:kazarma", {"hello \uFEFF", "hello"}, [user_id: "@_ap_alice___pleroma:kazarma"] ->
@@ -270,11 +269,10 @@ defmodule Kazarma.RoomTypes.ChatTest do
           msgtype: "m.image"
         ],
         user_id: "@_ap_alice___pleroma:kazarma" ->
-          {:ok,
-           %{
-             msgtype: "m.image",
-             info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}
-           }}
+          %{
+            msgtype: "m.image",
+            info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}
+          }
       end)
       |> expect(:send_message, fn
         "!room:kazarma",
