@@ -92,9 +92,9 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def send_attachment_message(matrix_id, room_id, file_bin, opts) do
-    with {:ok, msg} <- create_attachment_message(matrix_id, file_bin, opts) do
-      send_message(room_id, matrix_id, msg)
-    end
+    attachment = create_attachment_message(matrix_id, file_bin, opts)
+
+    send_message(room_id, matrix_id, attachment)
   end
 
   def send_attachment_message_for_ap_data(%{mimetype: mimetype, url: url}, matrix_id, room_id) do
