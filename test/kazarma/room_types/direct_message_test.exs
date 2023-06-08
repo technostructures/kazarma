@@ -192,58 +192,23 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
-      |> expect(:create_attachment_message, 2, fn
-        {:data, _, "example.jpg"},
-        [
-          body: "example.jpg",
-          filename: "example.jpg",
-          mimetype: "image/jpeg",
-          msgtype: "m.image"
-        ],
-        user_id: "@_ap_alice___pleroma:kazarma" ->
-          %{
-            msgtype: "m.image",
-            info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}
-          }
+      |> expect(:upload, 2, fn
+        _examplejpg_data,
+        [filename: "example.jpg", mimetype: "image/jpeg"],
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, "mxc://serveur/example"}
 
-        {:data, _, "example2.jpg"},
-        [
-          body: "example2.jpg",
-          filename: "example2.jpg",
-          mimetype: "image/jpeg",
-          msgtype: "m.image"
-        ],
-        user_id: "@_ap_alice___pleroma:kazarma" ->
-          %{
-            msgtype: "m.image",
-            info: %{"filename" => "example2.jpeg", "mimetype" => "image/jpeg"}
-          }
+        _examplejpg_data,
+        [filename: "example2.jpg", mimetype: "image/jpeg"],
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, "mxc://serveur/example2"}
       end)
-      |> expect(:send_message, 3, fn
-        "!room:kazarma", {"hello \uFEFF", "hello"}, [user_id: "@_ap_alice___pleroma:kazarma"] ->
+      |> expect(:send_message, fn
+        "!room:kazarma",
+        {"hello\nmxc://serveur/example\nmxc://serveur/example2 \uFEFF",
+         "hello<br><img src=\"mxc://serveur/example\" title=\"Attachment\"><br><img src=\"mxc://serveur/example2\" title=\"Attachment\">"},
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "event_id"}
-
-        "!room:kazarma",
-        %{
-          msgtype: "m.image",
-          info: %{
-            "filename" => "example.jpeg",
-            "mimetype" => "image/jpeg"
-          }
-        },
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, :something}
-
-        "!room:kazarma",
-        %{
-          msgtype: "m.image",
-          info: %{
-            "filename" => "example2.jpeg",
-            "mimetype" => "image/jpeg"
-          }
-        },
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, :something}
       end)
 
       %{
@@ -280,55 +245,23 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
-      |> expect(:create_attachment_message, 2, fn
-        {:data, _, "example.jpg"},
-        [
-          body: "example.jpg",
-          filename: "example.jpg",
-          mimetype: "image/jpeg",
-          msgtype: "m.image"
-        ],
-        user_id: "@_ap_alice___pleroma:kazarma" ->
-          %{
-            msgtype: "m.image",
-            info: %{"filename" => "example.jpeg", "mimetype" => "image/jpeg"}
-          }
+      |> expect(:upload, 2, fn
+        _examplejpg_data,
+        [filename: "example.jpg", mimetype: "image/jpeg"],
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, "mxc://serveur/example"}
 
-        {:data, _, "example2.jpg"},
-        [
-          body: "example2.jpg",
-          filename: "example2.jpg",
-          mimetype: "image/jpeg",
-          msgtype: "m.image"
-        ],
-        user_id: "@_ap_alice___pleroma:kazarma" ->
-          %{
-            msgtype: "m.image",
-            info: %{"filename" => "example2.jpeg", "mimetype" => "image/jpeg"}
-          }
+        _examplejpg_data,
+        [filename: "example2.jpg", mimetype: "image/jpeg"],
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, "mxc://serveur/example2"}
       end)
-      |> expect(:send_message, 2, fn
+      |> expect(:send_message, fn
         "!room:kazarma",
-        %{
-          msgtype: "m.image",
-          info: %{
-            "filename" => "example.jpeg",
-            "mimetype" => "image/jpeg"
-          }
-        },
+        {"mxc://serveur/example\nmxc://serveur/example2 \uFEFF",
+         "<img src=\"mxc://serveur/example\" title=\"Attachment\"><br><img src=\"mxc://serveur/example2\" title=\"Attachment\">"},
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "event_id"}
-
-        "!room:kazarma",
-        %{
-          msgtype: "m.image",
-          info: %{
-            "filename" => "example2.jpeg",
-            "mimetype" => "image/jpeg"
-          }
-        },
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, :something}
       end)
 
       %{

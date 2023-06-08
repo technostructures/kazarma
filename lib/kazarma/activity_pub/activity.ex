@@ -183,38 +183,66 @@ defmodule Kazarma.ActivityPub.Activity do
       |> make_text_message()
       |> add_reply(object_data, room_id)
 
-    message_result =
-      text_message &&
-        Kazarma.Matrix.Client.send_tagged_message(
-          room_id,
-          matrix_id,
-          text_message
-        )
+    text_message = add_attachments(matrix_id, text_message, attachments)
 
-    attachments_results = send_attachments(matrix_id, room_id, attachments)
-
-    get_result([message_result | attachments_results])
+    # message_result =
+    text_message &&
+      Kazarma.Matrix.Client.send_tagged_message(
+        room_id,
+        matrix_id,
+        text_message
+      )
   end
 
-  defp send_attachments(from, room_id, [nil | rest]), do: send_attachments(from, room_id, rest)
+  defp add_attachments(_matrix_id, text_message, nil), do: text_message
+  defp add_attachments(_matrix_id, text_message, []), do: text_message
+  defp add_attachments(_matrix_id, text_message, [nil]), do: text_message
 
-  defp send_attachments(from, room_id, [attachment | rest]) do
-    result =
-      normalize_attachment(attachment)
-      |> Client.send_attachment_message_for_ap_data(from, room_id)
-
-    [result | send_attachments(from, room_id, rest)]
+  defp add_attachments(matrix_id, nil, attachments) do
+    add_attachments(matrix_id, {"", ""}, attachments)
   end
 
-  defp send_attachments(_from, _room_id, _), do: []
+  defp add_attachments(matrix_id, {body, formatted_body}, [attachment | rest])
+       when not is_nil(attachment) do
+    {:ok, matrix_url} = Client.upload_media(matrix_id, attachment_url(attachment))
 
-  defp normalize_attachment(%{"mediaType" => mimetype, "url" => [%{"href" => url} | _]}) do
-    %{mimetype: mimetype, url: url}
+    body = body <> add_new_line(body) <> matrix_url
+
+    formatted_body =
+      formatted_body <>
+        add_new_formatted_line(formatted_body) <>
+        formatted_body_for_attachment(matrix_url, attachment)
+
+    add_attachments(matrix_id, {body, formatted_body}, rest)
   end
 
-  defp normalize_attachment(%{"mediaType" => mediatype, "url" => url}) do
-    %{mimetype: mediatype, url: url}
+  defp add_new_line(""), do: ""
+  defp add_new_line(_), do: "\n"
+
+  defp add_new_formatted_line(""), do: ""
+  defp add_new_formatted_line(_), do: "<br>"
+
+  defp formatted_body_for_attachment(url, %{"mediaType" => "image/" <> _} = attachment) do
+    ~s(<img src="#{url}" title="#{attachment_title(attachment)}">)
   end
+
+  defp formatted_body_for_attachment(url, %{"mediaType" => "audio/" <> _} = attachment) do
+    url = Client.get_media_url(url)
+
+    ~s(<audio src="#{url}" title="#{attachment_title(attachment)}"><a href="#{url}">#{attachment_title(attachment)}</a></audio>)
+  end
+
+  defp formatted_body_for_attachment(url, attachment) do
+    url = Client.get_media_url(url)
+
+    ~s(<a href="#{url}">#{attachment_title(attachment)}</a>)
+  end
+
+  defp attachment_url(%{"url" => [%{"href" => url} | _]}), do: url
+  defp attachment_url(%{"url" => url}), do: url
+
+  defp attachment_title(%{"name" => name}) when name not in [nil, ""], do: name
+  defp attachment_title(_), do: "Attachment"
 
   defp make_text_message(%{"source" => nil, "content" => nil}), do: nil
   defp make_text_message(%{"source" => "", "content" => ""}), do: nil
@@ -231,7 +259,7 @@ defmodule Kazarma.ActivityPub.Activity do
   defp make_text_message(%{"source" => ""}), do: nil
 
   defp make_text_message(%{"source" => source}) do
-    source
+    {source, source}
   end
 
   defp make_text_message(%{"content" => nil}), do: nil
@@ -265,9 +293,6 @@ defmodule Kazarma.ActivityPub.Activity do
   defp strip_tags(content) do
     HtmlSanitizeEx.strip_tags(content)
   end
-
-  defp add_reply(body, object_data, room_id) when is_binary(body),
-    do: add_reply({body, body}, object_data, room_id)
 
   defp add_reply({body, formatted_body}, %{"inReplyTo" => reply_to_ap_id}, room_id)
        when not is_nil(reply_to_ap_id) do
@@ -367,11 +392,6 @@ defmodule Kazarma.ActivityPub.Activity do
     )
     |> Kazarma.Repo.all()
   end
-
-  defp get_result([{:error, error} | _rest]), do: {:error, error}
-  defp get_result([{:ok, value} | _rest]), do: {:ok, value}
-  defp get_result([_anything_else | rest]), do: get_result(rest)
-  defp get_result([]), do: nil
 
   defp maybe_put(map, _key, nil), do: map
   defp maybe_put(map, key, value), do: Map.put(map, key, value)
