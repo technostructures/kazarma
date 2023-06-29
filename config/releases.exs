@@ -186,7 +186,7 @@ end
 
 default_locale = System.get_env("DEFAULT_LOCALE")
 
-if default_locale in ["fr", "es"] do
+if default_locale in Gettext.known_locales(KazarmaWeb.Gettext) do
   config :gettext, :default_locale, default_locale
 
   config :ex_cldr,
