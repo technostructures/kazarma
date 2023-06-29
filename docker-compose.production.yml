@@ -13,6 +13,9 @@ services:
     # ports:
     #   - "4000:4000"
     environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_DB=kazarma
+      - DATABASE_USERNAME=kazarma
       - DATABASE_PASSWORD
       - SECRET_KEY_BASE
       - HOMESERVER_TOKEN
@@ -31,6 +34,7 @@ services:
     image: postgres:15-alpine
     environment:
       - POSTGRES_USER=kazarma
-      - POSTGRES_PASSWORD="$DATABASE_PASSWORD"
+      - POSTGRES_DB=kazarma
+      - POSTGRES_PASSWORD=$DATABASE_PASSWORD
     volumes:
       - postgres_files:/var/lib/postgresql/data
