@@ -199,7 +199,7 @@ defmodule KazarmaWeb.Components.Profile do
           <div class="ml-2"><KazarmaWeb.Components.Icon.kazarma_icon /></div>
         </div>
         <div class="flex flex-row items-center justify-center">
-          <div class="max-w-full">
+          <div class="max-w-full min-w-0 flex flex-col">
             <.puppet_addresses actor={@actor} />
           </div>
           <div class="">
