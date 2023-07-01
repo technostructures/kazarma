@@ -21,7 +21,7 @@ msgstr ""
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:68
 #: lib/kazarma_web/live/index.ex:31
-#: lib/kazarma_web/live/object.ex:70
+#: lib/kazarma_web/live/object.ex:41
 #, elixir-autogen, elixir-format, fuzzy
 msgid "User not found"
 msgstr "User not found"
@@ -33,8 +33,8 @@ msgstr "User not found"
 msgid "Copy"
 msgstr "Copy"
 
-#: lib/kazarma_web/components/object.ex:70
-#: lib/kazarma_web/components/object.ex:71
+#: lib/kazarma_web/components/object.ex:75
+#: lib/kazarma_web/components/object.ex:76
 #: lib/kazarma_web/components/profile.ex:44
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Open"
@@ -46,7 +46,7 @@ msgstr "Open"
 msgid "Search"
 msgstr "Search"
 
-#: lib/kazarma_web/components/object.ex:97
+#: lib/kazarma_web/components/object.ex:102
 #: lib/kazarma_web/components/profile.ex:73
 #, elixir-autogen, elixir-format, fuzzy
 msgid "%{actor_name}'s avatar"
@@ -406,3 +406,8 @@ msgstr ""
 #, elixir-autogen, elixir-format, fuzzy
 msgid "opt-in to public bridging."
 msgstr "opt-in to public bridging."
+
+#: lib/kazarma_web/live/object.ex:26
+#, elixir-autogen, elixir-format
+msgid "Activity not found"
+msgstr ""
