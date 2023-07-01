@@ -1,6 +1,6 @@
 <a class="sr-only" href="#main"><%= gettext("Skip to content") %></a>
 <a class="sr-only" href="#search_address"><%= gettext("Skip to search") %></a>
-<header class="navbar sticky h-28 sm:h-16 top-0 z-50 shadow-lg justify-between flex-wrap items-center p-0">
+<header class="navbar sticky top-0 z-50 shadow-lg justify-between flex-wrap items-center p-0">
   <div class="flex-none m-2 lg:m-4 lg:flex order-1">
     <.link
       navigate={Routes.index_path(@socket, :index)}
@@ -9,7 +9,7 @@
       <KazarmaWeb.Components.Icon.kazarma_horizontal_logo />
     </.link>
   </div>
-  <div class="flex-grow lg:max-w-3xl m-2 mt-0 lg:mt-2 lg:mx-auto lg:inset-x-0 order-4 sm:order-2">
+  <div class="flex-grow lg:max-w-3xl m-2 lg:mx-auto lg:inset-x-0 order-4 sm:order-2">
     <.search socket={@socket} />
   </div>
   <div class="flex-none lg:flex order-3 sm:order-4">
