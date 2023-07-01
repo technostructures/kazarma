@@ -9,6 +9,7 @@ defmodule KazarmaWeb.Components.ActivityList do
     ~H"""
     <KazarmaWeb.Components.Object.show
       :for={object <- @previous_objects}
+      :if={actor_for_object(object)}
       object={object}
       actor={actor_for_object(object)}
       type={:replied_to}
@@ -23,6 +24,7 @@ defmodule KazarmaWeb.Components.ActivityList do
     />
     <KazarmaWeb.Components.Object.show
       :for={object <- @next_objects}
+      :if={actor_for_object(object)}
       object={object}
       actor={actor_for_object(object)}
       type={:reply}
