@@ -16,9 +16,16 @@ defmodule KazarmaWeb.Object do
 
     {:ok, actor} = ActivityPub.Actor.get_or_fetch_by_ap_id(actor_id)
 
-    actor_room = Kazarma.Bridge.get_room_by_remote_id(actor_id)
+    if valid_path?(params, actor, object) do
+      actor_room = Kazarma.Bridge.get_room_by_remote_id(actor_id)
 
-    {:ok, maybe_load_object(object, actor, actor_room, socket)}
+      {:ok, maybe_load_object(object, actor, actor_room, socket)}
+    else
+      {:ok,
+       socket
+       |> put_flash(:error, gettext("Activity not found"))
+       |> push_redirect(to: Routes.index_path(socket, :index))}
+    end
   end
 
   @impl true
@@ -38,6 +45,17 @@ defmodule KazarmaWeb.Object do
   @impl true
   def handle_info({:redirect, to}, socket) do
     {:noreply, push_navigate(socket, to: to)}
+  end
+
+  defp valid_path?(
+         %{"server" => server, "localpart" => localpart, "type" => type},
+         %ActivityPub.Actor{local: local} = actor,
+         %ActivityPub.Object{data: %{"type" => object_type}}
+       ) do
+    server_part = if local, do: "-", else: Kazarma.Address.server(actor)
+    localpart_part = Kazarma.Address.localpart(actor)
+
+    server == server_part && localpart == localpart_part && type == String.downcase(object_type)
   end
 
   defp maybe_load_object(
