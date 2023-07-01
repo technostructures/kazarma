@@ -2,6 +2,17 @@
 <KazarmaWeb.Components.Drawer.drawer>
   <:sidebar>
     <KazarmaWeb.Components.Profile.show actor={@actor} />
+    <div class="mt-8 text-center">
+      <.link
+        href={gettext("https://technostructures.org/en/")}
+        target="_blank"
+        aria-label={gettext("Technostructures")}
+        class="link link-hover"
+      >
+        <!-- <KazarmaWeb.Components.Icon.technostructures_logo class="mx-auto" /> -->
+        <%= gettext("A Technostructures project") %>
+      </.link>
+    </div>
   </:sidebar>
   <:button>
     <%= display_name(@actor) %>

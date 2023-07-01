@@ -218,9 +218,11 @@ defmodule KazarmaWeb.Components.Profile do
 
   def show(assigns) do
     ~H"""
-    <.original_profile actor={@actor} />
-    <!-- <div class="divider"></div> -->
-    <.puppet_profile actor={@actor} />
+    <div>
+      <.original_profile actor={@actor} />
+      <!-- <div class="divider"></div> -->
+      <.puppet_profile actor={@actor} />
+    </div>
     """
   end
 end

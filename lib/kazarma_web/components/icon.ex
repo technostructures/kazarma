@@ -207,6 +207,8 @@ defmodule KazarmaWeb.Components.Icon do
   Source: https://commons.wikimedia.org/wiki/File:Matrix_icon.svg
   License: Public domain
   """
+  attr :class, :string, default: ""
+
   def matrix_icon(assigns) do
     ~H"""
     <svg
@@ -216,6 +218,7 @@ defmodule KazarmaWeb.Components.Icon do
       xmlns:cc="http://creativecommons.org/ns#"
       xmlns:dc="http://purl.org/dc/elements/1.1/"
       xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      class={@class}
       width="24"
       height="24"
     >
@@ -230,11 +233,6 @@ defmodule KazarmaWeb.Components.Icon do
         data-source="stylesheet-processor"
         class="dblt-ykjmwcnxmi"
       />
-      <div xmlns="" id="saka-gui-root">
-        <div>
-          <div><style /></div>
-        </div>
-      </div>
     </svg>
     """
   end
@@ -511,11 +509,6 @@ defmodule KazarmaWeb.Components.Icon do
         data-source="stylesheet-processor"
         class="dblt-ykjmwcnxmi"
       />
-      <div xmlns="" id="saka-gui-root">
-        <div>
-          <div><style /></div>
-        </div>
-      </div>
     </svg>
     """
   end
@@ -601,6 +594,234 @@ defmodule KazarmaWeb.Components.Icon do
     " />
           <path d="M269.2,133.2C269.2,133.1,269.2,133.1,269.2,133.2c0-25.4-9.1-46-20.3-46c-11.2,0-20.4,20.6-20.4,45.9c0,0,0,0,0,0.1h0
     v192.5l40.8,64.2L269.2,133.2L269.2,133.2z" />
+        </g>
+      </g>
+    </svg>
+    """
+  end
+
+  @doc """
+  Technostructures cube logo
+
+  Author: Marne
+  License: CC-BY-SA
+  """
+  attr :class, :string, default: ""
+
+  def technostructures_logo(assigns) do
+    ~H"""
+    <svg
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      x="0px"
+      y="0px"
+      width="120"
+      height="120"
+      class={@class}
+      viewBox="0 0 447 442.8"
+      style="enable-background:new 0 0 447 442.8;"
+      xml:space="preserve"
+    >
+      <style type="text/css">
+        .stt0{fill:url(#SVGID_1_);}
+        .stt1{fill:url(#SVGID_2_);}
+        .stt2{fill:url(#SVGID_3_);}
+        .stt3{fill:url(#SVGID_4_);}
+        .stt4{fill:#650EF0;}
+        .stt5{fill:url(#SVGID_5_);}
+        .stt6{fill:url(#SVGID_6_);}
+        .stt7{fill:url(#SVGID_7_);}
+        .stt8{fill:url(#SVGID_8_);}
+        .stt9{fill:url(#SVGID_9_);}
+        .stt10{fill:url(#SVGID_10_);}
+        .stt11{fill:none;}
+      </style>
+      <g id="Calque_2"></g>
+      <g id="fond">
+        <g>
+          <linearGradient
+            id="SVGID_1_"
+            gradientUnits="userSpaceOnUse"
+            x1="-1227.245"
+            y1="5183.2368"
+            x2="-1100.7576"
+            y2="5183.2368"
+            gradientTransform="matrix(-1 0 0 -1 -1076.7321 5404.6362)"
+          >
+            <stop offset="0" style="stop-color:#FF2EF0" />
+            <stop offset="0.2501" style="stop-color:#42D684" />
+            <stop offset="0.4676" style="stop-color:#FF7B52" />
+            <stop offset="0.6464" style="stop-color:#FF699F" />
+            <stop offset="0.6714" style="stop-color:#FF62AB" />
+            <stop offset="0.8251" style="stop-color:#FF3AF0" />
+            <stop offset="0.9098" style="stop-color:#D61DF1" />
+            <stop offset="1" style="stop-color:#AE00F1" />
+          </linearGradient>
+          <path
+            class="stt0"
+            d="M142.3,235L142.3,235c4.5,0,8.2-6.1,8.2-13.6c0-7.5-3.7-13.5-8.2-13.5v0H24V235H142.3z"
+          />
+
+          <linearGradient
+            id="SVGID_2_"
+            gradientUnits="userSpaceOnUse"
+            x1="-1120.1901"
+            y1="5183.2368"
+            x2="-1076.7321"
+            y2="5183.2368"
+            gradientTransform="matrix(-1 0 0 -1 -1076.7321 5404.6362)"
+          >
+            <stop offset="0" style="stop-color:#FF2EF0" />
+            <stop offset="7.720524e-02" style="stop-color:#F22BF0" />
+            <stop offset="0.7148" style="stop-color:#8D16F0" />
+            <stop offset="1" style="stop-color:#650EF0" />
+          </linearGradient>
+          <circle class="stt1" cx="21.7" cy="221.4" r="21.7" />
+
+          <linearGradient
+            id="SVGID_3_"
+            gradientUnits="userSpaceOnUse"
+            x1="-2948.4478"
+            y1="1939.6284"
+            x2="-2821.9602"
+            y2="1939.6284"
+            gradientTransform="matrix(0 1 -1 0 2163.1184 3240.7336)"
+          >
+            <stop offset="0" style="stop-color:#FF2EF0" />
+            <stop offset="0.2501" style="stop-color:#42D684" />
+            <stop offset="0.4676" style="stop-color:#FF7B52" />
+            <stop offset="0.6464" style="stop-color:#FF699F" />
+            <stop offset="0.6714" style="stop-color:#FF62AB" />
+            <stop offset="0.8251" style="stop-color:#FF3AF0" />
+            <stop offset="0.9098" style="stop-color:#D61DF1" />
+            <stop offset="1" style="stop-color:#AE00F1" />
+          </linearGradient>
+          <path
+            class="stt2"
+            d="M237,300.5L237,300.5c0-4.5-6.1-8.2-13.6-8.2c-7.5,0-13.5,3.7-13.5,8.2h0v118.3H237V300.5z"
+          />
+
+          <linearGradient
+            id="SVGID_4_"
+            gradientUnits="userSpaceOnUse"
+            x1="-2841.3926"
+            y1="1939.6284"
+            x2="-2797.9348"
+            y2="1939.6284"
+            gradientTransform="matrix(0 1 -1 0 2163.1184 3240.7336)"
+          >
+            <stop offset="0" style="stop-color:#FF2EF0" />
+            <stop offset="7.720524e-02" style="stop-color:#F22BF0" />
+            <stop offset="0.7148" style="stop-color:#8D16F0" />
+            <stop offset="1" style="stop-color:#650EF0" />
+          </linearGradient>
+          <circle class="stt3" cx="223.5" cy="421.1" r="21.7" />
+          <rect x="110.7" y="167.8" class="stt4" width="153.7" height="153.7" />
+          <linearGradient
+            id="SVGID_5_"
+            gradientUnits="userSpaceOnUse"
+            x1="110.6599"
+            y1="144.7298"
+            x2="336.9592"
+            y2="144.7298"
+          >
+            <stop offset="0" style="stop-color:#FF2EF0" />
+            <stop offset="7.720522e-02" style="stop-color:#F22BF0" />
+            <stop offset="0.7148" style="stop-color:#8D16F0" />
+            <stop offset="1" style="stop-color:#650EF0" />
+          </linearGradient>
+          <polygon class="stt5" points="337,121.7 183.3,121.7 110.7,167.8 264.4,167.8 		" />
+          <linearGradient
+            id="SVGID_6_"
+            gradientUnits="userSpaceOnUse"
+            x1="264.3526"
+            y1="221.4134"
+            x2="337.1382"
+            y2="221.4134"
+          >
+            <stop offset="0" style="stop-color:#FF2EF0" />
+            <stop offset="7.720520e-02" style="stop-color:#F22BF0" />
+            <stop offset="0.7148" style="stop-color:#8D16F0" />
+            <stop offset="1" style="stop-color:#650EF0" />
+          </linearGradient>
+          <polygon class="stt6" points="264.4,321.5 337.1,275 337.1,121.4 264.4,167.8 		" />
+          <linearGradient
+            id="SVGID_7_"
+            gradientUnits="userSpaceOnUse"
+            x1="296.4915"
+            y1="221.3995"
+            x2="422.9789"
+            y2="221.3995"
+          >
+            <stop offset="0" style="stop-color:#FF2EF0" />
+            <stop offset="0.2501" style="stop-color:#42D684" />
+            <stop offset="0.4676" style="stop-color:#FF7B52" />
+            <stop offset="0.6464" style="stop-color:#FF699F" />
+            <stop offset="0.6714" style="stop-color:#FF62AB" />
+            <stop offset="0.8251" style="stop-color:#FF3AF0" />
+            <stop offset="0.9098" style="stop-color:#D61DF1" />
+            <stop offset="1" style="stop-color:#AE00F1" />
+          </linearGradient>
+          <path
+            class="stt7"
+            d="M304.7,207.8L304.7,207.8c-4.5,0-8.2,6.1-8.2,13.6c0,7.5,3.7,13.5,8.2,13.5v0H423v-27.1H304.7z"
+          />
+          <linearGradient
+            id="SVGID_8_"
+            gradientUnits="userSpaceOnUse"
+            x1="403.5464"
+            y1="221.3995"
+            x2="447.0044"
+            y2="221.3995"
+          >
+            <stop offset="0" style="stop-color:#FF2EF0" />
+            <stop offset="7.720524e-02" style="stop-color:#F22BF0" />
+            <stop offset="0.7148" style="stop-color:#8D16F0" />
+            <stop offset="1" style="stop-color:#650EF0" />
+          </linearGradient>
+          <circle class="stt8" cx="425.3" cy="221.4" r="21.7" />
+
+          <linearGradient
+            id="SVGID_9_"
+            gradientUnits="userSpaceOnUse"
+            x1="2013.3898"
+            y1="3463.3647"
+            x2="2139.8772"
+            y2="3463.3647"
+            gradientTransform="matrix(0 -1 1 0 -3239.8503 2163.9026)"
+          >
+            <stop offset="0" style="stop-color:#FF2EF0" />
+            <stop offset="0.2501" style="stop-color:#42D684" />
+            <stop offset="0.4676" style="stop-color:#FF7B52" />
+            <stop offset="0.6464" style="stop-color:#FF699F" />
+            <stop offset="0.6714" style="stop-color:#FF62AB" />
+            <stop offset="0.8251" style="stop-color:#FF3AF0" />
+            <stop offset="0.9098" style="stop-color:#D61DF1" />
+            <stop offset="1" style="stop-color:#AE00F1" />
+          </linearGradient>
+          <path
+            class="stt9"
+            d="M210,142.3L210,142.3c0,4.5,6.1,8.2,13.6,8.2c7.5,0,13.5-3.7,13.5-8.2h0V24H210V142.3z"
+          />
+
+          <linearGradient
+            id="SVGID_10_"
+            gradientUnits="userSpaceOnUse"
+            x1="2120.4448"
+            y1="3463.3647"
+            x2="2163.9026"
+            y2="3463.3647"
+            gradientTransform="matrix(0 -1 1 0 -3239.8503 2163.9026)"
+          >
+            <stop offset="0" style="stop-color:#FF2EF0" />
+            <stop offset="7.720524e-02" style="stop-color:#F22BF0" />
+            <stop offset="0.7148" style="stop-color:#8D16F0" />
+            <stop offset="1" style="stop-color:#650EF0" />
+          </linearGradient>
+          <circle class="stt10" cx="223.5" cy="21.7" r="21.7" />
+          <path class="stt11" d="M337.1,121.4" />
+          <path class="stt11" d="M110.7,167.8" />
         </g>
       </g>
     </svg>

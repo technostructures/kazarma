@@ -50,6 +50,53 @@
           <%= gettext("From ActivityPub") %>
         </button>
       </div>
+      <h3>
+        <%= gettext("Links") %>
+      </h3>
+      <ul>
+        <li>
+          <.link
+            href="https://matrix.to/#/#kazarma:matrix.org"
+            target="_blank"
+            aria-label={gettext("Matrix room")}
+            class="link link-hover"
+          >
+            <!-- <KazarmaWeb.Components.Icon.matrix_icon class="inline-block" /> -->
+            <%= gettext("Matrix room") %>
+          </.link>
+        </li>
+        <li>
+          <.link
+            href="https://gitlab.com/kazarma/kazarma"
+            target="_blank"
+            aria-label={gettext("Source and issue tracker")}
+            class="link link-hover"
+          >
+            <%= gettext("Source and issue tracker") %>
+          </.link>
+        </li>
+        <li>
+          <.link
+            href="https://hosted.weblate.org/projects/kazarma/kazarma/"
+            target="_blank"
+            aria-label={gettext("Translations")}
+            class="link link-hover"
+          >
+            <%= gettext("Translations") %>
+          </.link>
+        </li>
+      </ul>
+      <div class="mt-8 text-center">
+        <.link
+          href={gettext("https://technostructures.org/en/")}
+          target="_blank"
+          aria-label={gettext("Technostructures")}
+          class="link link-hover"
+        >
+          <KazarmaWeb.Components.Icon.technostructures_logo class="mx-auto" />
+          <%= gettext("A Technostructures project") %>
+        </.link>
+      </div>
     </div>
     <div :if={@after_text} class="card-body">
       <%= @after_text %>
