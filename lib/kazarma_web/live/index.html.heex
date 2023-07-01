@@ -1,13 +1,13 @@
 <div class="container mx-auto p-4 lg:max-w-3xl">
-  <div class="card mx-auto shadow-lg side bg-base-100 prose">
+  <div class="card mt-4 mx-auto shadow-lg side bg-base-100 prose prose-h1:mt-0 prose-h1:text-center prose-ul:my-0">
     <div :if={@before_text} class="card-body">
       <%= @before_text %>
     </div>
     <div :if={@help} class="card-body">
-      <h2>
+      <h1>
         <!-- @TODO: add a title config -->
-        <%= gettext("Kazarma") %>
-      </h2>
+        <%= gettext("kazarma") %>
+      </h1>
       <p>
         <%= gettext("Kazarma is a bridge between Matrix and ActivityPub.") %>
         <%= gettext(
@@ -39,14 +39,17 @@
       <h3>
         <%= gettext("Bridge yourself") %>
       </h3>
-      <div class="text-center">
+      <div class="flex flex-row flex-grow flex-wrap">
         <button
-          class="btn"
+          class="btn btn-accent btn-lg grow m-2 normal-case"
           phx-click={KazarmaWeb.CoreComponents.show_modal("bridge-matrix-modal")}
         >
           <%= gettext("From Matrix") %>
         </button>
-        <button class="btn" phx-click={KazarmaWeb.CoreComponents.show_modal("bridge-ap-modal")}>
+        <button
+          class="btn btn-accent btn-lg grow m-2 normal-case"
+          phx-click={KazarmaWeb.CoreComponents.show_modal("bridge-ap-modal")}
+        >
           <%= gettext("From ActivityPub") %>
         </button>
       </div>
