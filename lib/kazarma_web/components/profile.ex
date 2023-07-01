@@ -40,20 +40,24 @@ defmodule KazarmaWeb.Components.Profile do
 
   defp address_that_opens(assigns) do
     ~H"""
-    <div class="tooltip" data-tip={gettext("Click to open")}>
-      <.link href={@to} target="_blank" aria-label={gettext("Open")} class="link link-hover">
-        <%= @address %>
-      </.link>
+    <div class="tooltip max-w-full" data-tip={gettext("Click to open")}>
+      <div class="max-w-full overflow-hidden text-ellipsis">
+        <.link href={@to} target="_blank" aria-label={gettext("Open")} class="link link-hover">
+          <%= @address %>
+        </.link>
+      </div>
     </div>
     """
   end
 
   defp address_that_copies(assigns) do
     ~H"""
-    <div class="tooltip" data-tip={gettext("Click to copy")}>
-      <.link href="#" aria-label={gettext("Copy")} data-copy={@address} class="link link-hover">
-        <%= @address %>
-      </.link>
+    <div class="tooltip max-w-full" data-tip={gettext("Click to copy")}>
+      <div class="max-w-full overflow-hidden text-ellipsis">
+        <.link href="#" aria-label={gettext("Copy")} data-copy={@address} class="link link-hover">
+          <%= @address %>
+        </.link>
+      </div>
     </div>
     """
   end
@@ -75,8 +79,8 @@ defmodule KazarmaWeb.Components.Profile do
           </.link>
         </div>
       </div>
-      <div class="card-body p-6">
-        <div class="card-title flex flex-row flex-wrap">
+      <div class="card-body max-w-full p-6">
+        <div class="card-title flex flex-row">
           <h1 class="grow text-2xl">
             <.link
               navigate={Kazarma.ActivityPub.Adapter.actor_path(@actor)}
@@ -195,7 +199,7 @@ defmodule KazarmaWeb.Components.Profile do
           <div class="ml-2"><KazarmaWeb.Components.Icon.kazarma_icon /></div>
         </div>
         <div class="flex flex-row items-center justify-center">
-          <div class="grid">
+          <div class="max-w-full">
             <.puppet_addresses actor={@actor} />
           </div>
           <div class="">
