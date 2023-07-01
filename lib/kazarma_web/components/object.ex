@@ -57,7 +57,12 @@ defmodule KazarmaWeb.Components.Object do
   attr :classes, :string, default: ""
 
   def show(%{object: object} = assigns) when is_binary(object), do: show_redirect_link(assigns)
-  def show(%{object: %ActivityPub.Object{}} = assigns), do: show_content(assigns)
+
+  def show(%{object: %ActivityPub.Object{data: %{"type" => "Note"}}} = assigns),
+    do: show_note(assigns)
+
+  def show(%{object: %ActivityPub.Object{data: %{"id" => id}}}),
+    do: show_redirect_link(%{object: id})
 
   def show_redirect_link(assigns) do
     ~H"""
@@ -79,7 +84,7 @@ defmodule KazarmaWeb.Components.Object do
     """
   end
 
-  def show_content(assigns) do
+  def show_note(assigns) do
     ~H"""
     <div
       id={@object.data["id"]}
