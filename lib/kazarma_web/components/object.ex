@@ -107,8 +107,7 @@ defmodule KazarmaWeb.Components.Object do
       </div>
       <div class="card-body p-4">
         <.header actor={@actor} object={@object} socket={@socket} />
-        <div class={"mt-0 mb-0 divider #{if @type == :main, do: "before:bg-[#ffb7a4] after:bg-[#ffb7a4]"}"}>
-        </div>
+        <div class={"mt-0 mb-0 divider #{if @type == :main, do: "before:bg-[#ffb7a4] after:bg-[#ffb7a4]"}"} />
         <p class="object-content">
           <.display_body object={@object} />
         </p>
