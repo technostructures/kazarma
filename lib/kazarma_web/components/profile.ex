@@ -62,20 +62,32 @@ defmodule KazarmaWeb.Components.Profile do
     """
   end
 
+  defp avatar(assigns) do
+    ~H"""
+    <%= case avatar_url(@actor) do %>
+      <% nil -> %>
+        <KazarmaWeb.Components.Hashvatar.hashvatar
+          identifier={main_address(@actor)}
+          variant={:stagger}
+          line_color="#fffaf0"
+        />
+      <% url -> %>
+        <img src={url} alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])} />
+    <% end %>
+    """
+  end
+
   def original_profile(assigns) do
     ~H"""
     <div class="card shadow-lg bg-base-100 flex flex-row base-100">
-      <div :if={!is_nil(avatar_url(@actor))} class="avatar">
+      <div class="avatar">
         <div class="rounded-full w-24 h-24 my-4 ml-4 shadow">
           <.link
             navigate={Kazarma.ActivityPub.Adapter.actor_path(@actor)}
             class="link link-hover"
             title={main_address(@actor)}
           >
-            <img
-              src={avatar_url(@actor)}
-              alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])}
-            />
+            <.avatar actor={@actor} />
           </.link>
         </div>
       </div>

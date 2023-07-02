@@ -84,6 +84,21 @@ defmodule KazarmaWeb.Components.Object do
     """
   end
 
+  defp avatar(assigns) do
+    ~H"""
+    <%= case avatar_url(@actor) do %>
+      <% nil -> %>
+        <KazarmaWeb.Components.Hashvatar.hashvatar
+          identifier={main_address(@actor)}
+          variant={:stagger}
+          line_color="#fffaf0"
+        />
+      <% url -> %>
+        <img src={url} alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])} />
+    <% end %>
+    """
+  end
+
   def show_note(assigns) do
     ~H"""
     <div
@@ -94,16 +109,17 @@ defmodule KazarmaWeb.Components.Object do
         <.reply_icon class="w-10 h-10 m-2 -mr-4 self-start" />
       </div>
       <div>
-        <%= unless is_nil(avatar_url(@actor)) do %>
-          <div class="avatar">
-            <div class="rounded-full w-24 h-24 my-4 ml-4 shadow">
-              <img
-                src={avatar_url(@actor)}
-                alt={gettext("%{actor_name}'s avatar", actor_name: @actor.data["name"])}
-              />
-            </div>
+        <div class="avatar">
+          <div class="rounded-full w-24 h-24 my-4 ml-4 shadow">
+            <.link
+              navigate={Kazarma.ActivityPub.Adapter.actor_path(@actor)}
+              class="link link-hover"
+              title={main_address(@actor)}
+            >
+              <.avatar actor={@actor} />
+            </.link>
           </div>
-        <% end %>
+        </div>
       </div>
       <div class="card-body p-4">
         <.header actor={@actor} object={@object} socket={@socket} />
