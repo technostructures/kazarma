@@ -374,7 +374,7 @@ msgstr "aceptar el bridging público."
 
 #: lib/kazarma_web/live/object.ex:26
 msgid "Activity not found"
-msgstr ""
+msgstr "Actividad no encontrada"
 
 #: lib/kazarma_web/live/actor.html.heex:13
 #: lib/kazarma_web/live/index.html.heex:122
