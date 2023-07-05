@@ -165,7 +165,7 @@ defmodule Kazarma.ActivityPub.Activity do
 
     %{
       "mediaType" => mimetype,
-      "name" => nil,
+      "name" => "",
       "type" => "Document",
       "url" => [
         %{

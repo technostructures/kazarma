@@ -467,7 +467,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             "actor" => "http://kazarma/-/bob",
             "attachment" => %{
               "mediaType" => "image/jpeg",
-              "name" => nil,
+              "name" => "",
               "type" => "Document",
               "url" => [
                 %{
@@ -648,7 +648,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             "actor" => "http://kazarma/-/bob",
             "attachment" => %{
               "mediaType" => "image/jpeg",
-              "name" => nil,
+              "name" => "",
               "type" => "Document",
               "url" => [
                 %{
