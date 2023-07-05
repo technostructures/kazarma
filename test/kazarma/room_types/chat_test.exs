@@ -117,7 +117,12 @@ defmodule Kazarma.RoomTypes.ChatTest do
           {:ok, %{"room_id" => "!room:kazarma"}}
       end)
       |> expect(:send_message, fn "!room:kazarma",
-                                  {"hello \uFEFF", "hello"},
+                                  %{
+                                    "body" => "hello \uFEFF",
+                                    "format" => "org.matrix.custom.html",
+                                    "formatted_body" => "hello",
+                                    "msgtype" => "m.text"
+                                  },
                                   [user_id: "@_ap_alice___pleroma:kazarma"] ->
         {:ok, "event_id"}
       end)
@@ -167,7 +172,12 @@ defmodule Kazarma.RoomTypes.ChatTest do
         {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
       end)
       |> expect(:send_message, fn "!room:kazarma",
-                                  {"hello \uFEFF", "hello"},
+                                  %{
+                                    "body" => "hello \uFEFF",
+                                    "format" => "org.matrix.custom.html",
+                                    "formatted_body" => "hello",
+                                    "msgtype" => "m.text"
+                                  },
                                   [user_id: "@_ap_alice___pleroma:kazarma"] ->
         {:ok, "event_id"}
       end)
@@ -209,8 +219,12 @@ defmodule Kazarma.RoomTypes.ChatTest do
       end)
       |> expect(:send_message, fn
         "!room:kazarma",
-        {"hello\nmxc://serveur/example \uFEFF",
-         "hello<br><img src=\"mxc://serveur/example\" title=\"Attachment\">"},
+        %{
+          "body" => "hello\nmxc://serveur/example \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" => "hello<br><img src=\"mxc://serveur/example\" title=\"Attachment\">",
+          "msgtype" => "m.text"
+        },
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "event_id1"}
       end)
@@ -252,8 +266,12 @@ defmodule Kazarma.RoomTypes.ChatTest do
       end)
       |> expect(:send_message, fn
         "!room:kazarma",
-        {"mxc://serveur/example \uFEFF",
-         "<img src=\"mxc://serveur/example\" title=\"Attachment\">"},
+        %{
+          "body" => "mxc://serveur/example \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" => "<img src=\"mxc://serveur/example\" title=\"Attachment\">",
+          "msgtype" => "m.text"
+        },
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "event_id"}
       end)

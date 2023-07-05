@@ -205,8 +205,13 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       end)
       |> expect(:send_message, fn
         "!room:kazarma",
-        {"hello\nmxc://serveur/example\nmxc://serveur/example2 \uFEFF",
-         "hello<br><img src=\"mxc://serveur/example\" title=\"Attachment\"><br><img src=\"mxc://serveur/example2\" title=\"Attachment\">"},
+        %{
+          "body" => "hello\nmxc://serveur/example\nmxc://serveur/example2 \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" =>
+            "hello<br><img src=\"mxc://serveur/example\" title=\"Attachment\"><br><img src=\"mxc://serveur/example2\" title=\"Attachment\">",
+          "msgtype" => "m.text"
+        },
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "event_id"}
       end)
@@ -258,8 +263,13 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       end)
       |> expect(:send_message, fn
         "!room:kazarma",
-        {"mxc://serveur/example\nmxc://serveur/example2 \uFEFF",
-         "<img src=\"mxc://serveur/example\" title=\"Attachment\"><br><img src=\"mxc://serveur/example2\" title=\"Attachment\">"},
+        %{
+          "body" => "mxc://serveur/example\nmxc://serveur/example2 \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" =>
+            "<img src=\"mxc://serveur/example\" title=\"Attachment\"><br><img src=\"mxc://serveur/example2\" title=\"Attachment\">",
+          "msgtype" => "m.text"
+        },
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "event_id"}
       end)
@@ -358,7 +368,6 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
                                   %{
                                     "msgtype" => "m.text",
                                     "body" => "hello \uFEFF",
-                                    "formatted_body" => "hello",
                                     "m.relates_to" => %{
                                       "m.in_reply_to" => %{
                                         "event_id" => "local_id"

@@ -178,42 +178,63 @@ defmodule Kazarma.ActivityPub.Activity do
   end
 
   def send_message_and_attachment(matrix_id, room_id, object_data, attachments) do
-    {text_message, room_id} =
+    {content, room_id} =
       object_data
-      |> make_text_message()
+      |> make_content()
       |> add_reply(object_data, room_id)
 
-    text_message = add_attachments(matrix_id, text_message, attachments)
+    content = add_attachments(matrix_id, content, attachments)
 
     # message_result =
-    text_message &&
+    content &&
       Kazarma.Matrix.Client.send_tagged_message(
         room_id,
         matrix_id,
-        text_message
+        content
       )
   end
 
-  defp add_attachments(_matrix_id, text_message, nil), do: text_message
-  defp add_attachments(_matrix_id, text_message, []), do: text_message
-  defp add_attachments(_matrix_id, text_message, [nil]), do: text_message
+  defp add_attachments(_matrix_id, content, nil), do: content
+  defp add_attachments(_matrix_id, content, []), do: content
+  defp add_attachments(_matrix_id, content, [nil]), do: content
 
   defp add_attachments(matrix_id, nil, attachments) do
-    add_attachments(matrix_id, {"", ""}, attachments)
+    add_attachments(matrix_id, "", attachments)
   end
 
-  defp add_attachments(matrix_id, {body, formatted_body}, [attachment | rest])
+  defp add_attachments(matrix_id, content, [attachment | rest]) when is_binary(content) do
+    add_attachments(
+      matrix_id,
+      %{
+        "msgtype" => "m.text",
+        "body" => content,
+        "formatted_body" => content,
+        "format" => "org.matrix.custom.html"
+      },
+      [attachment | rest]
+    )
+  end
+
+  defp add_attachments(
+         matrix_id,
+         %{"body" => body} = content,
+         [attachment | rest]
+       )
        when not is_nil(attachment) do
     {:ok, matrix_url} = Client.upload_media(matrix_id, attachment_url(attachment))
 
-    body = body <> add_new_line(body) <> matrix_url
+    formatted_body = Map.get(content, "formatted_body", body)
 
     formatted_body =
       formatted_body <>
         add_new_formatted_line(formatted_body) <>
         formatted_body_for_attachment(matrix_url, attachment)
 
-    add_attachments(matrix_id, {body, formatted_body}, rest)
+    body = body <> add_new_line(body) <> matrix_url
+
+    content = %{content | "body" => body, "formatted_body" => formatted_body}
+
+    add_attachments(matrix_id, content, rest)
   end
 
   defp add_new_line(""), do: ""
@@ -244,33 +265,41 @@ defmodule Kazarma.ActivityPub.Activity do
   defp attachment_title(%{"name" => name}) when name not in [nil, ""], do: name
   defp attachment_title(_), do: "Attachment"
 
-  defp make_text_message(%{"source" => nil, "content" => nil}), do: nil
-  defp make_text_message(%{"source" => "", "content" => ""}), do: nil
+  defp make_content(%{"source" => nil, "content" => nil}), do: nil
+  defp make_content(%{"source" => "", "content" => ""}), do: nil
 
-  defp make_text_message(%{"source" => source, "content" => content} = data) do
+  defp make_content(%{"source" => source, "content" => content} = data) do
     tags = Map.get(data, "tag")
     body = process_message_text(source, tags)
     formatted_body = process_message_html(content, tags)
 
-    {body, formatted_body}
+    %{
+      "msgtype" => "m.text",
+      "body" => body,
+      "formatted_body" => formatted_body,
+      "format" => "org.matrix.custom.html"
+    }
   end
 
-  defp make_text_message(%{"source" => nil}), do: nil
-  defp make_text_message(%{"source" => ""}), do: nil
+  defp make_content(%{"source" => nil}), do: nil
+  defp make_content(%{"source" => ""}), do: nil
 
-  defp make_text_message(%{"source" => source}) do
-    {source, source}
-  end
+  defp make_content(%{"source" => source}), do: source
 
-  defp make_text_message(%{"content" => nil}), do: nil
-  defp make_text_message(%{"content" => ""}), do: nil
+  defp make_content(%{"content" => nil}), do: nil
+  defp make_content(%{"content" => ""}), do: nil
 
-  defp make_text_message(%{"content" => content} = data) do
+  defp make_content(%{"content" => content} = data) do
     tags = Map.get(data, "tag")
     body = process_message_text(content, tags)
     formatted_body = process_message_html(content, tags)
 
-    {body, formatted_body}
+    %{
+      "msgtype" => "m.text",
+      "body" => body,
+      "formatted_body" => formatted_body,
+      "format" => "org.matrix.custom.html"
+    }
   end
 
   defp process_message_text(content, tags) do
@@ -294,18 +323,18 @@ defmodule Kazarma.ActivityPub.Activity do
     HtmlSanitizeEx.strip_tags(content)
   end
 
-  defp add_reply({body, formatted_body}, %{"inReplyTo" => reply_to_ap_id}, room_id)
+  defp add_reply(content, %{"inReplyTo" => reply_to_ap_id}, room_id)
        when not is_nil(reply_to_ap_id) do
     case Bridge.get_events_by_remote_id(reply_to_ap_id) do
       [%BridgeEvent{local_id: event_id, room_id: replied_to_room_id} | _] ->
-        {Client.reply_event(event_id, body, formatted_body), replied_to_room_id}
+        {Client.reply_event(event_id, content), replied_to_room_id}
 
       _ ->
-        {{body, formatted_body}, room_id}
+        {content, room_id}
     end
   end
 
-  defp add_reply(text_message, _, room_id), do: {text_message, room_id}
+  defp add_reply(content, _, room_id), do: {content, room_id}
 
   defp convert_mentions_html(content, tags) do
     convert_mentions(content, tags, fn current_content, actor, ap_id, username, matrix_id ->

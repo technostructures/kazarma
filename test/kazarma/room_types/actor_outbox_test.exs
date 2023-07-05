@@ -245,7 +245,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         :ok
       end)
       |> expect(:send_message, fn "!room:kazarma",
-                                  {"hello \uFEFF", "hello"},
+                                  %{
+                                    "body" => "hello \uFEFF",
+                                    "format" => "org.matrix.custom.html",
+                                    "formatted_body" => "hello",
+                                    "msgtype" => "m.text"
+                                  },
                                   [user_id: "@_ap_alice___pleroma:kazarma"] ->
         {:ok, "event_id"}
       end)
@@ -366,7 +371,6 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
                                   %{
                                     "msgtype" => "m.text",
                                     "body" => "hello \uFEFF",
-                                    "formatted_body" => "hello",
                                     "m.relates_to" => %{
                                       "m.in_reply_to" => %{
                                         "event_id" => "local_id"

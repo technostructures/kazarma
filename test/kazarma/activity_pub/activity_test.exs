@@ -131,8 +131,12 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       end)
       |> expect(:send_message, fn
         "!room:kazarma",
-        {"@bob:kazarma hello \uFEFF",
-         ~s(<p><a href="https://matrix.to/#/@bob:kazarma">Bob</a> hello</p>)},
+        %{
+          "body" => "@bob:kazarma hello \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" => "<p><a href=\"https://matrix.to/#/@bob:kazarma\">Bob</a> hello</p>",
+          "msgtype" => "m.text"
+        },
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "event_id"}
       end)

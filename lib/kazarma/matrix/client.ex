@@ -252,18 +252,24 @@ defmodule Kazarma.Matrix.Client do
 
   def get_alias(alias), do: @matrix_client.get_alias(alias)
 
-  def reply_event(reply_to, body, formatted_body) do
+  def reply_event(reply_to, content) when is_binary(content) do
     %{
       "msgtype" => "m.text",
-      "body" => body,
-      "formatted_body" => formatted_body,
-      "format" => "org.matrix.custom.html",
+      "body" => content,
       "m.relates_to" => %{
         "m.in_reply_to" => %{
           "event_id" => reply_to
         }
       }
     }
+  end
+
+  def reply_event(reply_to, content) when is_map(content) do
+    Map.put(content, "m.relates_to", %{
+      "m.in_reply_to" => %{
+        "event_id" => reply_to
+      }
+    })
   end
 
   def send_message_for_event_object(room_id, user_id, %{
