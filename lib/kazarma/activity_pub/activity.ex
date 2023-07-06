@@ -99,12 +99,14 @@ defmodule Kazarma.ActivityPub.Activity do
           redacts: event_id
         } = event
       ) do
-    with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(sender_id),
-         %BridgeEvent{remote_id: remote_id} <-
-           Bridge.get_event_by_local_id(event_id),
-         %Object{} = object <- ActivityPub.Object.get_by_ap_id(remote_id),
-         {:ok, %{object: %ActivityPub.Object{data: %{"id" => delete_remote_id}}}} <-
-           Kazarma.ActivityPub.delete(object, true, actor) do
+    {:ok, actor} = Kazarma.Address.matrix_id_to_actor(sender_id)
+
+    for %BridgeEvent{remote_id: remote_id} <- Bridge.get_events_by_local_id(event_id) do
+      %Object{} = object = ActivityPub.Object.get_by_ap_id(remote_id)
+
+      {:ok, %{object: %ActivityPub.Object{data: %{"id" => delete_remote_id}}}} =
+        Kazarma.ActivityPub.delete(object, true, actor)
+
       Bridge.create_event(%{
         local_id: delete_event_id,
         remote_id: delete_remote_id,
@@ -116,9 +118,9 @@ defmodule Kazarma.ActivityPub.Activity do
       Kazarma.Logger.log_bridged_event(event,
         room_type: room_type
       )
-
-      :ok
     end
+
+    :ok
   end
 
   def get_replied_activity_if_exists(%Event{

@@ -232,26 +232,25 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity)
 
-    with {:ok, sender_matrix_id} <- Address.ap_id_to_matrix(sender_ap_id),
-         %BridgeEvent{local_id: event_id, room_id: room_id} <-
-           Bridge.get_event_by_remote_id(object_ap_id),
-         {:ok, delete_event_id} <-
-           Kazarma.Matrix.Client.redact_message(
-             sender_matrix_id,
-             room_id,
-             event_id
-           ) do
+    {:ok, sender_matrix_id} = Address.ap_id_to_matrix(sender_ap_id)
+
+    for %BridgeEvent{local_id: event_id, room_id: room_id} <-
+          Bridge.get_events_by_remote_id(object_ap_id) do
+      {:ok, delete_event_id} =
+        Kazarma.Matrix.Client.redact_message(
+          sender_matrix_id,
+          room_id,
+          event_id
+        )
+
       Bridge.create_event(%{
         local_id: delete_event_id,
         remote_id: delete_remote_id,
         room_id: room_id
       })
-
-      :ok
-    else
-      {:error, _code, %{"error" => error}} -> Logger.error(error)
-      {:error, error} -> Logger.error(inspect(error))
     end
+
+    :ok
   end
 
   # @TODO check if user can invite (same origin)
