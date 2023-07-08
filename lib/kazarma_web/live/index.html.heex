@@ -54,6 +54,28 @@
         </button>
       </div>
       <h3>
+        <%= gettext("Consent and privacy") %>
+      </h3>
+      <p>
+        <%= gettext("Kazarma waits for explicit user action to bridge activities and events.") %>
+        <%= gettext(
+          "It can be direct messages, or following of the relay actor to opt-in to public activites bridging."
+        ) %>
+        <%= gettext("Unfollowing the relay actor deactivates public activities bridging.") %>
+      </p>
+      <p>
+        <%= gettext("ActivityPub moderation tools are implemented.") %>
+        <%= gettext(
+          "For instance, blocking a Matrix user will ignore them and ban them from your public room if it exists."
+        ) %>
+        <%= gettext("You can also block the whole domain of the bridge.") %>
+      </p>
+      <p>
+        <%= gettext(
+          "Since ActivityPub clients do not implement end-to-end encryption, kazarma does not work in encrypted Matrix rooms."
+        ) %>
+      </p>
+      <h3>
         <%= gettext("Links") %>
       </h3>
       <ul>
