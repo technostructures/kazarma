@@ -390,11 +390,9 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def get_power_level_for_user(room_id, user_id) do
-    case @matrix_client.client(user_id: "@_kazarma:kazarma.local")
-         |> Polyjuice.Client.Room.get_state(room_id, "m.room.power_levels", "")
-         |> dbg() do
+    case @matrix_client.get_state(room_id, "m.room.power_levels", "") do
       {:ok, %{"users" => users}} ->
-        Map.get(users, user_id) |> dbg()
+        Map.get(users, user_id)
 
       _ ->
         nil
@@ -402,7 +400,7 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def is_administrator(room_id, user_id) do
-    case get_power_level_for_user(room_id, user_id) |> dbg() do
+    case get_power_level_for_user(room_id, user_id) do
       n when is_integer(n) ->
         n >= 100
 
