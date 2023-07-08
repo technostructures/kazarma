@@ -154,4 +154,137 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       assert :ok = handle_activity(public_note_fixture_with_mention())
     end
   end
+
+  describe "activity handler (handle_activity/1) for Block activity" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    def block_fixture do
+      %ActivityPub.Object{
+        data: %{
+          "id" => "block_object_id",
+          "type" => "Block",
+          "actor" => "http://pleroma/pub/actors/alice",
+          "object" => "http://kazarma/-/bob"
+        }
+      }
+    end
+
+    def unblock_fixture do
+      %ActivityPub.Object{
+        data: %{
+          "id" => "unblock_object_id",
+          "type" => "Undo",
+          "actor" => "http://pleroma/pub/actors/alice",
+          "object" => %{
+            "type" => "Block",
+            "object" => "http://kazarma/-/bob"
+          }
+        }
+      }
+    end
+
+    setup do
+      {:ok, _room} =
+        Bridge.create_room(%{
+          local_id: "local_id",
+          remote_id: "http://pleroma/pub/actors/alice",
+          data: %{
+            "type" => "ap_user",
+            "matrix_id" => "@_ap_alice___pleroma:kazarma"
+          }
+        })
+
+      {:ok, actor} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://pleroma/pub/actors/alice",
+            "id" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, actor: actor}
+    end
+
+    test "when receiving a Block activity for a Matrix user it ignores the user and bans them from the actor room" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:register, fn [
+                                username: "_ap_alice___pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
+                              ] ->
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:get_data, fn
+        "@_ap_alice___pleroma:kazarma",
+        "m.ignored_user_list",
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, %{}}
+      end)
+      |> expect(:put_data, fn
+        "@_ap_alice___pleroma:kazarma",
+        "m.ignored_user_list",
+        %{"@bob:kazarma" => %{}},
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          :ok
+      end)
+      |> expect(:send_state_event, fn "local_id",
+                                      "m.room.member",
+                                      "@bob:kazarma",
+                                      %{"membership" => "ban"},
+                                      [user_id: "@_ap_alice___pleroma:kazarma"] ->
+        :ok
+      end)
+
+      assert :ok == handle_activity(block_fixture())
+    end
+
+    test "when receiving a Undo/Block activity for a Matrix user it unignores the user and unbans them from the actor room" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:register, fn [
+                                username: "_ap_alice___pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
+                              ] ->
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:get_data, fn
+        "@_ap_alice___pleroma:kazarma",
+        "m.ignored_user_list",
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, %{"@bob:kazarma" => %{}}}
+      end)
+      |> expect(:put_data, fn
+        "@_ap_alice___pleroma:kazarma",
+        "m.ignored_user_list",
+        %{},
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          :ok
+      end)
+      |> expect(:send_state_event, fn "local_id",
+                                      "m.room.member",
+                                      "@bob:kazarma",
+                                      %{"membership" => "leave"},
+                                      [user_id: "@_ap_alice___pleroma:kazarma"] ->
+        :ok
+      end)
+
+      assert :ok == handle_activity(unblock_fixture())
+    end
+  end
 end

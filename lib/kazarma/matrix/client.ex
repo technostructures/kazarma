@@ -40,6 +40,14 @@ defmodule Kazarma.Matrix.Client do
     )
   end
 
+  def get_ignored_user_list(matrix_id) do
+    @matrix_client.get_data(
+      matrix_id,
+      "m.ignored_user_list",
+      user_id: matrix_id
+    )
+  end
+
   def redact_message(from_matrix_id, room_id, event_id, reason \\ nil) do
     @matrix_client.redact_message(
       room_id,
@@ -336,15 +344,19 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def invite(room_id, inviter, invitee) do
-    @matrix_client.client(user_id: inviter)
-    |> Polyjuice.Client.Room.send_state_event(room_id, "m.room.member", invitee, %{
-      "membership" => "invite"
-    })
+    @matrix_client.send_state_event(
+      room_id,
+      "m.room.member",
+      invitee,
+      %{
+        "membership" => "invite"
+      },
+      user_id: inviter
+    )
   end
 
   def get_membership(room_id, inviter, invitee) do
-    case @matrix_client.client(user_id: inviter)
-         |> Polyjuice.Client.Room.get_state(room_id, "m.room.member", invitee) do
+    case @matrix_client.get_state(room_id, "m.room.member", invitee, user_id: inviter) do
       %{"membership" => membership} ->
         membership
 
@@ -353,12 +365,34 @@ defmodule Kazarma.Matrix.Client do
     end
   end
 
+  def ban(room_id, banner, banned) do
+    @matrix_client.send_state_event(
+      room_id,
+      "m.room.member",
+      banned,
+      %{
+        "membership" => "ban"
+      },
+      user_id: banner
+    )
+  end
+
+  def unban(room_id, banner, banned) do
+    @matrix_client.send_state_event(
+      room_id,
+      "m.room.member",
+      banned,
+      %{
+        "membership" => "leave"
+      },
+      user_id: banner
+    )
+  end
+
   def get_power_level_for_user(room_id, user_id) do
-    case @matrix_client.client(user_id: "@_kazarma:kazarma.local")
-         |> Polyjuice.Client.Room.get_state(room_id, "m.room.power_levels", "")
-         |> dbg() do
+    case @matrix_client.get_state(room_id, "m.room.power_levels", "") do
       {:ok, %{"users" => users}} ->
-        Map.get(users, user_id) |> dbg()
+        Map.get(users, user_id)
 
       _ ->
         nil
@@ -366,7 +400,7 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def is_administrator(room_id, user_id) do
-    case get_power_level_for_user(room_id, user_id) |> dbg() do
+    case get_power_level_for_user(room_id, user_id) do
       n when is_integer(n) ->
         n >= 100
 
@@ -390,6 +424,38 @@ defmodule Kazarma.Matrix.Client do
         invite(room_id, inviter, invitee)
         join(invitee, room_id)
         :ok
+    end
+  end
+
+  def ignore(ignorer, ignored) do
+    ignore_list =
+      case get_ignored_user_list(ignorer) do
+        {:ok, data} ->
+          Map.put_new(data, ignored, %{})
+
+        {:error, 404, _error} ->
+          %{ignored => %{}}
+      end
+
+    @matrix_client.put_data(
+      ignorer,
+      "m.ignored_user_list",
+      ignore_list,
+      user_id: ignorer
+    )
+  end
+
+  def unignore(ignorer, ignored) do
+    case get_ignored_user_list(ignorer) do
+      {:ok, data} ->
+        ignore_list = Map.drop(data, [ignored])
+
+        @matrix_client.put_data(
+          ignorer,
+          "m.ignored_user_list",
+          ignore_list,
+          user_id: ignorer
+        )
     end
   end
 

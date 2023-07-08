@@ -352,6 +352,71 @@ defmodule Kazarma.ActivityPub.Adapter do
     end
   end
 
+  # Block
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Block",
+            "actor" => blocker,
+            "object" => blocked
+          }
+        } = activity
+      ) do
+    Kazarma.Logger.log_received_activity(activity, label: "Block")
+
+    case ActivityPub.Actor.get_cached_by_ap_id(blocked) do
+      {:ok, %ActivityPub.Actor{local: true} = _blocked_actor} ->
+        {:ok, blocker_matrix_id} = Address.ap_id_to_matrix(blocker)
+        {:ok, blocked_matrix_id} = Address.ap_id_to_matrix(blocked)
+
+        Kazarma.Matrix.Client.ignore(blocker_matrix_id, blocked_matrix_id)
+
+        case Kazarma.RoomType.ApUser.get_outbox(blocker) do
+          {:ok, %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}}} ->
+            Kazarma.Matrix.Client.ban(room_id, blocker_matrix_id, blocked_matrix_id)
+        end
+
+        :ok
+
+      _ ->
+        :error
+    end
+  end
+
+  # Unblock (Undo/Block)
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Undo",
+            "actor" => blocker,
+            "object" => %{
+              "type" => "Block",
+              "object" => blocked
+            }
+          }
+        } = activity
+      ) do
+    Kazarma.Logger.log_received_activity(activity, label: "Block")
+
+    case ActivityPub.Actor.get_cached_by_ap_id(blocked) do
+      {:ok, %ActivityPub.Actor{local: true} = _blocked_actor} ->
+        {:ok, blocker_matrix_id} = Address.ap_id_to_matrix(blocker)
+        {:ok, blocked_matrix_id} = Address.ap_id_to_matrix(blocked)
+
+        Kazarma.Matrix.Client.unignore(blocker_matrix_id, blocked_matrix_id)
+
+        case Kazarma.RoomType.ApUser.get_outbox(blocker) do
+          {:ok, %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}}} ->
+            Kazarma.Matrix.Client.unban(room_id, blocker_matrix_id, blocked_matrix_id)
+        end
+
+        :ok
+
+      _ ->
+        :error
+    end
+  end
+
   def handle_activity(%Object{} = activity) do
     Kazarma.Logger.log_received_activity(activity, label: "Unhandled activity")
 
