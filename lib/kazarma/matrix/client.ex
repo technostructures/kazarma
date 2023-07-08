@@ -344,15 +344,19 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def invite(room_id, inviter, invitee) do
-    @matrix_client.client(user_id: inviter)
-    |> Polyjuice.Client.Room.send_state_event(room_id, "m.room.member", invitee, %{
-      "membership" => "invite"
-    })
+    @matrix_client.send_state_event(
+      room_id,
+      "m.room.member",
+      invitee,
+      %{
+        "membership" => "invite"
+      },
+      user_id: inviter
+    )
   end
 
   def get_membership(room_id, inviter, invitee) do
-    case @matrix_client.client(user_id: inviter)
-         |> Polyjuice.Client.Room.get_state(room_id, "m.room.member", invitee) do
+    case @matrix_client.get_state(room_id, "m.room.member", invitee, user_id: inviter) do
       %{"membership" => membership} ->
         membership
 
@@ -362,17 +366,27 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def ban(room_id, banner, banned) do
-    @matrix_client.client(user_id: banner)
-    |> Polyjuice.Client.Room.send_state_event(room_id, "m.room.member", banned, %{
-      "membership" => "ban"
-    })
+    @matrix_client.send_state_event(
+      room_id,
+      "m.room.member",
+      banned,
+      %{
+        "membership" => "ban"
+      },
+      user_id: banner
+    )
   end
 
   def unban(room_id, banner, banned) do
-    @matrix_client.client(user_id: banner)
-    |> Polyjuice.Client.Room.send_state_event(room_id, "m.room.member", banned, %{
-      "membership" => "leave"
-    })
+    @matrix_client.send_state_event(
+      room_id,
+      "m.room.member",
+      banned,
+      %{
+        "membership" => "leave"
+      },
+      user_id: banner
+    )
   end
 
   def get_power_level_for_user(room_id, user_id) do
