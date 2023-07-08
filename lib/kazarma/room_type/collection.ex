@@ -22,12 +22,11 @@ defmodule Kazarma.RoomType.Collection do
           object: %Object{
             data:
               %{
-                "id" => object_id,
                 "attributedTo" => group_ap_id,
                 "to" => [group_members]
               } = object_data
           }
-        } = activity
+        } = _activity
       ) do
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
          {:ok, %{username: group_username, data: %{"name" => group_name}}} <-
@@ -36,20 +35,8 @@ defmodule Kazarma.RoomType.Collection do
          {:ok, room_id} <-
            get_or_create_collection_room(group_members, group_matrix_id, group_name),
          :ok <- Client.invite_and_accept(room_id, group_matrix_id, matrix_id),
-         attachments = Map.get(object_data, "attachment"),
-         {:ok, event_id} <-
-           Activity.send_message_and_attachment(matrix_id, room_id, object_data, attachments),
-         {:ok, _} <-
-           Bridge.create_event(%{
-             local_id: event_id,
-             remote_id: object_id,
-             room_id: room_id
-           }) do
-      Kazarma.Logger.log_bridged_activity(activity,
-        room_type: :collection,
-        room_id: room_id,
-        obj_type: "Note"
-      )
+         attachments = Map.get(object_data, "attachment") do
+      Activity.send_message_and_attachment(matrix_id, room_id, object_data, attachments)
 
       :ok
     end
@@ -77,13 +64,18 @@ defmodule Kazarma.RoomType.Collection do
   def create_from_event(event, room) do
     {:ok, sender} = Address.matrix_id_to_actor(event.sender)
 
-    Activity.create_from_event(
-      event,
-      sender: sender,
-      to: [room.remote_id]
-    )
+    {:ok, activity} =
+      Activity.create_from_event(
+        event,
+        sender: sender,
+        to: [room.remote_id]
+      )
 
-    Kazarma.Logger.log_bridged_event(event, room_type: :collection)
+    Kazarma.Logger.log_bridged_activity(activity,
+      room_type: :collection,
+      room_id: room.local_id,
+      obj_type: "Note"
+    )
   end
 
   # @TODO destructure event in Matrix.Transaction

@@ -117,7 +117,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           ]
         },
         nil ->
-          {:ok, :activity}
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => :object_id}}}}
       end)
 
       assert :ok == new_event(message_fixture())

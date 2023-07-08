@@ -5,6 +5,7 @@ defmodule Kazarma.Matrix.Client do
   Wrapper for MatrixAppService.Client.
   """
   use Kazarma.Config
+  alias Kazarma.Bridge
 
   def register(username) do
     localpart =
@@ -281,7 +282,7 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def send_message_for_event_object(room_id, user_id, %{
-        "id" => ap_id,
+        "id" => object_id,
         "content" => description,
         "name" => name,
         "category" => category,
@@ -293,13 +294,13 @@ defmodule Kazarma.Matrix.Client do
     body = """
     ### #{name}
 
-    #{ap_id}
+    #{object_id}
 
     > #{description}
     """
 
     formatted_body = """
-    <a href="#{ap_id}">
+    <a href="#{object_id}">
       <h3>#{name}</h3>
     </a>
     [#{category}] #{formatted_start_time}
@@ -308,11 +309,44 @@ defmodule Kazarma.Matrix.Client do
     </p>
     """
 
-    send_tagged_message(room_id, user_id, {body, formatted_body})
+    content = %{
+      "msgtype" => "m.text",
+      "body" => body,
+      "formatted_body" => formatted_body,
+      "format" => "org.matrix.custom.html"
+    }
+
+    case send_tagged_message(room_id, user_id, content) do
+      {:ok, event_id} ->
+        {:ok, _} =
+          Bridge.create_event(%{
+            local_id: event_id,
+            remote_id: object_id,
+            room_id: room_id
+          })
+
+        Kazarma.Logger.log_bridged_event(
+          %MatrixAppService.Event{
+            event_id: event_id,
+            type: "m.room.message",
+            room_id: room_id,
+            sender: user_id,
+            user_id: user_id,
+            content: content,
+            state_key: nil
+          },
+          obj_type: "Event"
+        )
+
+        :ok
+
+      _ ->
+        :error
+    end
   end
 
   def send_message_for_video_object(room_id, user_id, %{
-        "id" => ap_id,
+        "id" => object_id,
         "content" => description,
         "name" => name,
         "duration" => _duration,
@@ -325,14 +359,14 @@ defmodule Kazarma.Matrix.Client do
     body = """
     ### #{name}
 
-    #{ap_id}
+    #{object_id}
 
     > #{description}
     """
 
     formatted_body = """
     <h3>#{name}</h3>
-    <a href="#{ap_id}">
+    <a href="#{object_id}">
       <img src="#{thumbnail_matrix_url}">
     </a>
     <p>
@@ -340,7 +374,40 @@ defmodule Kazarma.Matrix.Client do
     </p>
     """
 
-    send_tagged_message(room_id, user_id, {body, formatted_body})
+    content = %{
+      "msgtype" => "m.text",
+      "body" => body,
+      "formatted_body" => formatted_body,
+      "format" => "org.matrix.custom.html"
+    }
+
+    case send_tagged_message(room_id, user_id, content) do
+      {:ok, event_id} ->
+        {:ok, _} =
+          Bridge.create_event(%{
+            local_id: event_id,
+            remote_id: object_id,
+            room_id: room_id
+          })
+
+        Kazarma.Logger.log_bridged_event(
+          %MatrixAppService.Event{
+            event_id: event_id,
+            type: "m.room.message",
+            room_id: room_id,
+            sender: user_id,
+            user_id: user_id,
+            content: content,
+            state_key: nil
+          },
+          obj_type: "Video"
+        )
+
+        :ok
+
+      _ ->
+        :error
+    end
   end
 
   def invite(room_id, inviter, invitee) do

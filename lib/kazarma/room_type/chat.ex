@@ -18,45 +18,35 @@ defmodule Kazarma.RoomType.Chat do
           object: %Object{
             data:
               %{
-                "content" => _body,
-                "id" => object_id
+                "content" => _body
               } = object_data
           }
-        } = activity
+        } = _activity
       ) do
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from_id),
          {:ok, room_id} <-
            get_or_create_direct_room(from_id, to_id),
-         attachment = Map.get(object_data, "attachment"),
-         {:ok, event_id} <-
-           Activity.send_message_and_attachment(matrix_id, room_id, object_data, [attachment]),
-         {:ok, _} <-
-           Bridge.create_event(%{
-             local_id: event_id,
-             remote_id: object_id,
-             room_id: room_id
-           }) do
-      Kazarma.Logger.log_bridged_activity(activity,
-        room_type: :chat,
-        room_id: room_id,
-        obj_type: "ChatMessage"
-      )
-
-      :ok
+         attachment = Map.get(object_data, "attachment") do
+      Activity.send_message_and_attachment(matrix_id, room_id, object_data, [attachment])
     end
   end
 
   def create_from_event(event, room) do
     {:ok, sender} = Address.matrix_id_to_actor(event.sender)
 
-    Activity.create_from_event(
-      event,
-      sender: sender,
-      to: [room.data["to_ap_id"]],
-      type: "ChatMessage"
-    )
+    {:ok, activity} =
+      Activity.create_from_event(
+        event,
+        sender: sender,
+        to: [room.data["to_ap_id"]],
+        type: "ChatMessage"
+      )
 
-    Kazarma.Logger.log_bridged_event(event, room_type: :chat)
+    Kazarma.Logger.log_bridged_activity(activity,
+      room_type: :chat,
+      room_id: room.local_id,
+      obj_type: "Note"
+    )
   end
 
   def handle_puppet_invite(user_id, sender_id, room_id) do

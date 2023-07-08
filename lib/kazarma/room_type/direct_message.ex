@@ -20,12 +20,11 @@ defmodule Kazarma.RoomType.DirectMessage do
           object: %Object{
             data:
               %{
-                "id" => object_id,
                 "actor" => from,
                 "conversation" => conversation
               } = object_data
           }
-        } = activity
+        } = _activity
       ) do
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
          to =
@@ -37,22 +36,8 @@ defmodule Kazarma.RoomType.DirectMessage do
            end),
          {:ok, room_id} <-
            get_or_create_conversation(conversation, matrix_id, to),
-         attachments = Map.get(object_data, "attachment"),
-         {:ok, event_id} <-
-           Activity.send_message_and_attachment(matrix_id, room_id, object_data, attachments),
-         {:ok, _} <-
-           Bridge.create_event(%{
-             local_id: event_id,
-             remote_id: object_id,
-             room_id: room_id
-           }) do
-      Kazarma.Logger.log_bridged_activity(activity,
-        room_type: :direct_message,
-        room_id: room_id,
-        obj_type: "Note"
-      )
-
-      :ok
+         attachments = Map.get(object_data, "attachment") do
+      Activity.send_message_and_attachment(matrix_id, room_id, object_data, attachments)
     end
   end
 
@@ -89,16 +74,21 @@ defmodule Kazarma.RoomType.DirectMessage do
       |> Enum.map(&Address.unchecked_matrix_id_to_actor/1)
       |> Enum.filter(&(!is_nil(&1)))
 
-    Activity.create_from_event(
-      event,
-      sender: sender,
-      to: Enum.map(recipients, & &1.ap_id),
-      additional_mentions: recipients,
-      context: room.remote_id,
-      fallback_reply: fallback_reply
-    )
+    {:ok, activity} =
+      Activity.create_from_event(
+        event,
+        sender: sender,
+        to: Enum.map(recipients, & &1.ap_id),
+        additional_mentions: recipients,
+        context: room.remote_id,
+        fallback_reply: fallback_reply
+      )
 
-    Kazarma.Logger.log_bridged_event(event, room_type: :direct_message)
+    Kazarma.Logger.log_bridged_activity(activity,
+      room_type: :direct_message,
+      room_id: room.local_id,
+      obj_type: "Note"
+    )
   end
 
   def handle_puppet_invite(matrix_id, inviter_id, room_id) do
@@ -120,26 +110,25 @@ defmodule Kazarma.RoomType.DirectMessage do
   end
 
   defp join_or_create_bridge_room(matrix_id, inviter_id, room_id) do
-    room =
-      case Bridge.get_room_by_local_id(room_id) do
-        nil ->
-          {:ok, inviter_actor} = Address.matrix_id_to_actor(inviter_id)
+    case Bridge.get_room_by_local_id(room_id) do
+      nil ->
+        {:ok, inviter_actor} = Address.matrix_id_to_actor(inviter_id)
 
-          {:ok, room} =
-            insert_bridge_room(room_id, ActivityPub.Utils.generate_context_id(inviter_actor), [
-              matrix_id
-            ])
+        {:ok, room} =
+          insert_bridge_room(room_id, ActivityPub.Utils.generate_context_id(inviter_actor), [
+            matrix_id
+          ])
 
-          Kazarma.Logger.log_created_room(room,
-            room_type: :direct_message,
-            room_id: room_id
-          )
+        Kazarma.Logger.log_created_room(room,
+          room_type: :direct_message,
+          room_id: room_id
+        )
 
-          {:ok, room}
+        {:ok, room}
 
-        room ->
-          updated_room_data = update_in(room.data["to"], &[matrix_id | &1]).data
-          Bridge.update_room(room, %{"data" => updated_room_data})
-      end
+      room ->
+        updated_room_data = update_in(room.data["to"], &[matrix_id | &1]).data
+        Bridge.update_room(room, %{"data" => updated_room_data})
+    end
   end
 end

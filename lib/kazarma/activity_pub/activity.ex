@@ -51,12 +51,14 @@ defmodule Kazarma.ActivityPub.Activity do
            attachment: attachment,
            tags: tags
          ) do
-      {:ok, %{object: %Object{data: %{"id" => remote_id}}}} ->
+      {:ok, %{object: %Object{data: %{"id" => remote_id}}} = activity} ->
         Bridge.create_event(%{
           local_id: event.event_id,
           remote_id: remote_id,
           room_id: event.room_id
         })
+
+        {:ok, activity}
 
       error ->
         {:error, error}
@@ -179,7 +181,12 @@ defmodule Kazarma.ActivityPub.Activity do
     }
   end
 
-  def send_message_and_attachment(matrix_id, room_id, object_data, attachments) do
+  def send_message_and_attachment(
+        matrix_id,
+        room_id,
+        %{"id" => object_id} = object_data,
+        attachments
+      ) do
     {content, room_id} =
       object_data
       |> make_content()
@@ -187,13 +194,39 @@ defmodule Kazarma.ActivityPub.Activity do
 
     content = add_attachments(matrix_id, content, attachments)
 
-    # message_result =
-    content &&
-      Kazarma.Matrix.Client.send_tagged_message(
-        room_id,
-        matrix_id,
-        content
-      )
+    case content &&
+           Kazarma.Matrix.Client.send_tagged_message(
+             room_id,
+             matrix_id,
+             content
+           ) do
+      {:ok, event_id} ->
+        {:ok, _} =
+          Bridge.create_event(%{
+            local_id: event_id,
+            remote_id: object_id,
+            room_id: room_id
+          })
+
+        Kazarma.Logger.log_bridged_event(
+          %MatrixAppService.Event{
+            event_id: event_id,
+            type: "m.room.message",
+            room_id: room_id,
+            sender: matrix_id,
+            user_id: matrix_id,
+            content: content,
+            state_key: nil
+          },
+          room_type: :collection,
+          obj_type: "Note"
+        )
+
+        :ok
+
+      _ ->
+        :error
+    end
   end
 
   defp add_attachments(_matrix_id, content, nil), do: content

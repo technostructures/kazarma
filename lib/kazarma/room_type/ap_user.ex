@@ -23,7 +23,6 @@ defmodule Kazarma.RoomType.ApUser do
             data:
               %{
                 "type" => "Note",
-                "id" => object_id,
                 "actor" => from_id
               } = object_data
           }
@@ -38,22 +37,8 @@ defmodule Kazarma.RoomType.ApUser do
          %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}} <-
            get_room_for_public_create(object_data),
          Client.join(from_matrix_id, room_id),
-         attachments = Map.get(object_data, "attachment"),
-         {:ok, event_id} <-
-           Activity.send_message_and_attachment(from_matrix_id, room_id, object_data, attachments),
-         {:ok, _} <-
-           Bridge.create_event(%{
-             local_id: event_id,
-             remote_id: object_id,
-             room_id: room_id
-           }) do
-      Kazarma.Logger.log_bridged_activity(activity,
-        room_type: :ap_room,
-        room_id: room_id,
-        obj_type: "Note"
-      )
-
-      :ok
+         attachments = Map.get(object_data, "attachment") do
+      Activity.send_message_and_attachment(from_matrix_id, room_id, object_data, attachments)
     end
   end
 
@@ -64,7 +49,6 @@ defmodule Kazarma.RoomType.ApUser do
             data:
               %{
                 "type" => "Video",
-                "id" => object_id,
                 "attributedTo" => attributed_to
               } = object_data
           }
@@ -90,22 +74,8 @@ defmodule Kazarma.RoomType.ApUser do
       for attributed <- attributed_list do
         with {:ok, %Room{local_id: room_id, data: %{"type" => "ap_user"}}} <-
                get_outbox(attributed),
-             Client.join(from_matrix_id, room_id),
-             {:ok, event_id} =
-               Client.send_message_for_video_object(room_id, from_matrix_id, object_data),
-             {:ok, _} <-
-               Bridge.create_event(%{
-                 local_id: event_id,
-                 remote_id: object_id,
-                 room_id: room_id
-               }) do
-          Kazarma.Logger.log_bridged_activity(activity,
-            room_type: :ap_room,
-            room_id: room_id,
-            obj_type: "Video"
-          )
-
-          :ok
+             Client.join(from_matrix_id, room_id) do
+          Client.send_message_for_video_object(room_id, from_matrix_id, object_data)
         end
       end
     end
@@ -115,7 +85,7 @@ defmodule Kazarma.RoomType.ApUser do
         %{
           data: %{
             "to" => _to,
-            "object" => %{"id" => object_id, "attributedTo" => attributed_to_id} = object_data
+            "object" => %{"attributedTo" => attributed_to_id} = object_data
           }
         } = activity
       ) do
@@ -127,22 +97,8 @@ defmodule Kazarma.RoomType.ApUser do
     with {:ok, attributed_to_matrix_id} <- Kazarma.Address.ap_id_to_matrix(attributed_to_id),
          {:ok, %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}}} <-
            get_outbox(attributed_to_id),
-         Kazarma.Matrix.Client.join(attributed_to_matrix_id, room_id),
-         {:ok, event_id} <-
-           Client.send_message_for_event_object(room_id, attributed_to_matrix_id, object_data),
-         {:ok, _} <-
-           Bridge.create_event(%{
-             local_id: event_id,
-             remote_id: object_id,
-             room_id: room_id
-           }) do
-      Kazarma.Logger.log_bridged_activity(activity,
-        room_type: :ap_room,
-        room_id: room_id,
-        obj_type: "Event"
-      )
-
-      :ok
+         Kazarma.Matrix.Client.join(attributed_to_matrix_id, room_id) do
+      Client.send_message_for_event_object(room_id, attributed_to_matrix_id, object_data)
     end
   end
 
@@ -177,14 +133,18 @@ defmodule Kazarma.RoomType.ApUser do
     {:ok, sender} = Address.matrix_id_to_actor(event.sender)
     {:ok, receiver} = Address.matrix_id_to_actor(room.data["matrix_id"])
 
-    Activity.create_from_event(
-      event,
-      sender: sender,
-      to: ["https://www.w3.org/ns/activitystreams#Public", receiver.ap_id],
-      additional_mentions: [receiver]
-    )
+    {:ok, activity} =
+      Activity.create_from_event(
+        event,
+        sender: sender,
+        to: ["https://www.w3.org/ns/activitystreams#Public", receiver.ap_id],
+        additional_mentions: [receiver]
+      )
 
-    Kazarma.Logger.log_bridged_event(event, room_type: :ap_room)
+    Kazarma.Logger.log_bridged_activity(activity,
+      room_type: :ap_user,
+      room_id: room.local_id
+    )
   end
 
   def get_outbox(ap_id) do
