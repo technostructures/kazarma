@@ -396,4 +396,78 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       assert :ok == handle_activity(unblock_fixture())
     end
   end
+
+  describe "activity handler (handle_activity/1) for Follow activity" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    def follow_fixture do
+      %ActivityPub.Object{
+        data: %{
+          "id" => "follow_object_id",
+          "type" => "Follow",
+          "actor" => "http://pleroma/pub/actors/alice",
+          "object" => "http://kazarma/-/bob"
+        }
+      }
+    end
+
+    def unfollow_fixture do
+      %ActivityPub.Object{
+        data: %{
+          "id" => "unfollow_object_id",
+          "type" => "Undo",
+          "actor" => "http://pleroma/pub/actors/alice",
+          "object" => %{
+            "type" => "Follow",
+            "object" => "http://kazarma/-/bob"
+          }
+        }
+      }
+    end
+
+    test "when receiving a Follow activity for a Matrix user it accepts the follow" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:accept, fn
+        %{
+          actor: %{
+            data: %{
+              "id" => "http://kazarma/-/bob",
+              "name" => "Bob",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/bob",
+            username: "bob@kazarma",
+            deactivated: false
+          },
+          object: %{
+            "actor" => "http://pleroma/pub/actors/alice",
+            "id" => "follow_object_id",
+            "object" => "http://kazarma/-/bob",
+            "type" => "Follow"
+          },
+          to: ["http://pleroma/pub/actors/alice"]
+        } ->
+          :ok
+      end)
+
+      assert :ok == handle_activity(follow_fixture())
+    end
+
+    test "when receiving a Undo/Follow activity for a Matrix user it does nothing" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+
+      assert :ok == handle_activity(unfollow_fixture())
+    end
+  end
 end

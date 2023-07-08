@@ -343,9 +343,9 @@ defmodule Kazarma.ActivityPub.Adapter do
           {:ok, follower_actor} = ActivityPub.Actor.get_cached_by_ap_id(follower)
           Kazarma.ActivityPub.unfollow(followed_actor, follower_actor)
           {:ok, _} = Kazarma.RoomType.ApUser.deactivate_outbox(follower_actor)
-
-          :ok
         end
+
+        :ok
 
       _ ->
         :error
