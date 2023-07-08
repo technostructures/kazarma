@@ -288,6 +288,8 @@ defmodule Kazarma.ActivityPub.Adapter do
         remote_id: invite_id,
         room_id: room_id
       })
+
+      :ok
     end
   end
 
