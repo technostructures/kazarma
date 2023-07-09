@@ -8,15 +8,15 @@
 # # to merge POT files into PO files.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2023-03-27 20:37+0000\n"
+"PO-Revision-Date: 2023-07-10 12:53+0000\n"
 "Last-Translator: gallegonovato <fran-carro@hotmail.es>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/kazarma/kazarma/"
 "es/>\n"
 "Language: es\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:68 lib/kazarma_web/live/index.ex:31
@@ -380,66 +380,76 @@ msgstr "Actividad no encontrada"
 #: lib/kazarma_web/live/index.html.heex:122
 #: lib/kazarma_web/live/object.html.heex:13
 msgid "A Technostructures project"
-msgstr ""
+msgstr "Un proyecto de Tecnoestructuras"
 
 #: lib/kazarma_web/live/index.html.heex:67
 msgid "ActivityPub moderation tools are implemented."
-msgstr ""
+msgstr "Se implementan las herramientas de moderación de ActivityPub."
 
 #: lib/kazarma_web/live/index.html.heex:57
 msgid "Consent and privacy"
-msgstr ""
+msgstr "Consentimiento y privacidad"
 
 #: lib/kazarma_web/live/index.html.heex:68
 msgid ""
 "For instance, blocking a Matrix user will ignore them and ban them from your "
 "public room if it exists."
 msgstr ""
+"Por ejemplo, si bloqueas a un usuario de Matrix, lo ignorarás y lo "
+"expulsarás de tu sala pública, si existe."
 
 #: lib/kazarma_web/live/index.html.heex:61
 msgid ""
 "It can be direct messages, or following of the relay actor to opt-in to "
 "public activites bridging."
 msgstr ""
+"Pueden ser mensajes directos, o seguimiento del actor de retransmisión para "
+"optar por las actividades públicas puente."
 
 #: lib/kazarma_web/live/index.html.heex:60
 msgid "Kazarma waits for explicit user action to bridge activities and events."
 msgstr ""
+"Kazarma espera la acción explícita del usuario para unir actividades y "
+"eventos."
 
 #: lib/kazarma_web/live/index.html.heex:79
 msgid "Links"
-msgstr ""
+msgstr "Enlaces"
 
 #: lib/kazarma_web/live/index.html.heex:86
 #: lib/kazarma_web/live/index.html.heex:90
 msgid "Matrix room"
-msgstr ""
+msgstr "Sala Matrix"
 
 #: lib/kazarma_web/live/index.html.heex:74
 msgid ""
 "Since ActivityPub clients do not implement end-to-end encryption, kazarma "
 "does not work in encrypted Matrix rooms."
 msgstr ""
+"Dado que los clientes de ActivityPub no implementan la encriptación de "
+"extremo a extremo, kazarma no funciona en salas Matrix encriptadas."
 
 #: lib/kazarma_web/live/index.html.heex:97
 #: lib/kazarma_web/live/index.html.heex:100
 msgid "Source and issue tracker"
-msgstr ""
+msgstr "Código fuente y seguimiento de incidencias"
 
 #: lib/kazarma_web/live/actor.html.heex:9
 #: lib/kazarma_web/live/index.html.heex:118
 #: lib/kazarma_web/live/object.html.heex:9
 msgid "Technostructures"
-msgstr ""
+msgstr "Tecnoestructuras"
 
 #: lib/kazarma_web/live/index.html.heex:107
 #: lib/kazarma_web/live/index.html.heex:110
 msgid "Translations"
-msgstr ""
+msgstr "Traducciones"
 
 #: lib/kazarma_web/live/index.html.heex:64
 msgid "Unfollowing the relay actor deactivates public activities bridging."
 msgstr ""
+"Dejar de seguir al actor de la retransmisión desactiva el puente de "
+"actividades públicas."
 
 #: lib/kazarma_web/live/index.html.heex:71
 msgid "You can also block the whole domain of the bridge."
