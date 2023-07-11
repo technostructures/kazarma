@@ -153,6 +153,7 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   def update_remote_actor(_), do: :ok
 
+  # @TODO: dispatch depending of existing Room record
   @impl ActivityPub.Adapter
   def handle_activity(
         %{
@@ -277,6 +278,7 @@ defmodule Kazarma.ActivityPub.Adapter do
            Address.ap_username_to_matrix_id(group_username),
          {:ok, room_id} <-
            Kazarma.RoomType.Collection.get_or_create_collection_room(
+             group_ap_id,
              group_members,
              group_matrix_id,
              group_name

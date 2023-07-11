@@ -18,12 +18,11 @@ defmodule Kazarma.RoomType.Collection do
 
   def create_from_ap(
         %{
-          data: %{"actor" => from},
+          data: %{"actor" => from, "to" => [group_members]},
           object: %Object{
             data:
               %{
-                "attributedTo" => group_ap_id,
-                "to" => [group_members]
+                "attributedTo" => group_ap_id
               } = object_data
           }
         } = _activity
@@ -33,7 +32,7 @@ defmodule Kazarma.RoomType.Collection do
            ActivityPub.Actor.get_cached_by_ap_id(group_ap_id),
          {:ok, group_matrix_id} <- Address.ap_username_to_matrix_id(group_username),
          {:ok, room_id} <-
-           get_or_create_collection_room(group_members, group_matrix_id, group_name),
+           get_or_create_collection_room(group_ap_id, group_members, group_matrix_id, group_name),
          :ok <- Client.invite_and_accept(room_id, group_matrix_id, matrix_id),
          attachments = Map.get(object_data, "attachment") do
       Activity.send_message_and_attachment(matrix_id, room_id, object_data, attachments)
@@ -42,12 +41,12 @@ defmodule Kazarma.RoomType.Collection do
     end
   end
 
-  def get_or_create_collection_room(members_ap_id, matrix_id, name) do
+  def get_or_create_collection_room(group_ap_id, members_ap_id, matrix_id, name) do
     with nil <- Bridge.get_room_by_remote_id(members_ap_id),
          {:ok, %{"room_id" => room_id}} <-
            Client.create_multiuser_room(matrix_id, [], name: name),
          {:ok, room} <-
-           insert_bridge_room(room_id, members_ap_id) do
+           insert_bridge_room(room_id, group_ap_id, members_ap_id) do
       Kazarma.Logger.log_created_room(room,
         room_type: :collection,
         room_id: room_id
@@ -61,19 +60,25 @@ defmodule Kazarma.RoomType.Collection do
     end
   end
 
-  def create_from_event(event, room) do
+  def create_from_event(%{content: %{"body" => content_body}} = event, %{
+        local_id: room_id,
+        remote_id: members_id,
+        data: %{"group" => group_id}
+      }) do
     {:ok, sender} = Address.matrix_id_to_actor(event.sender)
 
     {:ok, activity} =
       Activity.create_from_event(
         event,
         sender: sender,
-        to: [room.remote_id]
+        to: [members_id],
+        name: String.replace(content_body, ~r/(?<=.{20})(.+)/s, "..."),
+        attributed_to: group_id
       )
 
     Kazarma.Logger.log_bridged_activity(activity,
       room_type: :collection,
-      room_id: room.local_id,
+      room_id: room_id,
       obj_type: "Note"
     )
   end
@@ -96,11 +101,11 @@ defmodule Kazarma.RoomType.Collection do
     end
   end
 
-  defp insert_bridge_room(room_id, group) do
+  defp insert_bridge_room(room_id, group_id, members_id) do
     Bridge.create_room(%{
       local_id: room_id,
-      remote_id: group,
-      data: %{type: :collection}
+      remote_id: members_id,
+      data: %{type: :collection, group: group_id}
     })
   end
 end

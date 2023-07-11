@@ -20,36 +20,27 @@ defmodule Kazarma.ActivityPub.Activity do
       ) do
     sender = Keyword.fetch!(params, :sender)
 
-    to = Keyword.fetch!(params, :to)
-
-    type = Keyword.get(params, :type, "Note")
-
     replied_activity =
       get_replied_activity_if_exists(event) || Keyword.get(params, :fallback_reply)
-
-    in_reply_to = make_in_reply_to(replied_activity)
-
-    context = Keyword.get(params, :context) || make_context(replied_activity, sender)
-
-    attachment = attachment_from_matrix_event_content(event.content)
 
     manual_mentions = Kazarma.Matrix.Transaction.get_mentions_from_event_content(event.content)
 
     additional_mentions = Keyword.get(params, :additional_mentions, [])
 
-    content = Kazarma.Matrix.Transaction.build_text_content(event.content, additional_mentions)
-
     tags = Enum.map(manual_mentions ++ additional_mentions, &mention_tag_for_actor/1)
 
     case create(
-           type: type,
+           type: Keyword.get(params, :type, "Note"),
            sender: sender,
-           receivers_id: to,
-           context: context,
-           in_reply_to: in_reply_to,
-           content: content,
-           attachment: attachment,
-           tags: tags
+           receivers_id: Keyword.fetch!(params, :to),
+           context: Keyword.get(params, :context, make_context(replied_activity, sender)),
+           in_reply_to: make_in_reply_to(replied_activity),
+           content:
+             Kazarma.Matrix.Transaction.build_text_content(event.content, additional_mentions),
+           attachment: attachment_from_matrix_event_content(event.content),
+           tags: tags,
+           name: Keyword.get(params, :name),
+           attributed_to: Keyword.get(params, :attributed_to, sender.ap_id)
          ) do
       {:ok, %{object: %Object{data: %{"id" => remote_id}}} = activity} ->
         Bridge.create_event(%{
@@ -73,7 +64,7 @@ defmodule Kazarma.ActivityPub.Activity do
         "type" => Keyword.fetch!(params, :type),
         "content" => Keyword.fetch!(params, :content),
         "actor" => sender.ap_id,
-        "attributedTo" => sender.ap_id,
+        "attributedTo" => Keyword.fetch!(params, :attributed_to),
         "to" => Keyword.fetch!(params, :receivers_id),
         "conversation" => Keyword.get(params, :context)
       }
@@ -81,6 +72,7 @@ defmodule Kazarma.ActivityPub.Activity do
       |> maybe_put("attachment", Keyword.get(params, :attachment))
       |> maybe_put("tag", Keyword.get(params, :tags))
       |> maybe_put("inReplyTo", Keyword.get(params, :in_reply_to))
+      |> maybe_put("name", Keyword.get(params, :name))
 
     create_params = %{
       actor: Keyword.fetch!(params, :sender),
