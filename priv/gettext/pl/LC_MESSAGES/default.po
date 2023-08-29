@@ -3,14 +3,17 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-08-29 11:59+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2023-08-30 10:48+0000\n"
+"Last-Translator: Eryk Michalak <gnu.ewm@protonmail.com>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/kazarma/kazarma/"
+"pl/>\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 3.10.0\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 ## This file is a PO Template file.
 ##
@@ -21,45 +24,44 @@ msgstr ""
 ## Run "mix gettext.extract" to bring this file up to
 ## date. Leave "msgstr"s empty as changing them here as no
 ## effect: edit them in PO (.po) files instead.
-
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:68
 #: lib/kazarma_web/live/index.ex:31
 #: lib/kazarma_web/live/object.ex:41
 #, elixir-autogen, elixir-format
 msgid "User not found"
-msgstr ""
+msgstr "Nie znaleziono użytkownika"
 
 #: lib/kazarma_web/components/button.ex:14
 #: lib/kazarma_web/components/button.ex:15
 #: lib/kazarma_web/components/profile.ex:57
 #, elixir-autogen, elixir-format
 msgid "Copy"
-msgstr ""
+msgstr "Kopiuj"
 
 #: lib/kazarma_web/components/object.ex:75
 #: lib/kazarma_web/components/object.ex:76
 #: lib/kazarma_web/components/profile.ex:45
 #, elixir-autogen, elixir-format
 msgid "Open"
-msgstr ""
+msgstr "Otwórz"
 
 #: lib/kazarma_web/components/layouts/search.html.heex:29
 #: lib/kazarma_web/components/layouts/search.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Search"
-msgstr ""
+msgstr "Szukaj"
 
 #: lib/kazarma_web/components/object.ex:97
 #: lib/kazarma_web/components/profile.ex:75
 #, elixir-autogen, elixir-format
 msgid "%{actor_name}'s avatar"
-msgstr ""
+msgstr "Awatar %{actor_name}"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:1
 #, elixir-autogen, elixir-format
 msgid "Skip to content"
-msgstr ""
+msgstr "Przejdź do zawartości"
 
 #: lib/kazarma_web/components/layouts/app.html.heex:2
 #, elixir-autogen, elixir-format
@@ -80,7 +82,7 @@ msgstr ""
 #: lib/kazarma_web/components/layouts/app.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "Help"
-msgstr ""
+msgstr "Pomoc"
 
 #: lib/kazarma_web/components/layouts/search.html.heex:13
 #: lib/kazarma_web/components/layouts/search.html.heex:14
@@ -92,7 +94,7 @@ msgstr ""
 #: lib/kazarma_web/components/core_components.ex:474
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr ""
+msgstr "Działania"
 
 #: lib/kazarma_web/components/layouts/_log_level.html.heex:11
 #, elixir-autogen, elixir-format
@@ -118,12 +120,12 @@ msgstr ""
 #: lib/kazarma_web/components/core_components.ex:77
 #, elixir-autogen, elixir-format
 msgid "close"
-msgstr ""
+msgstr "zamknij"
 
 #: lib/kazarma_web/components/core_components.ex:183
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
-msgstr ""
+msgstr "Próba ponownego połączenia"
 
 #: lib/kazarma_web/components/layouts/root.html.heex:9
 #, elixir-autogen, elixir-format
@@ -133,22 +135,22 @@ msgstr ""
 #: lib/kazarma_web/components/profile.ex:55
 #, elixir-autogen, elixir-format
 msgid "Click to copy"
-msgstr ""
+msgstr "Kliknij aby skopiować"
 
 #: lib/kazarma_web/components/profile.ex:43
 #, elixir-autogen, elixir-format
 msgid "Click to open"
-msgstr ""
+msgstr "Kliknij aby otworzyć"
 
 #: lib/kazarma_web/components/core_components.ex:173
 #, elixir-autogen, elixir-format
 msgid "Error!"
-msgstr ""
+msgstr "Błąd!"
 
 #: lib/kazarma_web/components/core_components.ex:172
 #, elixir-autogen, elixir-format
 msgid "Success!"
-msgstr ""
+msgstr "Sukces!"
 
 #: lib/kazarma_web/components/core_components.ex:177
 #, elixir-autogen, elixir-format
@@ -158,7 +160,7 @@ msgstr ""
 #: lib/kazarma_web/components/profile.ex:222
 #, elixir-autogen, elixir-format
 msgid "?"
-msgstr ""
+msgstr "?"
 
 #: lib/kazarma_web/components/profile.ex:149
 #, elixir-autogen, elixir-format
@@ -194,13 +196,13 @@ msgstr ""
 #: lib/kazarma_web/components/profile.ex:152
 #, elixir-autogen, elixir-format
 msgid "Compatible platform: Mobilizon."
-msgstr ""
+msgstr "Zgodna platforma: Mobilizon."
 
 #: lib/kazarma_web/components/profile.ex:136
 #: lib/kazarma_web/components/profile.ex:185
 #, elixir-autogen, elixir-format
 msgid "Compatible platform: Pleroma."
-msgstr ""
+msgstr "Zgodna platforma: Pleroma."
 
 #: lib/kazarma_web/components/layouts/_bridge_yourself_modals.html.heex:12
 #, elixir-autogen, elixir-format
@@ -225,12 +227,12 @@ msgstr ""
 #: lib/kazarma_web/live/index.html.heex:53
 #, elixir-autogen, elixir-format
 msgid "From ActivityPub"
-msgstr ""
+msgstr "Z ActivityPub"
 
 #: lib/kazarma_web/live/index.html.heex:47
 #, elixir-autogen, elixir-format
 msgid "From Matrix"
-msgstr ""
+msgstr "Z Matrixa"
 
 #: lib/kazarma_web/live/actor.html.heex:30
 #: lib/kazarma_web/live/actor.html.heex:47
@@ -422,13 +424,13 @@ msgstr ""
 #: lib/kazarma_web/live/index.html.heex:79
 #, elixir-autogen, elixir-format
 msgid "Links"
-msgstr ""
+msgstr "Linki"
 
 #: lib/kazarma_web/live/index.html.heex:86
 #: lib/kazarma_web/live/index.html.heex:90
 #, elixir-autogen, elixir-format
 msgid "Matrix room"
-msgstr ""
+msgstr "Pokój Matrix"
 
 #: lib/kazarma_web/live/index.html.heex:74
 #, elixir-autogen, elixir-format
@@ -452,7 +454,7 @@ msgstr ""
 #: lib/kazarma_web/live/index.html.heex:110
 #, elixir-autogen, elixir-format
 msgid "Translations"
-msgstr ""
+msgstr "Tłumaczenie"
 
 #: lib/kazarma_web/live/index.html.heex:64
 #, elixir-autogen, elixir-format
@@ -474,4 +476,4 @@ msgstr ""
 #: lib/kazarma_web/live/index.html.heex:9
 #, elixir-autogen, elixir-format
 msgid "kazarma"
-msgstr ""
+msgstr "kazarma"
