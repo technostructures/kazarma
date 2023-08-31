@@ -1,4 +1,11 @@
+# SPDX-FileCopyrightText: 2020-2023 The Kazarma Team
+# SPDX-License-Identifier: AGPL-3.0-only
+
 defmodule KazarmaWeb.HealthPlug do
+  @moduledoc """
+  Healthcheck plug.
+  """
+
   import Plug.Conn
 
   def init(opts), do: opts
