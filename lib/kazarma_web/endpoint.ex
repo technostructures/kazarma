@@ -14,6 +14,8 @@ defmodule KazarmaWeb.Endpoint do
     signing_salt: "/du80Mq6"
   ]
 
+  plug KazarmaWeb.HealthPlug
+
   socket "/socket", KazarmaWeb.UserSocket,
     websocket: true,
     longpoll: false
