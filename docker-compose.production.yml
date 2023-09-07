@@ -9,7 +9,7 @@ volumes:
 services:
   
   kazarma:
-    image: registry.gitlab.com/kazarma/kazarma/production:${KAZARMA_VERSION:-latest}
+    image: registry.gitlab.com/technostructures/kazarma/kazarma/production:${KAZARMA_VERSION:-latest}
     # ports:
     #   - "4000:4000"
     environment:
