@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2020-2023 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
 
-FROM registry.gitlab.com/kazarma/alpine-elixir-phoenix:1.14
+FROM registry.gitlab.com/technostructures/docker-images/alpine-elixir-phoenix:1.14
 
 ENV HEX_HTTP_CONCURRENCY=1
 ENV HEX_HTTP_TIMEOUT=240
