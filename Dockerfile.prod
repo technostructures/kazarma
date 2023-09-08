@@ -19,7 +19,7 @@
 #   docker image, with a development
 #   toolset.
 # -----------------------------------
-FROM registry.gitlab.com/technostructures/docker-images/alpine-elixir-phoenix:1.14 AS elixir-builder
+FROM bitwalker/alpine-elixir-phoenix:1.14 AS elixir-builder
 
 ENV MIX_ENV=prod
 ENV AP_BASE_PATH=/
