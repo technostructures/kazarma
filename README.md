@@ -130,10 +130,9 @@ mix docs
 
 ## Sponsors
 
-The [NLNet foundation](https://nlnet.nl/) [selected this project](https://nlnet.nl/project/Matrix-CommonsPub/) as part of the Next Generation Internet initiative (thank you!).
+Kazarma receives funding from [NLnet](https://nlnet.nl/project/Kazarma-Release#ack) through the [NGI0 Entrust Fund](https://nlnet.nl/entrust/).
 
-They redistribute public European funding (EU'S R&D programme called "Horizon 2020") to finance programming efforts on a "resilient, trustworthy and sustainable" Internet. if you're interested, [check out how to apply in this video](https://media.ccc.de/v/36c3-10795-ngi_zero_a_treasure_trove_of_it_innovation)!
-
+If you'd like to apply, check out how in [this video](https://media.ccc.de/v/36c3-10795-ngi_zero_a_treasure_trove_of_it_innovation)!
 
 ## License 
 
