@@ -75,6 +75,11 @@ config :activity_pub, :http,
   send_user_agent: true,
   adapter: [
     ssl_options: [
+      verify: :verify_peer,
+      cacerts: :public_key.cacerts_get(),
+      customize_hostname_check: [
+        match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
+      ],
       # Workaround for remote server certificate chain issues
       partial_chain: &:hackney_connect.partial_chain/1,
       # We don't support TLS v1.3 yet

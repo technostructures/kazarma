@@ -132,7 +132,7 @@ defmodule KazarmaWeb.Components.Hashvatar do
         line_to(polar_point(outer_radius, angle_a)),
         arc_to(polar_point(outer_radius, angle_b), arc_radius, variant == :spider),
         # close the path
-        'Z'
+        ~c"Z"
       ]
       |> Enum.join(" ")
 

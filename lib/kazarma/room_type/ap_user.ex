@@ -28,7 +28,10 @@ defmodule Kazarma.RoomType.ApUser do
           }
         } = activity
       ) do
-    Kazarma.Logger.log_received_activity(activity, obj_type: "Note", label: "Public Note activity")
+    Kazarma.Logger.log_received_activity(activity,
+      obj_type: "Note",
+      label: "Public Note activity"
+    )
 
     with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
          %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}} <-
