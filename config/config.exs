@@ -39,8 +39,7 @@ config :mime, :types, %{
   "application/xml" => ["xml"],
   "application/xrd+xml" => ["xrd+xml"],
   "application/jrd+json" => ["jrd+json"],
-  "application/activity+json" => ["activity+json"],
-  "application/ld+json" => ["activity+json"]
+  "application/activity+json" => ["activity+json"]
 }
 
 config :gettext, :default_locale, "en"

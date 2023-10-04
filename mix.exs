@@ -18,7 +18,13 @@ defmodule Kazarma.MixProject do
       docs: [
         assets: "doc_diagrams"
       ],
-      test_coverage: [tool: :covertool, summary: true],
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
       releases: [kazarma: [applications: [svadilfari: :permanent, prom_ex: :permanent]]]
     ]
   end
@@ -62,7 +68,6 @@ defmodule Kazarma.MixProject do
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: :test},
       {:junit_formatter, "~> 3.1", only: :test},
-      {:covertool, "~> 2.0"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.2.0", only: [:dev, :test], runtime: false},
       {:hackney, "~> 1.18.0", override: true},
@@ -75,7 +80,9 @@ defmodule Kazarma.MixProject do
       {:phoenix_live_reload, "~> 1.4.1"},
       {:html_sanitize_ex, "~> 1.4"},
       {:ex_cldr_dates_times, "~> 2.0"},
-      {:svadilfari, github: "akasprzok/svadilfari", ref: "6e55a2f"}
+      {:svadilfari, github: "akasprzok/svadilfari", ref: "6e55a2f"},
+      {:tesla, "~> 1.7", override: true},
+      {:excoveralls, "~> 0.17", only: :test}
     ]
   end
 

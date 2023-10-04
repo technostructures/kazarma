@@ -49,7 +49,6 @@ build_plt:
         - matrix_app_service
         - activity_pub
         - polyjuice_client
-        - mix.lock
   script:
     - apk update
     - apk add git cmake g++
@@ -212,15 +211,15 @@ test:
     - mix ecto.create
     - mix ecto.migrate
   script:
-    - mix test --cover
-  coverage: '/Line total: (\d+\.\d+)%/' # Line total: 66.4%
+    - mix coveralls.cobertura
+  coverage: '/\[TOTAL\]\s+(\d+\.\d+)%/'
   artifacts:
     when: always
     reports:
       junit: _build/test/lib/kazarma/test-junit-report.xml
       coverage_report:
         coverage_format: cobertura
-        path: coverage.xml
+        path: cover/cobertura.xml
 
 format:
   extends:
