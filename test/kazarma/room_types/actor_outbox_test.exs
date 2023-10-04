@@ -459,6 +459,130 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     end
   end
 
+  describe "activity handler (handle_activity/1) for public Video" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, actor} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://pleroma/pub/actors/alice",
+            "id" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, channel} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Channel",
+            "name" => "Channel",
+            "preferredUsername" => "channel",
+            "url" => "http://pleroma/pub/actors/channel",
+            "id" => "http://pleroma/pub/actors/channel",
+            "username" => "channel@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/channel"
+        })
+
+      {:ok, actor: actor, channel: channel}
+    end
+
+    def public_video_fixture do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://kazarma/-/bob",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ],
+          "actor" => "http://pleroma/pub/actors/alice"
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Video",
+            "id" => "note_id",
+            "actor" => "http://pleroma/pub/actors/alice",
+            "attributedTo" => [
+              %{"type" => "Person", "id" => "http://pleroma/pub/actors/alice"},
+              %{"type" => "Group", "id" => "http://pleroma/pub/actors/channel"}
+            ],
+            "content" => "Video description",
+            "name" => "Video name",
+            "duration" => 42,
+            "url" => [],
+            "icon" => [
+              %{
+                "width" => 150,
+                "url" => "https://via.placeholder.com/150"
+              }
+            ],
+            "conversation" => "http://pleroma/pub/contexts/context",
+            "attachment" => nil
+          }
+        }
+      }
+    end
+
+    test "receiving a public note forwards it to the puppet's timeline room" do
+      Kazarma.Matrix.TestClient
+      |> expect(:register, fn
+        [
+          username: "_ap_channel___pleroma",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "_ap_channel___pleroma:kazarma"}}
+      end)
+      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_channel___pleroma:kazarma" ->
+        :ok
+      end)
+      |> expect(:upload, fn _blob,
+                            [filename: "150", mimetype: "application/octet-stream"],
+                            [user_id: "@_ap_channel___pleroma:kazarma"] ->
+        {:ok, "mxc://server/media_id"}
+      end)
+      |> expect(:send_message, fn "!room:kazarma",
+                                  {
+                                    "### Video name\n\nnote_id\n\n> Video description\n \uFEFF",
+                                    "<h3>Video name</h3>\n<a href=\"note_id\">\n  <img src=\"mxc://server/media_id\">\n</a>\n<p>\n  Video description\n</p>\n"
+                                  },
+                                  [user_id: "@_ap_channel___pleroma:kazarma"] ->
+        {:ok, "event_id"}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma/pub/actors/alice",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok = handle_activity(public_video_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "note_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Bridge.list_events()
+    end
+  end
+
   describe "When an actor follows the relay actor" do
     setup :set_mox_from_context
     setup :verify_on_exit!
