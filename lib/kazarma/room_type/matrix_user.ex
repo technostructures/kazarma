@@ -17,7 +17,7 @@ defmodule Kazarma.RoomType.MatrixUser do
   def create_from_event(event, room) do
     {:ok, sender} = Address.matrix_id_to_actor(event.sender)
 
-    if sender == room.data["matrix_id"] do
+    if event.sender == room.data["matrix_id"] do
       Activity.create_from_event(
         event,
         sender: sender,
