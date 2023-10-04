@@ -8,7 +8,7 @@ stages:
   - deploy_production
   - docs
 
-image: elixir:1.14-otp-25-alpine
+image: elixir:1.15-otp-25-alpine
 
 cache: &global_cache
   key: cache-test
