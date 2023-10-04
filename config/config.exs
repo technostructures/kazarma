@@ -78,7 +78,7 @@ config :activity_pub, :http,
       verify: :verify_peer,
       cacerts: :public_key.cacerts_get(),
       customize_hostname_check: [
-        match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
+        match_fun: &Kazarma.Release.ssl_hostname_check/2
       ],
       # Workaround for remote server certificate chain issues
       partial_chain: &:hackney_connect.partial_chain/1,

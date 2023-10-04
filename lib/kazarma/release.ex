@@ -27,4 +27,12 @@ defmodule Kazarma.Release do
   defp load_app do
     Application.load(@app)
   end
+
+  @doc """
+  Wrapper for the anonymous function returned by :public_key.pkix_verify_hostname_match_fun/1
+  """
+  def ssl_hostname_check(arg1, arg2) do
+    fun = :public_key.pkix_verify_hostname_match_fun(:https)
+    fun.(arg1, arg2)
+  end
 end
