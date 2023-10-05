@@ -813,6 +813,200 @@ defmodule Kazarma.Matrix.TransactionTest do
     end
   end
 
+  describe "When receiving a follow command" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      ActivityPub.Object.insert(%{data: %{"id" => "remote_id"}})
+
+      {:ok, _event} =
+        Bridge.create_event(%{
+          local_id: "local_id",
+          remote_id: "remote_id",
+          room_id: "!room:kazarma"
+        })
+
+      {:ok, _room} =
+        Bridge.create_room(%{
+          data: %{"matrix_id" => "@alice:kazarma", "type" => "ap_user"},
+          local_id: "!room:kazarma",
+          remote_id: "http://kazarma/-/alice"
+        })
+
+      :ok
+    end
+
+    test "the follow fails if the room is not an ap_user_room" do
+      assert {:error, :room_type_should_be_ap_user_room, "!foo:kazarma"} =
+               new_event(%Event{
+                 type: "m.room.message",
+                 room_id: "!foo:kazarma",
+                 user_id: "@bob:kazarma",
+                 content: %{"body" => "!kazarmafollow", "msgtype" => "m.text"}
+               })
+    end
+
+    test "the follow is executed" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:get_profile, fn "@alice:kazarma" ->
+        {:ok, %{"displayname" => "Alice"}}
+      end)
+      Kazarma.ActivityPub.TestServer
+      |> expect(:follow, 1, fn
+          %ActivityPub.Actor{
+            id: nil,
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/bob/followers",
+              "followings" => "http://kazarma/-/bob/following",
+              "icon" => nil,
+              "id" => "http://kazarma/-/bob",
+              "inbox" => "http://kazarma/-/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Bob",
+              "outbox" => "http://kazarma/-/bob/outbox",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/bob",
+            username: "bob@kazarma",
+            deactivated: false,
+            pointer_id: nil
+          },
+          %ActivityPub.Actor{
+            id: nil,
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/alice/followers",
+              "followings" => "http://kazarma/-/alice/following",
+              "icon" => nil,
+              "id" => "http://kazarma/-/alice",
+              "inbox" => "http://kazarma/-/alice/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Alice",
+              "outbox" => "http://kazarma/-/alice/outbox",
+              "preferredUsername" => "alice",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/alice",
+            username: "alice@kazarma",
+            deactivated: false,
+            pointer_id: nil
+          }
+        ->
+          {:ok}
+      end)
+
+      assert {:ok} =
+               new_event(%Event{
+                 type: "m.room.message",
+                 room_id: "!room:kazarma",
+                 user_id: "@bob:kazarma",
+                 content: %{"body" => "!kazarmafollow", "msgtype" => "m.text"}
+               })
+
+    end
+  end
+
+  describe "When receiving a unfollow" do
+    setup do
+      ActivityPub.Object.insert(%{data: %{"id" => "remote_id"}})
+
+      {:ok, _event} =
+        Bridge.create_event(%{
+          local_id: "local_id",
+          remote_id: "remote_id",
+          room_id: "!room:kazarma"
+        })
+
+        {:ok, _room} =
+          Bridge.create_room(%{
+            data: %{"matrix_id" => "@alice:kazarma", "type" => "ap_user"},
+            local_id: "!room:kazarma",
+            remote_id: "http://kazarma/-/alice"
+          })
+
+      :ok
+    end
+
+    test "the unfollow fails if the room is not an ap_user_room" do
+      assert {:error, :room_type_should_be_ap_user_room, "!foo:kazarma"} =
+               new_event(%Event{
+                 type: "m.room.message",
+                 room_id: "!foo:kazarma",
+                 user_id: "@bob:kazarma",
+                 content: %{"body" => "!kazarmafollow", "msgtype" => "m.text"}
+               })
+    end
+
+    test "the unfollow is executed" do
+      Kazarma.ActivityPub.TestServer
+      |> expect(:unfollow, fn
+          %ActivityPub.Actor{
+            id: nil,
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/bob/followers",
+              "followings" => "http://kazarma/-/bob/following",
+              "icon" => nil,
+              "id" => "http://kazarma/-/bob",
+              "inbox" => "http://kazarma/-/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Bob",
+              "outbox" => "http://kazarma/-/bob/outbox",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/bob",
+            username: "bob@kazarma",
+            deactivated: false,
+            pointer_id: nil
+          },
+          %ActivityPub.Actor{
+            id: nil,
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/alice/followers",
+              "followings" => "http://kazarma/-/alice/following",
+              "icon" => nil,
+              "id" => "http://kazarma/-/alice",
+              "inbox" => "http://kazarma/-/alice/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Alice",
+              "outbox" => "http://kazarma/-/alice/outbox",
+              "preferredUsername" => "alice",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/alice",
+            username: "alice@kazarma",
+            deactivated: false,
+            pointer_id: nil
+          }
+        ->
+          {:ok}
+      end)
+      assert :ok =
+               new_event(%Event{
+                 type: "m.room.message",
+                 room_id: "!room:kazarma",
+                 user_id: "@bob:kazarma",
+                 content: %{"body" => "!kazarmaunfollow", "msgtype" => "m.text"}
+               })
+    end
+  end
+
   describe "Message deletion" do
     setup :set_mox_from_context
     setup :verify_on_exit!
