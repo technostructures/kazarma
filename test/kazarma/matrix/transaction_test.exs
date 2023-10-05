@@ -834,6 +834,13 @@ defmodule Kazarma.Matrix.TransactionTest do
           remote_id: "http://kazarma/-/alice"
         })
 
+      {:ok, _user_room} =
+        Bridge.create_room(%{
+          data: %{"matrix_id" => "@bob:kazarma", "type" => "ap_user"},
+          local_id: "!roombob:kazarma",
+          remote_id: "http://kazarma/-/bob"
+        })
+
       :ok
     end
 
@@ -913,6 +920,16 @@ defmodule Kazarma.Matrix.TransactionTest do
                  content: %{"body" => "!kazarmafollow", "msgtype" => "m.text"}
                })
     end
+
+    test "you can not follow yourself" do
+      assert {:error, :sender_and_receiver_should_be_different, "!roombob:kazarma"} =
+               new_event(%Event{
+                 type: "m.room.message",
+                 room_id: "!roombob:kazarma",
+                 user_id: "@bob:kazarma",
+                 content: %{"body" => "!kazarmafollow", "msgtype" => "m.text"}
+               })
+    end
   end
 
   describe "when receiving a unfollow" do
@@ -934,6 +951,13 @@ defmodule Kazarma.Matrix.TransactionTest do
           data: %{"matrix_id" => "@alice:kazarma", "type" => "ap_user"},
           local_id: "!room:kazarma",
           remote_id: "http://kazarma/-/alice"
+        })
+
+      {:ok, _room} =
+        Bridge.create_room(%{
+          data: %{"matrix_id" => "@bob:kazarma", "type" => "ap_user"},
+          local_id: "!roombob:kazarma",
+          remote_id: "http://kazarma/-/bob"
         })
 
       :ok
@@ -1013,6 +1037,16 @@ defmodule Kazarma.Matrix.TransactionTest do
                  room_id: "!room:kazarma",
                  user_id: "@bob:kazarma",
                  content: %{"body" => "!kazarmaunfollow", "msgtype" => "m.text"}
+               })
+    end
+
+    test "you can not unfollow yourself" do
+      assert {:error, :sender_and_receiver_should_be_different, "!roombob:kazarma"} =
+               new_event(%Event{
+                 type: "m.room.message",
+                 room_id: "!roombob:kazarma",
+                 user_id: "@bob:kazarma",
+                 content: %{"body" => "!kazarmafollow", "msgtype" => "m.text"}
                })
     end
   end
