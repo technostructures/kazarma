@@ -37,7 +37,12 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
         {:ok, %{"displayname" => "Bob"}}
       end)
 
-      assert :ok == new_event(set_outbox_event_fixture())
+      assert {:ok,
+              %MatrixAppService.Bridge.Room{
+                data: %{type: :matrix_user, matrix_id: "@bob:kazarma"},
+                local_id: "!foo:kazarma",
+                remote_id: "http://kazarma/-/bob"
+              }} = new_event(set_outbox_event_fixture())
 
       assert [
                %MatrixAppService.Bridge.Room{
@@ -59,7 +64,7 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
          }}
       end)
 
-      assert :ok == new_event(set_outbox_event_fixture())
+      assert nil == new_event(set_outbox_event_fixture())
 
       assert [] = Bridge.list_rooms()
     end
