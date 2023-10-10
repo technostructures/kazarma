@@ -35,9 +35,11 @@ defmodule Kazarma.RoomType.ApUser do
 
     with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
          %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}} <-
-           get_room_for_public_create(object_data),
-         Client.join(from_matrix_id, room_id),
-         attachments = Map.get(object_data, "attachment") do
+           get_room_for_public_create(object_data) do
+      Client.join(from_matrix_id, room_id)
+
+      attachments = Map.get(object_data, "attachment")
+
       Activity.send_message_and_attachment(from_matrix_id, room_id, object_data, attachments)
     end
   end
@@ -73,8 +75,9 @@ defmodule Kazarma.RoomType.ApUser do
          {:ok, from_matrix_id} <- Address.ap_id_to_matrix(channel_sender) do
       for attributed <- attributed_list do
         with {:ok, %Room{local_id: room_id, data: %{"type" => "ap_user"}}} <-
-               get_outbox(attributed),
-             Client.join(from_matrix_id, room_id) do
+               get_outbox(attributed) do
+          Client.join(from_matrix_id, room_id)
+
           Client.send_message_for_video_object(room_id, from_matrix_id, object_data)
         end
       end
@@ -96,8 +99,9 @@ defmodule Kazarma.RoomType.ApUser do
 
     with {:ok, attributed_to_matrix_id} <- Kazarma.Address.ap_id_to_matrix(attributed_to_id),
          {:ok, %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}}} <-
-           get_outbox(attributed_to_id),
-         Kazarma.Matrix.Client.join(attributed_to_matrix_id, room_id) do
+           get_outbox(attributed_to_id) do
+      Kazarma.Matrix.Client.join(attributed_to_matrix_id, room_id)
+
       Client.send_message_for_event_object(room_id, attributed_to_matrix_id, object_data)
     end
   end

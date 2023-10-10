@@ -25,8 +25,9 @@ defmodule Kazarma.RoomType.Chat do
       ) do
     with {:ok, matrix_id} <- Address.ap_id_to_matrix(from_id),
          {:ok, room_id} <-
-           get_or_create_direct_room(from_id, to_id),
-         attachment = Map.get(object_data, "attachment") do
+           get_or_create_direct_room(from_id, to_id) do
+      attachment = Map.get(object_data, "attachment")
+
       Activity.send_message_and_attachment(matrix_id, room_id, object_data, [attachment])
     end
   end

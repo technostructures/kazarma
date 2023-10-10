@@ -33,8 +33,9 @@ defmodule Kazarma.RoomType.Collection do
          {:ok, group_matrix_id} <- Address.ap_username_to_matrix_id(group_username),
          {:ok, room_id} <-
            get_or_create_collection_room(group_ap_id, group_members, group_matrix_id, group_name),
-         :ok <- Client.invite_and_accept(room_id, group_matrix_id, matrix_id),
-         attachments = Map.get(object_data, "attachment") do
+         :ok <- Client.invite_and_accept(room_id, group_matrix_id, matrix_id) do
+      attachments = Map.get(object_data, "attachment")
+
       Activity.send_message_and_attachment(matrix_id, room_id, object_data, attachments)
 
       :ok

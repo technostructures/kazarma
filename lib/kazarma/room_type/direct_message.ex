@@ -35,8 +35,9 @@ defmodule Kazarma.RoomType.DirectMessage do
              end
            end),
          {:ok, room_id} <-
-           get_or_create_conversation(conversation, matrix_id, to),
-         attachments = Map.get(object_data, "attachment") do
+           get_or_create_conversation(conversation, matrix_id, to) do
+      attachments = Map.get(object_data, "attachment")
+
       Activity.send_message_and_attachment(matrix_id, room_id, object_data, attachments)
     end
   end
