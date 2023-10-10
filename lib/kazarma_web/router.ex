@@ -12,7 +12,7 @@ defmodule KazarmaWeb.Router do
   end
 
   pipeline :accepts_html_and_json do
-    plug(:accepts, ["activity+json", "json", "html"])
+    plug(:accepts, ["html", "activity+json", "json"])
     plug(KazarmaWeb.LiveOrJsonPlug)
   end
 

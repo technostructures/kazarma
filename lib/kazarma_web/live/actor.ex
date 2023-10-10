@@ -25,22 +25,26 @@ defmodule KazarmaWeb.Actor do
   def mount(%{"username" => username}, session, socket) do
     put_session_locale(session)
 
-    {:ok, actor} = get_actor(username)
+    case get_actor(username) do
+      {:ok, actor} ->
+        public_activities = public_activities(actor)
 
-    public_activities = public_activities(actor)
+        page_title = String.replace(actor.data["name"], ~r/(?<=.{20})(.+)/s, "...")
 
-    page_title = String.replace(actor.data["name"], ~r/(?<=.{20})(.+)/s, "...")
+        {
+          :ok,
+          socket
+          |> assign(conn: socket)
+          |> assign(offset: 0)
+          |> assign(actor: actor)
+          |> assign(last_page: is_list(public_activities) && length(public_activities) < 10)
+          |> assign(page_title: page_title),
+          temporary_assigns: [activities: public_activities]
+        }
 
-    {
-      :ok,
-      socket
-      |> assign(conn: socket)
-      |> assign(offset: 0)
-      |> assign(actor: actor)
-      |> assign(last_page: is_list(public_activities) && length(public_activities) < 10)
-      |> assign(page_title: page_title),
-      temporary_assigns: [activities: public_activities]
-    }
+      _ ->
+        {:ok, socket |> put_flash(:error, gettext("User not found")) |> push_navigate(to: "/")}
+    end
   end
 
   @impl true

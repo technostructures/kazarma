@@ -26,6 +26,8 @@ defmodule KazarmaWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import KazarmaWeb.ConnCase
+      import Kazarma.Mocks
+      import Mox, except: [expect: 3, expect: 4]
 
       alias KazarmaWeb.Router.Helpers, as: Routes
 
