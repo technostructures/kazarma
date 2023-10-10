@@ -60,7 +60,7 @@ defmodule Kazarma.Matrix.Transaction do
 
     Kazarma.Commands.handle_command(rest, room_id, user_id)
 
-    :ok
+    # :ok
   end
 
   def new_event(%Event{type: "m.room.message", room_id: room_id} = event) do
