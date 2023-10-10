@@ -89,6 +89,15 @@ config :matrix_app_service, :app_service,
 
 config :activity_pub, :domain, "kazarma.local"
 
+config :activity_pub, :http,
+  proxy_url: nil,
+  send_user_agent: true,
+  adapter: [
+    ssl_options: [
+      verify: :verify_none
+    ]
+  ]
+
 config :kazarma, bridge_remote_matrix_users: true
 config :kazarma, html_search: true
 config :kazarma, html_actor_view_include_remote: true
