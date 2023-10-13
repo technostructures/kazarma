@@ -850,7 +850,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  type: "m.room.message",
                  room_id: "!foo:kazarma",
                  user_id: "@bob:kazarma",
-                 content: %{"body" => "!kazarmafollow", "msgtype" => "m.text"}
+                 content: %{"body" => "!kazarma follow", "msgtype" => "m.text"}
                })
     end
 
@@ -917,7 +917,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  type: "m.room.message",
                  room_id: "!room:kazarma",
                  user_id: "@bob:kazarma",
-                 content: %{"body" => "!kazarmafollow", "msgtype" => "m.text"}
+                 content: %{"body" => "!kazarma follow", "msgtype" => "m.text"}
                })
     end
 
@@ -927,7 +927,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  type: "m.room.message",
                  room_id: "!roombob:kazarma",
                  user_id: "@bob:kazarma",
-                 content: %{"body" => "!kazarmafollow", "msgtype" => "m.text"}
+                 content: %{"body" => "!kazarma follow", "msgtype" => "m.text"}
                })
     end
   end
@@ -969,7 +969,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  type: "m.room.message",
                  room_id: "!foo:kazarma",
                  user_id: "@bob:kazarma",
-                 content: %{"body" => "!kazarmaunfollow", "msgtype" => "m.text"}
+                 content: %{"body" => "!kazarma unfollow", "msgtype" => "m.text"}
                })
     end
 
@@ -1036,7 +1036,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  type: "m.room.message",
                  room_id: "!room:kazarma",
                  user_id: "@bob:kazarma",
-                 content: %{"body" => "!kazarmaunfollow", "msgtype" => "m.text"}
+                 content: %{"body" => "!kazarma unfollow", "msgtype" => "m.text"}
                })
     end
 
@@ -1046,7 +1046,7 @@ defmodule Kazarma.Matrix.TransactionTest do
                  type: "m.room.message",
                  room_id: "!roombob:kazarma",
                  user_id: "@bob:kazarma",
-                 content: %{"body" => "!kazarmafollow", "msgtype" => "m.text"}
+                 content: %{"body" => "!kazarma follow", "msgtype" => "m.text"}
                })
     end
   end
