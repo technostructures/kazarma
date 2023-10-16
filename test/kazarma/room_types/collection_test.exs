@@ -156,6 +156,81 @@ defmodule Kazarma.Matrix.CollectionTest do
     end
   end
 
+  describe "activity handler (handle_activity/1) for Remove/Invite activity" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    def remove_invite_fixture do
+      %ActivityPub.Object{
+        data: %{
+          "type" => "Remove",
+          "actor" => "http://mobilizon/@alice",
+          "object" => %{
+            data: %{
+              "type" => "Invite",
+              "target" => "http://kazarma/-/bob",
+              "object" => "http://mobilizon/@group"
+            }
+          },
+          "to" => ["http://kazarma/-/bob", "http://mobilizon/@group/members"]
+        }
+      }
+    end
+
+    setup do
+      {:ok, actor} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Group",
+            "name" => "Group",
+            "preferredUsername" => "group",
+            "url" => "http://mobilizon/@group",
+            "id" => "http://mobilizon/@group",
+            "username" => "group",
+            "endpoints" => %{"members" => "http://mobilizon/@group/members"}
+          },
+          "local" => false,
+          "actor" => "http://mobilizon/@group",
+          "username" => "group"
+        })
+
+      {:ok, actor: actor}
+    end
+
+    test "when receiving a Remove/Invite activity for a Matrix user in a collection room it kicks them" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, fn "@bob:kazarma" ->
+        {:ok, %{"displayname" => "Bob"}}
+      end)
+      |> expect(:register, fn
+        [
+          username: "_ap_group___mobilizon",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "_ap_group___mobilizon:kazarma"}}
+      end)
+      |> expect(:send_state_event, fn
+        "!room:kazarma",
+        "m.room.member",
+        "@bob:kazarma",
+        %{"membership" => "leave"},
+        [user_id: "@_ap_group___mobilizon:kazarma"] ->
+          {:ok, "!invite_event"}
+      end)
+
+      %{
+        data: %{"type" => "collection"},
+        local_id: "!room:kazarma",
+        remote_id: "http://mobilizon/@group"
+      }
+      |> Bridge.create_room()
+
+      assert :ok == handle_activity(remove_invite_fixture())
+    end
+  end
+
   describe "activity handler (handle_activity/1) for Note activity in collection" do
     setup :set_mox_from_context
     setup :verify_on_exit!
