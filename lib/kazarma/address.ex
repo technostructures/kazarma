@@ -141,7 +141,7 @@ defmodule Kazarma.Address do
   end
 
   def ap_id_to_matrix(ap_id, types \\ [:remote_matrix, :local_matrix, :activity_pub]) do
-    case Actor.get_cached_by_ap_id(ap_id) |> dbg() do
+    case Actor.get_cached_by_ap_id(ap_id) do
       {:ok, %Actor{username: username}} ->
         ap_username_to_matrix_id(username, types)
 

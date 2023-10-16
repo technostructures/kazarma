@@ -272,14 +272,13 @@ defmodule Kazarma.ActivityPub.Adapter do
          {:ok,
           %{
             username: group_username,
-            data: %{"name" => group_name, "endpoints" => %{"members" => group_members}}
+            data: %{"name" => group_name, "endpoints" => %{"members" => _group_members}}
           }} <- ActivityPub.Actor.get_cached_by_ap_id(group_ap_id),
          {:ok, group_matrix_id} <-
            Address.ap_username_to_matrix_id(group_username),
          {:ok, room_id} <-
            Kazarma.RoomType.Collection.get_or_create_collection_room(
              group_ap_id,
-             group_members,
              group_matrix_id,
              group_name
            ),
@@ -291,6 +290,33 @@ defmodule Kazarma.ActivityPub.Adapter do
         room_id: room_id
       })
 
+      :ok
+    end
+  end
+
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Remove",
+            "actor" => _remover,
+            "object" => %{
+              data: %{
+                "type" => "Invite",
+                "target" => removed,
+                "object" => group
+              }
+            }
+          }
+        } = activity
+      ) do
+    Kazarma.Logger.log_received_activity(activity)
+
+    with {:ok, removed_matrix_id} <- Address.ap_id_to_matrix(removed),
+         {:ok, group_matrix_id} <- Address.ap_id_to_matrix(group),
+         %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "collection"}} <-
+           Kazarma.Bridge.get_room_by_remote_id(group),
+         {:ok, _event_id} <-
+           Kazarma.Matrix.Client.kick(room_id, group_matrix_id, removed_matrix_id) do
       :ok
     end
   end

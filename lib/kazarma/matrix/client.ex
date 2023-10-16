@@ -422,6 +422,18 @@ defmodule Kazarma.Matrix.Client do
     )
   end
 
+  def kick(room_id, kicker, kicked) do
+    @matrix_client.send_state_event(
+      room_id,
+      "m.room.member",
+      kicked,
+      %{
+        "membership" => "leave"
+      },
+      user_id: kicker
+    )
+  end
+
   def get_membership(room_id, inviter, invitee) do
     case @matrix_client.get_state(room_id, "m.room.member", invitee, user_id: inviter) do
       %{"membership" => membership} ->
