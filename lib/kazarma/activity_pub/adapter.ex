@@ -294,6 +294,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     end
   end
 
+  # Kick (Remove/Invite)
   def handle_activity(
         %{
           data: %{

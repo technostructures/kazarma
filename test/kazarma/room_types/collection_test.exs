@@ -102,7 +102,7 @@ defmodule Kazarma.Matrix.CollectionTest do
                %MatrixAppService.Bridge.Room{
                  data: %{"type" => "collection"},
                  local_id: "!room:kazarma",
-                 remote_id: "http://mobilizon/@group/members"
+                 remote_id: "http://mobilizon/@group"
                }
              ] = Bridge.list_rooms()
 
@@ -139,9 +139,9 @@ defmodule Kazarma.Matrix.CollectionTest do
       end)
 
       %{
-        data: %{"type" => "collection", "group" => "http://mobilizon/@group"},
+        data: %{"type" => "collection"},
         local_id: "!room:kazarma",
-        remote_id: "http://mobilizon/@group/members"
+        remote_id: "http://mobilizon/@group"
       }
       |> Bridge.create_room()
 
@@ -203,9 +203,9 @@ defmodule Kazarma.Matrix.CollectionTest do
 
     setup do
       %{
-        data: %{"type" => "collection", "group" => "http://mobilizon/@group"},
+        data: %{"type" => "collection"},
         local_id: "!room:kazarma",
-        remote_id: "http://mobilizon/@group/members"
+        remote_id: "http://mobilizon/@group"
       }
       |> Bridge.create_room()
 
@@ -393,12 +393,32 @@ defmodule Kazarma.Matrix.CollectionTest do
     end
 
     setup do
+      {:ok, group} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "MN:Collection",
+            "name" => "Group",
+            "preferredUsername" => "group",
+            "url" => "http://mobilizon/@group",
+            "id" => "http://mobilizon/@group",
+            "username" => "group@mobilizon",
+            "members" => "http://mobilizon/@group/members"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://mobilizon/@group"
+        })
+
+      group
+      |> ActivityPub.Actor.format_remote_actor()
+      |> ActivityPub.Actor.set_cache()
+
       ActivityPub.Object.insert(%{data: %{"id" => "http://mobilizon/comments/note_id"}})
 
       %{
-        data: %{"type" => "collection", "group" => "http://mobilizon/@group"},
+        data: %{"type" => "collection"},
         local_id: "!room:kazarma",
-        remote_id: "http://mobilizon/@group/members"
+        remote_id: "http://mobilizon/@group"
       }
       |> Bridge.create_room()
 
