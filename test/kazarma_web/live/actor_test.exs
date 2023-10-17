@@ -130,30 +130,22 @@ defmodule KazarmaWeb.ActorTest do
       |> ActivityPub.Actor.format_remote_actor()
       |> ActivityPub.Actor.set_cache()
 
-      ActivityPub.Object.insert(%{
-        data: %{
-          "id" => "http://kazarma/-/alice/note/note1",
-          "actor" => "http://pleroma/pub/actors/alice",
-          "type" => "Note",
-          "content" => "Note 1",
-          "to" => ["https://www.w3.org/ns/activitystreams#Public"]
-        }
-      })
-
-      ActivityPub.Object.insert(%{
-        data: %{
-          "id" => "http://kazarma/-/alice/note/note2",
-          "actor" => "http://pleroma/pub/actors/alice",
-          "type" => "Note",
-          "content" => "Note 2",
-          "to" => ["https://www.w3.org/ns/activitystreams#Public"]
-        }
-      })
+      for x <- 1..25 do
+        ActivityPub.Object.insert(%{
+          data: %{
+            "id" => "http://kazarma/-/alice/note/note#{x}",
+            "actor" => "http://pleroma/pub/actors/alice",
+            "type" => "Note",
+            "content" => "Note #{x}",
+            "to" => ["https://www.w3.org/ns/activitystreams#Public"]
+          }
+        })
+      end
 
       :ok
     end
 
-    test "it shows user info", %{conn: conn} do
+    test "shows user info", %{conn: conn} do
       {:ok, _view, html} = live(conn, "/pleroma/alice")
 
       assert html =~ "Alice"
@@ -162,7 +154,7 @@ defmodule KazarmaWeb.ActorTest do
       assert html =~ "This user is not bridged."
     end
 
-    test "it shows user public activities if the user is bridged", %{conn: conn} do
+    test "shows user public activities if the user is bridged", %{conn: conn} do
       {:ok, _room} =
         Bridge.create_room(%{
           data: %{"matrix_id" => "@alice:kazarma", "type" => "ap_user"},
@@ -172,11 +164,74 @@ defmodule KazarmaWeb.ActorTest do
 
       {:ok, _view, html} = live(conn, "/pleroma/alice")
 
-      assert html =~ "Note 1"
-      assert html =~ "Note 2"
+      html
+      |> assert_html_include("div[id=\"http://kazarma/-/alice/note/note1\"")
+      |> assert_html_include("div[id=\"http://kazarma/-/alice/note/note2\"")
+      |> assert_html_include("div[id=\"http://kazarma/-/alice/note/note11\"", 0)
+
+      # Todo: add test to ensure just tens activities are displaied
     end
 
-    test "it shows an error and redirects if the user is not found", %{conn: conn} do
+    test "handles 'load_more' events", %{conn: conn} do
+      {:ok, _room} =
+        Bridge.create_room(%{
+          data: %{"matrix_id" => "@alice:kazarma", "type" => "ap_user"},
+          local_id: "!foo:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, view, html} = live(conn, "/pleroma/alice")
+
+      view
+      |> render_hook(:load_more)
+
+      view
+      |> render_hook(:load_more)
+
+      html = render(view)
+
+      html
+      |> assert_html_include("div[id=\"http://kazarma/-/alice/note/note4\"")
+      |> assert_html_include("div[id=\"http://kazarma/-/alice/note/note14\"")
+      |> assert_html_include("div[id=\"http://kazarma/-/alice/note/note24\"")
+      |> assert_html_include("div[id=\"http://kazarma/-/alice/note/note35\"", 0)
+      |> refute_html_include("button", %{}, "load more")
+    end
+
+    test "handles 'search' events with a redirect when the user exist", %{conn: conn} do
+      {:ok, _room} =
+        Bridge.create_room(%{
+          data: %{"matrix_id" => "@alice:kazarma", "type" => "ap_user"},
+          local_id: "!foo:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, view, html} = live(conn, "/pleroma/alice")
+
+      view
+      |> render_hook(:search, %{"search" => %{"address" => "http://pleroma/pub/actors/alice"}})
+
+      assert_receive {_, {:redirect, _, %{kind: :push, to: "/pleroma/alice"}}}
+    end
+
+    test "handles 'search'  with an error when the user is not found", %{conn: conn} do
+      {:ok, _room} =
+        Bridge.create_room(%{
+          data: %{"matrix_id" => "@alice:kazarma", "type" => "ap_user"},
+          local_id: "!foo:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, view, html} = live(conn, "/pleroma/alice")
+
+      view
+      |> render_hook(:search, %{"search" => %{"address" => "http://pleroma/pub/actors/bob"}})
+
+      assert {:error, {:live_redirect, %{to: "/", flash: %{"error" => "User not found"}}}} =
+               live(conn, "/pleroma/not_found")
+    end
+
+    test "shows an error and redirects if the user is not found", %{conn: conn} do
       assert {:error, {:live_redirect, %{to: "/", flash: %{"error" => "User not found"}}}} =
                live(conn, "/pleroma/not_found")
     end

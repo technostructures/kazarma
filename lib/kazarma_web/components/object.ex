@@ -61,24 +61,24 @@ defmodule KazarmaWeb.Components.Object do
   def show(%{object: %ActivityPub.Object{data: %{"type" => "Note"}}} = assigns),
     do: show_note(assigns)
 
-  def show(%{object: %ActivityPub.Object{data: %{"id" => id}}}),
-    do: show_redirect_link(%{object: id})
+  def show(%{object: %ActivityPub.Object{data: %{"id" => _id}}} = assigns),
+    do: show_redirect_link(assigns)
 
   def show_redirect_link(assigns) do
     ~H"""
     <div class={"card shadow-lg side bg-base-100 mt-4 flex flex-row items-center #{@classes}"}>
       <div :if={@type == :reply} class="self-start align-center">
-        <.reply_icon class="w-10 h-10 m-2 -mr-4 self-start" />
+        <.reply_icon class="w-10 h-10 m-2 -mr-4 self-start reply_icon" />
       </div>
       <div class="card-body p-4">
         <div class="flex">
-          <.link href={@object} class="btn mx-auto" title={gettext("Open")}>
+          <.link href={@object.data["id"]} class="btn mx-auto" title={gettext("Open")}>
             <%= gettext("Open") %>
           </.link>
         </div>
       </div>
       <div :if={@type == :replied_to} class="self-end align-center">
-        <.replied_icon class="w-10 h-10 m-2 -ml-5" />
+        <.replied_icon class="w-10 h-10 m-2 -ml-5 replied_icon" />
       </div>
     </div>
     """
@@ -106,7 +106,7 @@ defmodule KazarmaWeb.Components.Object do
       class={"card shadow-lg side bg-base-100 mt-4 flex flex-row items-center #{if @type == :main, do: "bg-accent"} #{@classes}"}
     >
       <div :if={@type == :reply} class="self-start align-center">
-        <.reply_icon class="w-10 h-10 m-2 -mr-4 self-start" />
+        <.reply_icon class="w-10 h-10 m-2 -mr-4 self-start reply_icon" />
       </div>
       <div>
         <div class="avatar">
@@ -128,8 +128,8 @@ defmodule KazarmaWeb.Components.Object do
           <.display_body object={@object} />
         </p>
       </div>
-      <div :if={@type == :replied_to} class="self-end align-center">
-        <.replied_icon class="w-10 h-10 m-2 -ml-5" />
+      <div :if={@type == :replied_to} class="self-end align-center reply_icon">
+        <.replied_icon class="w-10 h-10 m-2 -ml-5 replied_icon" />
       </div>
     </div>
     """

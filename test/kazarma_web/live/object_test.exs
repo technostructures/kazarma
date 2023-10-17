@@ -168,5 +168,44 @@ defmodule KazarmaWeb.ObjectTest do
 
       assert html =~ "Note 2"
     end
+
+    test "it handles 'search' events with a redirect when the user exist", %{
+      conn: conn,
+      local_note: local_note
+    } do
+      {:ok, _room} =
+        Bridge.create_room(%{
+          data: %{"matrix_id" => "@alice:kazarma", "type" => "ap_user"},
+          local_id: "!foo:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, view, html} = live(conn, "/-/alice/note/#{local_note.id}")
+
+      view
+      |> render_hook(:search, %{"search" => %{"address" => "http://pleroma/pub/actors/alice"}})
+
+      assert_receive {_, {:redirect, _, %{kind: :push, to: "/pleroma/alice"}}}
+    end
+
+    test "it handles 'search'  with an error when the user is not found", %{
+      conn: conn,
+      local_note: local_note
+    } do
+      {:ok, _room} =
+        Bridge.create_room(%{
+          data: %{"matrix_id" => "@alice:kazarma", "type" => "ap_user"},
+          local_id: "!foo:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, view, html} = live(conn, "/-/alice/note/#{local_note.id}")
+
+      view
+      |> render_hook(:search, %{"search" => %{"address" => "http://pleroma/pub/actors/bob"}})
+
+      assert {:error, {:live_redirect, %{to: "/", flash: %{"error" => "User not found"}}}} =
+               live(conn, "/pleroma/not_found")
+    end
   end
 end
