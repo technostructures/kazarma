@@ -1,7 +1,7 @@
 # Kazarma
 
 [![Latest Release](https://gitlab.com/technostructures/kazarma/kazarma/-/badges/release.svg)](https://gitlab.com/technostructures/kazarma/kazarma/-/releases)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/kazarma)](https://artifacthub.io/packages/helm/kazarma/kazarma)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/technostructures)](https://artifacthub.io/packages/helm/technostructures/kazarma)
 [![Matrix room](https://img.shields.io/matrix/kazarma:matrix.org)](https://matrix.to/#/#kazarma:matrix.org?via=matrix.org)
 [![REUSE status](https://api.reuse.software/badge/gitlab.com/technostructures/kazarma/kazarma)](https://api.reuse.software/info/gitlab.com/technostructures/kazarma/kazarma)
 [![Gitlab pipeline status](https://img.shields.io/gitlab/pipeline-status/kazarma/kazarma?branch=main)](https://gitlab.com/technostructures/kazarma/kazarma/-/pipelines)
