@@ -553,9 +553,13 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         {:ok, "mxc://server/media_id"}
       end)
       |> expect(:send_message, fn "!room:kazarma",
-                                  {
-                                    "### Video name\n\nnote_id\n\n> Video description\n \uFEFF",
-                                    "<h3>Video name</h3>\n<a href=\"note_id\">\n  <img src=\"mxc://server/media_id\">\n</a>\n<p>\n  Video description\n</p>\n"
+                                  %{
+                                    "body" =>
+                                      "### Video name\n\nnote_id\n\n> Video description\n \uFEFF",
+                                    "format" => "org.matrix.custom.html",
+                                    "formatted_body" =>
+                                      "<h3>Video name</h3>\n<a href=\"note_id\">\n  <img src=\"mxc://server/media_id\">\n</a>\n<p>\n  Video description\n</p>\n",
+                                    "msgtype" => "m.text"
                                   },
                                   [user_id: "@_ap_channel___pleroma:kazarma"] ->
         {:ok, "event_id"}
