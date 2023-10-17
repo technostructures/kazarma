@@ -49,6 +49,7 @@ build_plt:
         - matrix_app_service
         - activity_pub
         - polyjuice_client
+      if: '$CI_PIPELINE_SOURCE != "merge_request_event"'
   script:
     - apk update
     - apk add git cmake g++
