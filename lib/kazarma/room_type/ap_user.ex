@@ -22,6 +22,7 @@ defmodule Kazarma.RoomType.ApUser do
           object: %Object{
             data:
               %{
+                "type" => "Note",
                 "id" => object_id,
                 "actor" => from_id
               } = object_data
@@ -60,7 +61,12 @@ defmodule Kazarma.RoomType.ApUser do
         %{
           data: %{"to" => _to_list, "actor" => _from_id},
           object: %Object{
-            data: %{"id" => object_id, "attributedTo" => attributed_to} = object_data
+            data:
+              %{
+                "type" => "Video",
+                "id" => object_id,
+                "attributedTo" => attributed_to
+              } = object_data
           }
         } = activity
       ) do

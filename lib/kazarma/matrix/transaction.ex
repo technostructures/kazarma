@@ -53,14 +53,14 @@ defmodule Kazarma.Matrix.Transaction do
           type: "m.room.message",
           room_id: room_id,
           user_id: user_id,
-          content: %{"body" => "!kazarma" <> rest, "msgtype" => "m.text"}
+          content: %{"body" => "!kazarma " <> rest, "msgtype" => "m.text"}
         } = event
       ) do
     Kazarma.Logger.log_received_event(event, label: "Bot command")
 
     Kazarma.Commands.handle_command(rest, room_id, user_id)
 
-    :ok
+    # :ok
   end
 
   def new_event(%Event{type: "m.room.message", room_id: room_id} = event) do

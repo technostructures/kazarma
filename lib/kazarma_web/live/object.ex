@@ -9,22 +9,21 @@ defmodule KazarmaWeb.Object do
 
   @impl true
   def mount(%{"uuid" => uuid} = params, _session, socket) do
-    {:ok, _raw_uuid} = Ecto.UUID.dump(uuid)
-
-    %ActivityPub.Object{data: %{"actor" => actor_id}} =
-      object = ActivityPub.Object.get_by_id(uuid)
-
-    {:ok, actor} = ActivityPub.Actor.get_or_fetch_by_ap_id(actor_id)
-
-    if valid_path?(params, actor, object) do
+    with {:ok, _raw_uuid} <- Ecto.UUID.dump(uuid),
+         %ActivityPub.Object{data: %{"actor" => actor_id}} =
+           object <- ActivityPub.Object.get_by_id(uuid),
+         {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_ap_id(actor_id),
+         true <-
+           valid_path?(params, actor, object) do
       actor_room = Kazarma.Bridge.get_room_by_remote_id(actor_id)
 
       {:ok, maybe_load_object(object, actor, actor_room, socket)}
     else
-      {:ok,
-       socket
-       |> put_flash(:error, gettext("Activity not found"))
-       |> push_redirect(to: Routes.index_path(socket, :index))}
+      _ ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("Activity not found"))
+         |> push_redirect(to: Routes.index_path(socket, :index))}
     end
   end
 

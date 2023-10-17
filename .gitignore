@@ -37,3 +37,6 @@ kazarma-*.tar
 
 # ignore log files
 /*.log
+
+# ignore local coverage.html files
+coverage.xml

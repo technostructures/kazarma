@@ -59,6 +59,115 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     end
   end
 
+  describe "Convert files" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, actor} =
+        ActivityPub.Object.insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://pleroma/pub/actors/alice",
+            "id" => "http://pleroma/pub/actors/alice",
+            "username" => "alice@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, actor: actor}
+    end
+
+    def public_note_fixture_with_attachment do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://kazarma/-/bob",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Note",
+            "content" =>
+              ~S(<p><span class="h-card"><a href="http://kazarma/-/bob" class="u-url mention">@<span>bob@kazarma.kazarma.local</span></a></span> hello</p>),
+            "source" => "@bob@kazarma.kazarma.local hello",
+            "id" => "note_id",
+            "actor" => "http://pleroma/pub/actors/alice",
+            "conversation" => "http://pleroma/pub/contexts/context",
+            "attachment" => [
+              %{
+                "mediaType" => "image/jpeg",
+                "name" => "aabbccddeeffgg",
+                "type" => "Document",
+                "url" => [
+                  %{
+                    "href" => "https://example.com/",
+                    "mediaType" => "image/jpeg",
+                    "type" => "Link"
+                  }
+                ]
+              }
+            ],
+            "attributedTo" => "http://kazarma/-/bob",
+            "content" => ""
+          }
+        }
+      }
+    end
+
+    test "it converts attachment" do
+      Kazarma.Matrix.TestClient
+      |> expect(:register, fn [
+                                username: "_ap_alice___pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
+                              ] ->
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
+        :ok
+      end)
+      |> expect(:send_message, fn
+        "!room:kazarma",
+        %{
+          "body" =>
+            "@bob@kazarma.kazarma.local hello\nhttp://matrix/_matrix/media/r0/download/server/image_id \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" =>
+            "<img src=\"http://matrix/_matrix/media/r0/download/server/image_id\" title=\"aabbccddeeffgg\">",
+          "msgtype" => "m.text"
+        },
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, "event_id"}
+      end)
+      |> expect(:upload, fn
+        "<!doctype html>\n<html>\n<head>\n    <title>Example Domain</title>\n\n    <meta charset=\"utf-8\" />\n    <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <style type=\"text/css\">\n    body {\n        background-color: #f0f0f2;\n        margin: 0;\n        padding: 0;\n        font-family: -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", \"Open Sans\", \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n        \n    }\n    div {\n        width: 600px;\n        margin: 5em auto;\n        padding: 2em;\n        background-color: #fdfdff;\n        border-radius: 0.5em;\n        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);\n    }\n    a:link, a:visited {\n        color: #38488f;\n        text-decoration: none;\n    }\n    @media (max-width: 700px) {\n        div {\n            margin: 0 auto;\n            width: auto;\n        }\n    }\n    </style>    \n</head>\n\n<body>\n<div>\n    <h1>Example Domain</h1>\n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>\n</div>\n</body>\n</html>\n",
+        [filename: "example.com", mimetype: "application/octet-stream"],
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, "http://matrix/_matrix/media/r0/download/server/image_id"}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma/pub/actors/alice",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok = handle_activity(public_note_fixture_with_attachment())
+    end
+  end
+
   describe "Content conversion" do
     setup :set_mox_from_context
     setup :verify_on_exit!
@@ -151,7 +260,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(public_note_fixture_with_mention())
+      assert :ok == handle_activity(public_note_fixture_with_mention())
     end
   end
 

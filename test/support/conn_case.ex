@@ -25,7 +25,12 @@ defmodule KazarmaWeb.ConnCase do
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
+      import Phoenix.LiveViewTest
       import KazarmaWeb.ConnCase
+      require KazarmaWeb.HtmlChecker
+      import KazarmaWeb.HtmlChecker
+      import Kazarma.Mocks
+      import Mox, except: [expect: 3, expect: 4]
 
       alias KazarmaWeb.Router.Helpers, as: Routes
 
