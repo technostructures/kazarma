@@ -17,24 +17,29 @@ defmodule Kazarma.RoomType.MatrixUser do
   def create_from_event(event, room) do
     {:ok, sender} = Address.matrix_id_to_actor(event.sender)
 
-    if event.sender == room.data["matrix_id"] do
-      Activity.create_from_event(
-        event,
-        sender: sender,
-        to: ["https://www.w3.org/ns/activitystreams#Public"]
-      )
-    else
-      {:ok, receiver} = Address.matrix_id_to_actor(room.data["matrix_id"])
+    {:ok, activity} =
+      if event.sender == room.data["matrix_id"] do
+        Activity.create_from_event(
+          event,
+          sender: sender,
+          to: ["https://www.w3.org/ns/activitystreams#Public"]
+        )
+      else
+        {:ok, receiver} = Address.matrix_id_to_actor(room.data["matrix_id"])
 
-      Activity.create_from_event(
-        event,
-        sender: sender,
-        to: ["https://www.w3.org/ns/activitystreams#Public", receiver.ap_id],
-        additional_mentions: [receiver]
-      )
-    end
+        Activity.create_from_event(
+          event,
+          sender: sender,
+          to: ["https://www.w3.org/ns/activitystreams#Public", receiver.ap_id],
+          additional_mentions: [receiver]
+        )
+      end
 
-    Kazarma.Logger.log_bridged_event(event, room_type: :matrix_user)
+    Kazarma.Logger.log_bridged_activity(activity,
+      room_type: :matrix_user,
+      room_id: room.local_id,
+      obj_type: "Note"
+    )
   end
 
   def join(actor, follower_ap_id) do

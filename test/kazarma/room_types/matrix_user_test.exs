@@ -126,7 +126,7 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
           to: ["https://www.w3.org/ns/activitystreams#Public"]
         },
         nil ->
-          {:ok, :activity}
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "http://kazarma/-/bob/Note/1"}}}}
       end)
 
       assert :ok == new_event(status_event_fixture())
@@ -194,7 +194,7 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
           to: ["https://www.w3.org/ns/activitystreams#Public", "http://kazarma/-/bob"]
         },
         nil ->
-          {:ok, :activity}
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "http://kazarma/-/bob/Note/2"}}}}
       end)
 
       assert :ok == new_event(status_mention_event_fixture())

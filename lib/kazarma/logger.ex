@@ -53,9 +53,9 @@ defmodule Kazarma.Logger do
       room_id: room_id
     })
 
-    Logger.info("Bridged #{display_activity_type(type, obj_type)} activity")
+    Logger.info("Sent #{display_activity_type(type, obj_type)} activity")
 
-    Logger.info("to #{room_type} room #{room_id}")
+    Logger.info("from #{room_type} room #{room_id}")
 
     inspect(activity, pretty: true)
     |> Logger.debug()
@@ -93,7 +93,7 @@ defmodule Kazarma.Logger do
       room_id: room_id
     })
 
-    Logger.notice("Bridged #{type} event")
+    Logger.notice("Sent #{type} event")
 
     Logger.info("to #{room_type} room #{room_id}")
 

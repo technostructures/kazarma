@@ -153,6 +153,7 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   def update_remote_actor(_), do: :ok
 
+  # @TODO: dispatch depending of existing Room record
   @impl ActivityPub.Adapter
   def handle_activity(
         %{
@@ -271,13 +272,13 @@ defmodule Kazarma.ActivityPub.Adapter do
          {:ok,
           %{
             username: group_username,
-            data: %{"name" => group_name, "endpoints" => %{"members" => group_members}}
+            data: %{"name" => group_name, "endpoints" => %{"members" => _group_members}}
           }} <- ActivityPub.Actor.get_cached_by_ap_id(group_ap_id),
          {:ok, group_matrix_id} <-
            Address.ap_username_to_matrix_id(group_username),
          {:ok, room_id} <-
            Kazarma.RoomType.Collection.get_or_create_collection_room(
-             group_members,
+             group_ap_id,
              group_matrix_id,
              group_name
            ),
@@ -288,6 +289,36 @@ defmodule Kazarma.ActivityPub.Adapter do
         remote_id: invite_id,
         room_id: room_id
       })
+
+      :ok
+    end
+  end
+
+  # Kick (Remove/Invite)
+  def handle_activity(
+        %{
+          data: %{
+            "type" => "Remove",
+            "actor" => _remover,
+            "object" => %{
+              data: %{
+                "type" => "Invite",
+                "target" => removed,
+                "object" => group
+              }
+            }
+          }
+        } = activity
+      ) do
+    Kazarma.Logger.log_received_activity(activity)
+
+    with {:ok, removed_matrix_id} <- Address.ap_id_to_matrix(removed),
+         {:ok, group_matrix_id} <- Address.ap_id_to_matrix(group),
+         %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "collection"}} <-
+           Kazarma.Bridge.get_room_by_remote_id(group),
+         {:ok, _event_id} <-
+           Kazarma.Matrix.Client.kick(room_id, group_matrix_id, removed_matrix_id) do
+      :ok
     end
   end
 
@@ -343,9 +374,9 @@ defmodule Kazarma.ActivityPub.Adapter do
           {:ok, follower_actor} = ActivityPub.Actor.get_cached_by_ap_id(follower)
           Kazarma.ActivityPub.unfollow(followed_actor, follower_actor)
           {:ok, _} = Kazarma.RoomType.ApUser.deactivate_outbox(follower_actor)
-
-          :ok
         end
+
+        :ok
 
       _ ->
         :error
