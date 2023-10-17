@@ -51,6 +51,7 @@ defmodule Kazarma.Matrix.CollectionTest do
             "url" => "http://mobilizon/@group",
             "id" => "http://mobilizon/@group",
             "username" => "group",
+            "members" => "http://mobilizon/@group/members",
             "endpoints" => %{"members" => "http://mobilizon/@group/members"}
           },
           "local" => false,
@@ -120,11 +121,20 @@ defmodule Kazarma.Matrix.CollectionTest do
       |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
+      |> expect(:register, fn
+        [
+          username: "_ap_group___mobilizon",
+          device_id: "KAZARMA_APP_SERVICE",
+          initial_device_display_name: "Kazarma",
+          registration_type: "m.login.application_service"
+        ] ->
+          {:ok, %{"user_id" => "_ap_group___mobilizon:kazarma"}}
+      end)
 
       Kazarma.ActivityPub.TestServer
       |> expect(:accept, fn
         %{
-          actor: %ActivityPub.Actor{
+          actor: %{
             data: %{
               "id" => "http://kazarma/-/bob"
             },
@@ -500,7 +510,7 @@ defmodule Kazarma.Matrix.CollectionTest do
       :ok
     end
 
-    test "when receiving an event not replying it creates a new discussion" do
+    test "when receiving an event that's not a reply it creates a new group discussion" do
       Kazarma.Matrix.TestClient
       |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
@@ -573,7 +583,7 @@ defmodule Kazarma.Matrix.CollectionTest do
              ] = Bridge.list_events()
     end
 
-    test "when receiving an event replying to a discussion it forwards the message in the corresponding discussion" do
+    test "when receiving an event replying to a discussion it forwards the message to the corresponding discussion" do
       Kazarma.Matrix.TestClient
       |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}

@@ -94,10 +94,12 @@ defmodule Kazarma.RoomType.Collection do
              "replaces_state" => invite_event_id
            }
          } <- event,
+         {:ok, %ActivityPub.Actor{data: %{"members" => members_id}}} =
+           ActivityPub.Actor.get_cached_by_ap_id(group_ap_id),
          %BridgeEvent{remote_id: invite_ap_id} <-
            Bridge.get_event_by_local_id(invite_event_id) do
       Kazarma.ActivityPub.accept(%{
-        to: [group_ap_id],
+        to: [members_id],
         object: invite_ap_id,
         actor: joiner
       })
