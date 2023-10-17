@@ -26,6 +26,8 @@ defmodule Kazarma.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import Kazarma.DataCase
+      require KazarmaWeb.HtmlChecker
+      import KazarmaWeb.HtmlChecker
       require Kazarma.Mocks
       import Kazarma.Mocks
       import Mox, except: [expect: 3, expect: 4]
