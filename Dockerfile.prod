@@ -42,7 +42,7 @@ RUN /opt/mix/elixir/1-15/rebar3 plugins upgrade rebar3_hex
 #   system image to host your
 #   application
 # -----------------------------------
-FROM alpine:3.16 as elixir-runner
+FROM alpine:3.18 as elixir-runner
 
 # You can add any libraries required by your application
 # here:
