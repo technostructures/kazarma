@@ -8,7 +8,7 @@
 # # to merge POT files into PO files.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2023-06-05 09:09+0000\n"
+"PO-Revision-Date: 2023-11-04 16:34+0000\n"
 "Last-Translator: Pierre de Lacroix <pierre@pdelacroix.com>\n"
 "Language-Team: English <https://hosted.weblate.org/projects/kazarma/kazarma/"
 "en/>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:68 lib/kazarma_web/live/index.ex:31
@@ -359,87 +359,107 @@ msgstr "opt-in to public bridging."
 
 #: lib/kazarma_web/live/object.ex:26
 msgid "Activity not found"
-msgstr ""
+msgstr "Activity not found"
 
 #: lib/kazarma_web/live/actor.html.heex:13
 #: lib/kazarma_web/live/index.html.heex:122
 #: lib/kazarma_web/live/object.html.heex:13
+#, fuzzy
 msgid "A Technostructures project"
-msgstr ""
+msgstr "A Technostructures project"
 
 #: lib/kazarma_web/live/index.html.heex:67
+#, fuzzy
 msgid "ActivityPub moderation tools are implemented."
-msgstr ""
+msgstr "ActivityPub moderation tools are implemented."
 
 #: lib/kazarma_web/live/index.html.heex:57
+#, fuzzy
 msgid "Consent and privacy"
-msgstr ""
+msgstr "Consent and privacy"
 
 #: lib/kazarma_web/live/index.html.heex:68
+#, fuzzy
 msgid ""
 "For instance, blocking a Matrix user will ignore them and ban them from your "
 "public room if it exists."
 msgstr ""
+"For instance, blocking a Matrix user will ignore them and ban them from your "
+"public room if it exists."
 
 #: lib/kazarma_web/live/index.html.heex:61
+#, fuzzy
 msgid ""
 "It can be direct messages, or following of the relay actor to opt-in to "
 "public activites bridging."
 msgstr ""
+"It can be direct messages, or following of the relay actor to opt-in to "
+"public activites bridging."
 
 #: lib/kazarma_web/live/index.html.heex:60
+#, fuzzy
 msgid "Kazarma waits for explicit user action to bridge activities and events."
-msgstr ""
+msgstr "Kazarma waits for explicit user action to bridge activities and events."
 
 #: lib/kazarma_web/live/index.html.heex:79
+#, fuzzy
 msgid "Links"
-msgstr ""
+msgstr "Links"
 
 #: lib/kazarma_web/live/index.html.heex:86
 #: lib/kazarma_web/live/index.html.heex:90
+#, fuzzy
 msgid "Matrix room"
-msgstr ""
+msgstr "Matrix room"
 
 #: lib/kazarma_web/live/index.html.heex:74
+#, fuzzy
 msgid ""
 "Since ActivityPub clients do not implement end-to-end encryption, kazarma "
 "does not work in encrypted Matrix rooms."
 msgstr ""
+"Since ActivityPub clients do not implement end-to-end encryption, kazarma "
+"does not work in encrypted Matrix rooms."
 
 #: lib/kazarma_web/live/index.html.heex:97
 #: lib/kazarma_web/live/index.html.heex:100
+#, fuzzy
 msgid "Source and issue tracker"
-msgstr ""
+msgstr "Source and issue tracker"
 
 #: lib/kazarma_web/live/actor.html.heex:9
 #: lib/kazarma_web/live/index.html.heex:118
 #: lib/kazarma_web/live/object.html.heex:9
+#, fuzzy
 msgid "Technostructures"
-msgstr ""
+msgstr "Technostructures"
 
 #: lib/kazarma_web/live/index.html.heex:107
 #: lib/kazarma_web/live/index.html.heex:110
+#, fuzzy
 msgid "Translations"
-msgstr ""
+msgstr "Translations"
 
 #: lib/kazarma_web/live/index.html.heex:64
+#, fuzzy
 msgid "Unfollowing the relay actor deactivates public activities bridging."
-msgstr ""
+msgstr "Unfollowing the relay actor deactivates public activities bridging."
 
 #: lib/kazarma_web/live/index.html.heex:71
+#, fuzzy
 msgid "You can also block the whole domain of the bridge."
-msgstr ""
+msgstr "You can also block the whole domain of the bridge."
 
 #: lib/kazarma_web/live/actor.html.heex:7
 #: lib/kazarma_web/live/index.html.heex:116
 #: lib/kazarma_web/live/object.html.heex:7
+#, fuzzy
 msgid "https://technostructures.org/en/"
-msgstr ""
+msgstr "https://technostructures.org/en/"
 
 #: lib/kazarma_web/live/index.html.heex:9
-#, fuzzy
 msgid "kazarma"
-msgstr "Kazarma"
+msgstr "kazarma"
 
 #: lib/kazarma_web/live/index.html.heex:9
 msgid "Kazarma"
