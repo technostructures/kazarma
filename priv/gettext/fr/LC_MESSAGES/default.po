@@ -8,15 +8,15 @@
 ## to merge POT files into PO files.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2023-06-04 14:10+0000\n"
+"PO-Revision-Date: 2023-11-04 16:34+0000\n"
 "Last-Translator: Pierre de Lacroix <pierre@pdelacroix.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/kazarma/kazarma/"
 "fr/>\n"
 "Language: fr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:68
@@ -131,12 +131,12 @@ msgstr "Bridger Matrix et ActivityPub"
 #: lib/kazarma_web/components/profile.ex:55
 #, elixir-autogen, elixir-format
 msgid "Click to copy"
-msgstr "Copier"
+msgstr "Cliquer pour copier"
 
 #: lib/kazarma_web/components/profile.ex:43
 #, elixir-autogen, elixir-format
 msgid "Click to open"
-msgstr "Ouvrir"
+msgstr "Cliquer pour ouvrir"
 
 #: lib/kazarma_web/components/core_components.ex:173
 #, elixir-autogen, elixir-format
@@ -414,93 +414,101 @@ msgstr "accepter le bridge public."
 #: lib/kazarma_web/live/object.ex:26
 #, elixir-autogen, elixir-format
 msgid "Activity not found"
-msgstr ""
+msgstr "Activité non trouvée"
 
 #: lib/kazarma_web/live/actor.html.heex:13
 #: lib/kazarma_web/live/index.html.heex:122
 #: lib/kazarma_web/live/object.html.heex:13
 #, elixir-autogen, elixir-format
 msgid "A Technostructures project"
-msgstr ""
+msgstr "Un projet Technostructures"
 
 #: lib/kazarma_web/live/index.html.heex:67
 #, elixir-autogen, elixir-format
 msgid "ActivityPub moderation tools are implemented."
-msgstr ""
+msgstr "Les outils de modération d'ActivityPub sont implémentés."
 
 #: lib/kazarma_web/live/index.html.heex:57
 #, elixir-autogen, elixir-format
 msgid "Consent and privacy"
-msgstr ""
+msgstr "Consentement et respect de la vie privée"
 
 #: lib/kazarma_web/live/index.html.heex:68
 #, elixir-autogen, elixir-format
 msgid "For instance, blocking a Matrix user will ignore them and ban them from your public room if it exists."
 msgstr ""
+"Par exemple, bloquer un compte Matrix bridgé l'ignorera et le bannira de "
+"votre room publique si elle existe."
 
 #: lib/kazarma_web/live/index.html.heex:61
 #, elixir-autogen, elixir-format
 msgid "It can be direct messages, or following of the relay actor to opt-in to public activites bridging."
 msgstr ""
+"Il peut s'agir de messages directs, ou du fait de suivre l'acteur relai pour "
+"activer le bridging d'activités publiques."
 
 #: lib/kazarma_web/live/index.html.heex:60
 #, elixir-autogen, elixir-format
 msgid "Kazarma waits for explicit user action to bridge activities and events."
 msgstr ""
+"Kazarma attend une action explicite pour bridger les activités et évènements."
 
 #: lib/kazarma_web/live/index.html.heex:79
 #, elixir-autogen, elixir-format
 msgid "Links"
-msgstr ""
+msgstr "Liens"
 
 #: lib/kazarma_web/live/index.html.heex:86
 #: lib/kazarma_web/live/index.html.heex:90
 #, elixir-autogen, elixir-format
 msgid "Matrix room"
-msgstr ""
+msgstr "Room Matrix"
 
 #: lib/kazarma_web/live/index.html.heex:74
 #, elixir-autogen, elixir-format
 msgid "Since ActivityPub clients do not implement end-to-end encryption, kazarma does not work in encrypted Matrix rooms."
 msgstr ""
+"Comme les clients ActivityPub n'implémentent pas le chiffrement bout-à-bout, "
+"kazarma ne fonctionne pas dans les rooms Matrix chiffrées."
 
 #: lib/kazarma_web/live/index.html.heex:97
 #: lib/kazarma_web/live/index.html.heex:100
 #, elixir-autogen, elixir-format
 msgid "Source and issue tracker"
-msgstr ""
+msgstr "Code source et gestion de tickets"
 
 #: lib/kazarma_web/live/actor.html.heex:9
 #: lib/kazarma_web/live/index.html.heex:118
 #: lib/kazarma_web/live/object.html.heex:9
 #, elixir-autogen, elixir-format
 msgid "Technostructures"
-msgstr ""
+msgstr "Technostructures"
 
 #: lib/kazarma_web/live/index.html.heex:107
 #: lib/kazarma_web/live/index.html.heex:110
 #, elixir-autogen, elixir-format
 msgid "Translations"
-msgstr ""
+msgstr "Traductions"
 
 #: lib/kazarma_web/live/index.html.heex:64
 #, elixir-autogen, elixir-format
 msgid "Unfollowing the relay actor deactivates public activities bridging."
 msgstr ""
+"Arrêter de suivre l'acteur relai désactivera le bridge d'activités publiques."
 
 #: lib/kazarma_web/live/index.html.heex:71
 #, elixir-autogen, elixir-format
 msgid "You can also block the whole domain of the bridge."
-msgstr ""
+msgstr "Vous pouvez aussi bloquer tout le domaine du bridge."
 
 #: lib/kazarma_web/live/actor.html.heex:7
 #: lib/kazarma_web/live/index.html.heex:116
 #: lib/kazarma_web/live/object.html.heex:7
 #, elixir-autogen, elixir-format
 msgid "https://technostructures.org/en/"
-msgstr ""
+msgstr "https://technostructures.org/fr/"
 
 #: lib/kazarma_web/live/index.html.heex:9
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "kazarma"
-msgstr "Kazarma"
+msgstr "kazarma"
