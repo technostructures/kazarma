@@ -76,7 +76,7 @@ prepare_dev:
 
 .docker:
   stage: setup
-  image: carlallen/docker:buildx
+  image: ezkrg/buildx:v0.11.2
   services:
     - name: docker:dind
       command: ["dockerd", "--host=tcp://0.0.0.0:2375"]
