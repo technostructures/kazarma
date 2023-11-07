@@ -147,7 +147,7 @@ tag_image_prerelease:
   script:
     - docker pull $IMAGE_TAG
     - |
-      PRERELEASE_TAG = $CI_REGISTRY_IMAGE:$(echo $CI_COMMIT_TAG | sed 's/^v//')
+      export PRERELEASE_TAG=$CI_REGISTRY_IMAGE:$(echo $CI_COMMIT_TAG | sed 's/^v//')
       docker tag $IMAGE_TAG $PRERELEASE_TAG
     - docker push --all-tags $IMAGE_TAG
   variables:
@@ -162,13 +162,13 @@ tag_image_release:
   script:
     - docker pull $IMAGE_TAG
     - |
-      PATCH_TAG = $CI_REGISTRY_IMAGE:$(echo $CI_COMMIT_TAG | sed -E 's/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/\1\.\2\.\3/')
+      export PATCH_TAG=$CI_REGISTRY_IMAGE:$(echo $CI_COMMIT_TAG | sed -E 's/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/\1\.\2\.\3/')
       docker tag $IMAGE_TAG $PATCH_TAG
     - |
-      MINOR_TAG = $CI_REGISTRY_IMAGE:$(echo $CI_COMMIT_TAG | sed -E 's/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/\1\.\2/')
+      export MINOR_TAG=$CI_REGISTRY_IMAGE:$(echo $CI_COMMIT_TAG | sed -E 's/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/\1\.\2/')
       docker tag $IMAGE_TAG $MINOR_TAG
     - |
-      MAJOR_TAG = $CI_REGISTRY_IMAGE:$(echo $CI_COMMIT_TAG | sed -E 's/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/\1/')
+      export MAJOR_TAG=$CI_REGISTRY_IMAGE:$(echo $CI_COMMIT_TAG | sed -E 's/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/\1/')
       docker tag $IMAGE_TAG $MAJOR_TAG
     - docker push --all-tags $IMAGE_TAG
   variables:
