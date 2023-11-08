@@ -76,6 +76,72 @@ defmodule Kazarma.ActivityPub.ActorTest do
               }} = get_actor_by_username("alice")
     end
 
+    test "when asked for an existing remote matrix users returns the corresponding actor and persists it in database" do
+      Kazarma.Matrix.TestClient
+      |> expect(:client, fn -> %{base_url: "http://matrix"} end)
+      |> expect(:get_profile, fn "@alice:remote" ->
+        {:ok, %{"displayname" => "Alice", "avatar_url" => "mxc://server/image_id"}}
+      end)
+
+      assert {:ok, %{keys: keys} = actor} = get_actor_by_username("alice___remote")
+
+      assert %ActivityPub.Actor{
+               local: true,
+               deactivated: false,
+               username: "alice___remote@kazarma",
+               ap_id: "http://kazarma/-/alice___remote",
+               data: %{
+                 "preferredUsername" => "alice___remote",
+                 "id" => "http://kazarma/-/alice___remote",
+                 "type" => "Person",
+                 "name" => "Alice",
+                 "icon" => %{
+                   "type" => "Image",
+                   "url" => "http://matrix/_matrix/media/r0/download/server/image_id"
+                 },
+                 "followers" => "http://kazarma/-/alice___remote/followers",
+                 "following" => "http://kazarma/-/alice___remote/following",
+                 "inbox" => "http://kazarma/-/alice___remote/inbox",
+                 "outbox" => "http://kazarma/-/alice___remote/outbox",
+                 "manuallyApprovesFollowers" => false,
+                 endpoints: %{
+                   "sharedInbox" => "http://kazarma/shared_inbox"
+                 }
+               }
+             } = actor
+
+      assert %{
+               data: %{
+                 "ap_data" => %{
+                   "preferredUsername" => "alice___remote",
+                   "id" => "http://kazarma/-/alice___remote",
+                   "type" => "Person",
+                   "name" => "Alice",
+                   "icon" => %{
+                     "type" => "Image",
+                     "url" => "http://matrix/_matrix/media/r0/download/server/image_id"
+                   }
+                 },
+                 "keys" => ^keys
+               }
+             } = Bridge.get_user_by_local_id("@alice:remote")
+
+      assert {:ok,
+              %{
+                data: %{
+                  "preferredUsername" => "alice___remote",
+                  "id" => "http://kazarma/-/alice___remote",
+                  "type" => "Person",
+                  "name" => "Alice",
+                  "icon" => %{
+                    "type" => "Image",
+                    "url" => "http://matrix/_matrix/media/r0/download/server/image_id"
+                  }
+                },
+                keys: ^keys
+              }} = get_actor_by_username("alice___remote")
+    end
+
     test "when asked for a nonexisting matrix users returns an error tuple" do
       Kazarma.Matrix.TestClient
       |> expect(:get_profile, fn "@nonexisting:kazarma" ->

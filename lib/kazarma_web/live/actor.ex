@@ -6,10 +6,12 @@ defmodule KazarmaWeb.Actor do
   use KazarmaWeb, :live_view
 
   def get_actor(username) do
-    if Application.get_env(:kazarma, :html_actor_view_include_remote, false) do
-      ActivityPub.Actor.get_cached_or_fetch(username: username)
-    else
-      ActivityPub.Actor.get_cached(username: username)
+    include_remote = Application.get_env(:kazarma, :html_actor_view_include_remote, false)
+
+    case ActivityPub.Actor.get_cached_or_fetch(username: username) do
+      {:ok, %{local: true} = actor} -> {:ok, actor}
+      {:ok, %{local: false} = actor} when include_remote == true -> {:ok, actor}
+      _ -> nil
     end
   end
 

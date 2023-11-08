@@ -43,7 +43,7 @@ defmodule KazarmaWeb.IndexTest do
         {:ok, view, html} = live(var!(conn), "/")
 
         view
-        |> form("#search", search: %{address: unquote(address)})
+        |> form("#search-form", search: %{address: unquote(address)})
         |> render_submit()
 
         assert_redirect(view, unquote(path))
