@@ -45,6 +45,15 @@ config :kazarma, KazarmaWeb.Endpoint,
   url: [host: System.fetch_env!("HOST"), scheme: "https", port: 443],
   secret_key_base: System.fetch_env!("SECRET_KEY_BASE")
 
+if System.get_env("INSECURE_SSL_TESTING_ONLY") == "true" do
+  config :activity_pub, :http,
+    adapter: [
+      ssl_options: [
+        verify: :verify_none
+      ]
+    ]
+end
+
 config :kazarma, bridge_remote_matrix_users: System.get_env("BRIDGE_REMOTE") == "true"
 config :kazarma, html_search: System.get_env("HTML_SEARCH") == "true"
 config :kazarma, html_actor_view_include_remote: System.get_env("HTML_AP") == "true"
