@@ -47,7 +47,7 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   synapse:
-    image: matrixdotorg/synapse:v1.84.1
+    image: matrixdotorg/synapse:v1.96.1
     # domainname: matrix.local
     # Since synapse does not retry to connect to the database, restart upon
     # failure
