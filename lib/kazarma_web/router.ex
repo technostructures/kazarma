@@ -54,7 +54,7 @@ defmodule KazarmaWeb.Router do
     transaction_adapter: Kazarma.Matrix.Transaction,
     room_adapter: Kazarma.Matrix.Room,
     user_adapter: Kazarma.Matrix.User,
-    path: "/matrix"
+    path: "/"
   )
 
   # Enables LiveDashboard only for development
