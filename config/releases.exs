@@ -52,6 +52,11 @@ if System.get_env("INSECURE_SSL_TESTING_ONLY") == "true" do
         verify: :verify_none
       ]
     ]
+
+  config :matrix_app_service, :client_options,
+    ssl_options: [
+      verify: :verify_none
+    ]
 end
 
 config :kazarma, bridge_remote_matrix_users: System.get_env("BRIDGE_REMOTE") == "true"

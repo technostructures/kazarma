@@ -87,6 +87,11 @@ config :matrix_app_service, :app_service,
   homeserver_token:
     "MDAyMGxvY2F0aW9uIG1hdHJpeC5pbWFnby5sb2NhbAowMDEzaWRlbnRpZmllciBrZXkKMDAxMGNpZCBnZW4gPSAxCjAwMmNjaWQgdXNlcl9pZCA9IEBhbGljZTptYXRyaXguaW1hZ28ubG9jYWwKMDAxNmNpZCB0eXBlID0gYWNjZXNzCjAwMjFjaWQgbm9uY2UgPSBjcX4jazVTUDNeUlk2WnRECjAwMmZzaWduYXR1cmUg_K2biF-xm5ue7985RkAomVadF7yfy3UiEpH-e15m0esK"
 
+config :matrix_app_service, :client_options,
+  ssl_options: [
+    verify: :verify_none
+  ]
+
 config :activity_pub, :domain, "kazarma.local"
 
 config :activity_pub, :http,
