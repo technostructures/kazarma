@@ -164,7 +164,7 @@ defmodule Kazarma.Mocks do
 
   defp right_quote([_]) do
     quote do
-      right
+      [right]
     end
   end
 
