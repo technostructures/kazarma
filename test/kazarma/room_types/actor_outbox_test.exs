@@ -635,9 +635,6 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "following the relay actor makes it accept, follow back and creates the actor room" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@relay:kazarma" ->
-        {:ok, %{"displayname" => "Relay"}}
-      end)
       |> expect(:register, fn
         [
           username: "_ap_alice___pleroma",
@@ -681,9 +678,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           actor: %ActivityPub.Actor{
             data: %{
               "id" => "http://kazarma/-/relay",
-              "name" => "Relay",
+              "name" => "Kazarma",
               "preferredUsername" => "relay",
-              "type" => "Person"
+              "type" => "Application"
             },
             local: true,
             ap_id: "http://kazarma/-/relay",
@@ -704,9 +701,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           id: nil,
           data: %{
             "id" => "http://kazarma/-/relay",
-            "name" => "Relay",
+            "name" => "Kazarma",
             "preferredUsername" => "relay",
-            "type" => "Person"
+            "type" => "Application"
           },
           local: true,
           ap_id: "http://kazarma/-/relay",
@@ -741,9 +738,6 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "following the relay actor makes it accept, follow back and gets the actor room by alias if it already exists" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@relay:kazarma" ->
-        {:ok, %{"displayname" => "Relay"}}
-      end)
       |> expect(:register, fn
         [
           username: "_ap_alice___pleroma",
@@ -791,9 +785,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           actor: %ActivityPub.Actor{
             data: %{
               "id" => "http://kazarma/-/relay",
-              "name" => "Relay",
+              "name" => "Kazarma",
               "preferredUsername" => "relay",
-              "type" => "Person"
+              "type" => "Application"
             },
             local: true,
             ap_id: "http://kazarma/-/relay",
@@ -814,9 +808,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           id: nil,
           data: %{
             "id" => "http://kazarma/-/relay",
-            "name" => "Relay",
+            "name" => "Kazarma",
             "preferredUsername" => "relay",
-            "type" => "Person"
+            "type" => "Application"
           },
           local: true,
           ap_id: "http://kazarma/-/relay",
@@ -851,9 +845,6 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "following the relay actor makes it accept, follow back and starts bridging again is relay had previously been unfollowed" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@relay:kazarma" ->
-        {:ok, %{"displayname" => "Relay"}}
-      end)
       |> expect(:register, fn
         [
           username: "_ap_alice___pleroma",
@@ -877,12 +868,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       Kazarma.ActivityPub.TestServer
       |> expect(:accept, fn
         %{
-          actor: %ActivityPub.Actor{
+          actor: %{
             data: %{
               "id" => "http://kazarma/-/relay",
-              "name" => "Relay",
+              "name" => "Kazarma",
               "preferredUsername" => "relay",
-              "type" => "Person"
+              "type" => "Application"
             },
             local: true,
             ap_id: "http://kazarma/-/relay",
@@ -903,9 +894,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           id: nil,
           data: %{
             "id" => "http://kazarma/-/relay",
-            "name" => "Relay",
+            "name" => "Kazarma",
             "preferredUsername" => "relay",
-            "type" => "Person"
+            "type" => "Application"
           },
           local: true,
           ap_id: "http://kazarma/-/relay",
@@ -969,8 +960,8 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       {:ok, relay} =
         ActivityPub.Object.insert(%{
           "data" => %{
-            "type" => "Person",
-            "name" => "Relay",
+            "type" => "Application",
+            "name" => "Kazarma",
             "preferredUsername" => "relay",
             "url" => "http://kazarma/-/relay",
             "id" => "http://kazarma/-/relay",
@@ -1009,9 +1000,6 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "unfollowing the relay actor makes it unfollow back and deactivates the actor room" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@relay:kazarma" ->
-        {:ok, %{"displayname" => "Relay"}}
-      end)
       |> expect(:register, fn
         [
           username: "_ap_alice___pleroma",
@@ -1038,9 +1026,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           id: nil,
           data: %{
             "id" => "http://kazarma/-/relay",
-            "name" => "Relay",
+            "name" => "Kazarma",
             "preferredUsername" => "relay",
-            "type" => "Person"
+            "type" => "Application"
           },
           local: true,
           ap_id: "http://kazarma/-/relay",
