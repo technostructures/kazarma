@@ -113,7 +113,8 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_local_actor(username) do
-    username = if String.contains?(username, "@"), do: username, else: "#{username}@#{Address.domain()}"
+    username =
+      if String.contains?(username, "@"), do: username, else: "#{username}@#{Address.domain()}"
 
     if username == Address.relay_username() do
       get_relay_actor()
