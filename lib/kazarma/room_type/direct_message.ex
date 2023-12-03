@@ -57,11 +57,31 @@ defmodule Kazarma.RoomType.DirectMessage do
 
       {:ok, room_id}
     else
-      %Room{local_id: local_id} -> {:ok, local_id}
+      %Room{local_id: local_id, data: %{"to" => to}} = room ->
+        maybe_invite_new_users(room, creator, invites)
+        {:ok, local_id}
+
       # {:ok, room_id} -> {:ok, room_id}
-      {:error, error} -> {:error, error}
-      _ -> {:error, :unknown_error}
+      {:error, error} ->
+        {:error, error}
+
+      _ ->
+        {:error, :unknown_error}
     end
+  end
+
+  defp maybe_invite_new_users(
+         %Room{local_id: room_id, data: %{"to" => already_there} = room_data} = room,
+         creator,
+         recipients
+       ) do
+    new_members = Enum.filter(recipients, fn recipient -> recipient not in already_there end)
+
+    Enum.each(new_members, fn user_id ->
+      Client.invite(room_id, creator, user_id)
+    end)
+
+    Bridge.update_room(room, %{data: %{room_data | "to" => already_there ++ new_members}})
   end
 
   # =======================

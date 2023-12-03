@@ -38,6 +38,18 @@ defmodule Kazarma.RoomType.ApUser do
            get_room_for_public_create(object_data) do
       Client.join(from_matrix_id, room_id)
 
+      Map.get(object_data, "tag", [])
+      |> Enum.filter(fn tag -> Map.get(tag, "type") == "Mention" end)
+      |> Enum.each(fn %{"name" => mentioned_username} ->
+        case Address.ap_username_to_matrix_id(mentioned_username) do
+          {:ok, mentioned_matrix_id} ->
+            Client.invite(room_id, from_matrix_id, mentioned_matrix_id)
+
+          _ ->
+            nil
+        end
+      end)
+
       attachments = Map.get(object_data, "attachment")
 
       Activity.send_message_and_attachment(from_matrix_id, room_id, object_data, attachments)

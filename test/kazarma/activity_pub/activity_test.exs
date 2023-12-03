@@ -238,6 +238,14 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
       end)
+      |> expect(:send_state_event, fn
+        "!room:kazarma",
+        "m.room.member",
+        "@_ap_bob___kazarma.kazarma.local:kazarma",
+        %{"membership" => "invite"},
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, "!invite_event"}
+      end)
       |> expect(:send_message, fn
         "!room:kazarma",
         %{

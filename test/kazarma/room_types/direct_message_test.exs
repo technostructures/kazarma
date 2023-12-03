@@ -50,6 +50,25 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       }
     end
 
+    def note_fixture_adding_another_user do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => ["http://kazarma/-/bob", "http://kazarma/-/carole"]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Note",
+            "source" => "hello",
+            "id" => "note_id",
+            "actor" => "http://pleroma/pub/actors/alice",
+            "conversation" => "http://pleroma/pub/contexts/context",
+            "attachment" => nil
+          }
+        }
+      }
+    end
+
     def note_with_attachments_fixture do
       %{
         data: %{
@@ -109,13 +128,76 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         local_id: "!room:kazarma",
         remote_id: "http://pleroma/pub/contexts/context",
         data: %{
-          "type" => "note",
+          "type" => "direct_message",
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
       |> Bridge.create_room()
 
       assert :ok = handle_activity(note_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "note_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Bridge.list_events()
+    end
+
+    test "when receiving a Note activity for an existing conversation with another mention for a Matrix it invites them" do
+      Kazarma.Matrix.TestClient
+      |> expect(:register, fn [
+                                username: "_ap_alice___pleroma",
+                                device_id: "KAZARMA_APP_SERVICE",
+                                initial_device_display_name: "Kazarma",
+                                registration_type: "m.login.application_service"
+                              ] ->
+        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
+      end)
+      |> expect(:get_profile, 2, fn
+        "@bob:kazarma" ->
+          {:ok, %{"displayname" => "Bob"}}
+
+        "@carole:kazarma" ->
+          {:ok, %{"displayname" => "Carole"}}
+      end)
+      |> expect(:send_state_event, fn
+        "!room:kazarma",
+        "m.room.member",
+        "@carole:kazarma",
+        %{"membership" => "invite"},
+        [user_id: "@_ap_alice___pleroma:kazarma"] ->
+          {:ok, "!invite_event"}
+      end)
+      |> expect(:send_message, fn "!room:kazarma",
+                                  {"hello \uFEFF", "hello"},
+                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
+        {:ok, "event_id"}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma/pub/contexts/context",
+        data: %{
+          "type" => "direct_message",
+          "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok = handle_activity(note_fixture_adding_another_user())
+
+      assert [
+               %MatrixAppService.Bridge.Room{
+                 local_id: "!room:kazarma",
+                 remote_id: "http://pleroma/pub/contexts/context",
+                 data: %{
+                   "type" => "direct_message",
+                   "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma", "@carole:kazarma"]
+                 }
+               }
+             ] = Bridge.list_rooms()
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -220,7 +302,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         local_id: "!room:kazarma",
         remote_id: "http://pleroma.local/contexts/aabbccddeeff",
         data: %{
-          "type" => "note",
+          "type" => "direct_message",
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
@@ -278,7 +360,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         local_id: "!room:kazarma",
         remote_id: "http://pleroma.local/contexts/aabbccddeeff",
         data: %{
-          "type" => "note",
+          "type" => "direct_message",
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
@@ -382,7 +464,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         local_id: "!room:kazarma",
         remote_id: "http://pleroma/pub/contexts/context",
         data: %{
-          "type" => "note",
+          "type" => "direct_message",
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
         }
       }
