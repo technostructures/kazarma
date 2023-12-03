@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Invite mentioned users in Notes in AP outbox rooms
+- Invite mentioned users in Notes in direct message rooms
+
+### Bug fixes
+
+- Fix a bug in Webfinger request for relay actor
+
 ## [1.0.0-alpha.1]
 
 ### Features
