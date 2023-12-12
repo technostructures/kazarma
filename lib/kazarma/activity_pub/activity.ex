@@ -96,7 +96,7 @@ defmodule Kazarma.ActivityPub.Activity do
     {:ok, actor} = Kazarma.Address.matrix_id_to_actor(sender_id)
 
     for %BridgeEvent{remote_id: remote_id} <- Bridge.get_events_by_local_id(event_id) do
-      %Object{} = object = ActivityPub.Object.get_by_ap_id(remote_id)
+      {:ok, %Object{} = object} = ActivityPub.Object.get_cached(ap_id: remote_id)
 
       {:ok, %{object: %ActivityPub.Object{data: %{"id" => delete_remote_id}}}} =
         Kazarma.ActivityPub.delete(object, true, actor)
@@ -122,7 +122,8 @@ defmodule Kazarma.ActivityPub.Activity do
       }) do
     case Bridge.get_events_by_local_id(event_id) do
       [%BridgeEvent{remote_id: ap_id} | _] ->
-        Object.get_cached_by_ap_id(ap_id)
+        {:ok, activity} = Object.get_cached(ap_id: ap_id)
+        activity
 
       _ ->
         nil
@@ -399,7 +400,7 @@ defmodule Kazarma.ActivityPub.Activity do
   def convert_mentions(content, tags, convert_fun) do
     Enum.reduce(tags, content, fn
       %{"type" => "Mention", "href" => ap_id, "name" => username}, content ->
-        with {:ok, actor} <- ActivityPub.Actor.get_cached_by_ap_id(ap_id),
+        with {:ok, actor} <- ActivityPub.Actor.get_cached(ap_id: ap_id),
              {:ok, matrix_id} <- Address.ap_username_to_matrix_id(actor.username) do
           convert_fun.(content, actor, ap_id, username, matrix_id)
         else

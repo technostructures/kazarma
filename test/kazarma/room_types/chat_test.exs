@@ -12,7 +12,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",

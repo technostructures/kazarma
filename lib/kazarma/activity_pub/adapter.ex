@@ -273,7 +273,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           %{
             username: group_username,
             data: %{"name" => group_name, "endpoints" => %{"members" => _group_members}}
-          }} <- ActivityPub.Actor.get_cached_by_ap_id(group_ap_id),
+          }} <- ActivityPub.Actor.get_cached(ap_id: group_ap_id),
          {:ok, group_matrix_id} <-
            Address.ap_username_to_matrix_id(group_username),
          {:ok, room_id} <-
@@ -334,14 +334,18 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity, label: "Follow")
 
-    case ActivityPub.Actor.get_cached_by_ap_id(followed) do
+    case ActivityPub.Actor.get_cached(ap_id: followed) do
       {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
-        Kazarma.ActivityPub.accept(%{to: [follower], actor: followed_actor, object: activity.data})
+        Kazarma.ActivityPub.accept(%{
+          to: [follower],
+          actor: followed_actor,
+          object: activity.data["id"]
+        })
 
         if followed == Address.relay_ap_id() do
           Logger.debug("follow back remote actor")
-          {:ok, follower_actor} = ActivityPub.Actor.get_cached_by_ap_id(follower)
-          Kazarma.ActivityPub.follow(followed_actor, follower_actor)
+          {:ok, follower_actor} = ActivityPub.Actor.get_cached(ap_id: follower)
+          Kazarma.ActivityPub.follow(%{actor: followed_actor, object: follower_actor})
           {:ok, _} = Kazarma.RoomType.ApUser.create_outbox(follower_actor)
         end
 
@@ -367,12 +371,12 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity, label: "Unfollow")
 
-    case ActivityPub.Actor.get_cached_by_ap_id(followed) do
+    case ActivityPub.Actor.get_cached(ap_id: followed) do
       {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
         if followed == Address.relay_ap_id() do
           Logger.debug("unfollow back remote actor")
-          {:ok, follower_actor} = ActivityPub.Actor.get_cached_by_ap_id(follower)
-          Kazarma.ActivityPub.unfollow(followed_actor, follower_actor)
+          {:ok, follower_actor} = ActivityPub.Actor.get_cached(ap_id: follower)
+          Kazarma.ActivityPub.unfollow(%{actor: followed_actor, object: follower_actor})
           {:ok, _} = Kazarma.RoomType.ApUser.deactivate_outbox(follower_actor)
         end
 
@@ -395,7 +399,7 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity, label: "Block")
 
-    case ActivityPub.Actor.get_cached_by_ap_id(blocked) do
+    case ActivityPub.Actor.get_cached(ap_id: blocked) do
       {:ok, %ActivityPub.Actor{local: true} = _blocked_actor} ->
         {:ok, blocker_matrix_id} = Address.ap_id_to_matrix(blocker)
         {:ok, blocked_matrix_id} = Address.ap_id_to_matrix(blocked)
@@ -429,7 +433,7 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity, label: "Block")
 
-    case ActivityPub.Actor.get_cached_by_ap_id(blocked) do
+    case ActivityPub.Actor.get_cached(ap_id: blocked) do
       {:ok, %ActivityPub.Actor{local: true} = _blocked_actor} ->
         {:ok, blocker_matrix_id} = Address.ap_id_to_matrix(blocker)
         {:ok, blocked_matrix_id} = Address.ap_id_to_matrix(blocked)

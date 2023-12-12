@@ -65,7 +65,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -174,7 +174,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -313,7 +313,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         })
 
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -455,12 +455,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
             username: "bob@kazarma",
             deactivated: false
           },
-          object: %{
-            "actor" => "http://pleroma/pub/actors/alice",
-            "id" => "follow_object_id",
-            "object" => "http://kazarma/-/bob",
-            "type" => "Follow"
-          },
+          object: "follow_object_id",
           to: ["http://pleroma/pub/actors/alice"]
         } ->
           :ok

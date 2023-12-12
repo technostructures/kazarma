@@ -115,8 +115,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
             "https://www.w3.org/ns/activitystreams#Public",
             "https://pleroma.interhacker.space/users/test_user_bob2"
           ]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => :object_id}}}}
       end)
 
@@ -130,7 +129,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -377,7 +376,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     setup do
       {:ok, alice} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -392,7 +391,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         })
 
       {:ok, bob} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Bob",
@@ -559,7 +558,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -574,7 +573,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         })
 
       {:ok, channel} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Channel",
             "name" => "Channel",
@@ -687,7 +686,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -708,6 +707,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       %{
         data: %{
           "type" => "Follow",
+          "id" => "follow_object_id",
           "actor" => "http://pleroma/pub/actors/alice",
           "object" => "http://kazarma/-/relay"
         }
@@ -721,6 +721,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "actor" => "http://pleroma/pub/actors/alice",
           "object" => %{
             "type" => "Follow",
+            "id" => "follow_object_id",
             "object" => "http://kazarma/-/relay"
           }
         }
@@ -781,40 +782,37 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
             username: "relay@kazarma",
             deactivated: false
           },
-          object: %{
-            "actor" => "http://pleroma/pub/actors/alice",
-            "object" => "http://kazarma/-/relay",
-            "type" => "Follow"
-          },
+          object: "follow_object_id",
           to: ["http://pleroma/pub/actors/alice"]
         } ->
           :ok
       end)
       |> expect(:follow, fn
-        %ActivityPub.Actor{
-          id: nil,
-          data: %{
-            "id" => "http://kazarma/-/relay",
-            "name" => "Kazarma",
-            "preferredUsername" => "relay",
-            "type" => "Application"
+        %{
+          actor: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://kazarma/-/relay",
+              "name" => "Kazarma",
+              "preferredUsername" => "relay",
+              "type" => "Application"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/relay",
+            username: "relay@kazarma"
           },
-          local: true,
-          ap_id: "http://kazarma/-/relay",
-          username: "relay@kazarma"
-        },
-        %ActivityPub.Actor{
-          data: %{
-            "id" => "http://pleroma/pub/actors/alice",
-            "name" => "Alice",
-            "preferredUsername" => "alice",
-            "type" => "Person",
-            "url" => "http://pleroma/pub/actors/alice",
-            "username" => "alice@pleroma"
-          },
-          local: false,
-          ap_id: "http://pleroma/pub/actors/alice",
-          username: "alice@pleroma"
+          object: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://pleroma/pub/actors/alice",
+              "name" => "Alice",
+              "preferredUsername" => "alice",
+              "type" => "Person",
+              "url" => "http://pleroma/pub/actors/alice",
+              "username" => "alice@pleroma"
+            },
+            local: false,
+            ap_id: "http://pleroma/pub/actors/alice",
+            username: "alice@pleroma"
+          }
         } ->
           :ok
       end)
@@ -888,40 +886,37 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
             username: "relay@kazarma",
             deactivated: false
           },
-          object: %{
-            "actor" => "http://pleroma/pub/actors/alice",
-            "object" => "http://kazarma/-/relay",
-            "type" => "Follow"
-          },
+          object: "follow_object_id",
           to: ["http://pleroma/pub/actors/alice"]
         } ->
           :ok
       end)
       |> expect(:follow, fn
-        %ActivityPub.Actor{
-          id: nil,
-          data: %{
-            "id" => "http://kazarma/-/relay",
-            "name" => "Kazarma",
-            "preferredUsername" => "relay",
-            "type" => "Application"
+        %{
+          actor: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://kazarma/-/relay",
+              "name" => "Kazarma",
+              "preferredUsername" => "relay",
+              "type" => "Application"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/relay",
+            username: "relay@kazarma"
           },
-          local: true,
-          ap_id: "http://kazarma/-/relay",
-          username: "relay@kazarma"
-        },
-        %ActivityPub.Actor{
-          data: %{
-            "id" => "http://pleroma/pub/actors/alice",
-            "name" => "Alice",
-            "preferredUsername" => "alice",
-            "type" => "Person",
-            "url" => "http://pleroma/pub/actors/alice",
-            "username" => "alice@pleroma"
-          },
-          local: false,
-          ap_id: "http://pleroma/pub/actors/alice",
-          username: "alice@pleroma"
+          object: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://pleroma/pub/actors/alice",
+              "name" => "Alice",
+              "preferredUsername" => "alice",
+              "type" => "Person",
+              "url" => "http://pleroma/pub/actors/alice",
+              "username" => "alice@pleroma"
+            },
+            local: false,
+            ap_id: "http://pleroma/pub/actors/alice",
+            username: "alice@pleroma"
+          }
         } ->
           :ok
       end)
@@ -974,40 +969,37 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
             username: "relay@kazarma",
             deactivated: false
           },
-          object: %{
-            "actor" => "http://pleroma/pub/actors/alice",
-            "object" => "http://kazarma/-/relay",
-            "type" => "Follow"
-          },
+          object: "follow_object_id",
           to: ["http://pleroma/pub/actors/alice"]
         } ->
           :ok
       end)
       |> expect(:follow, fn
-        %ActivityPub.Actor{
-          id: nil,
-          data: %{
-            "id" => "http://kazarma/-/relay",
-            "name" => "Kazarma",
-            "preferredUsername" => "relay",
-            "type" => "Application"
+        %{
+          actor: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://kazarma/-/relay",
+              "name" => "Kazarma",
+              "preferredUsername" => "relay",
+              "type" => "Application"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/relay",
+            username: "relay@kazarma"
           },
-          local: true,
-          ap_id: "http://kazarma/-/relay",
-          username: "relay@kazarma"
-        },
-        %ActivityPub.Actor{
-          data: %{
-            "id" => "http://pleroma/pub/actors/alice",
-            "name" => "Alice",
-            "preferredUsername" => "alice",
-            "type" => "Person",
-            "url" => "http://pleroma/pub/actors/alice",
-            "username" => "alice@pleroma"
-          },
-          local: false,
-          ap_id: "http://pleroma/pub/actors/alice",
-          username: "alice@pleroma"
+          object: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://pleroma/pub/actors/alice",
+              "name" => "Alice",
+              "preferredUsername" => "alice",
+              "type" => "Person",
+              "url" => "http://pleroma/pub/actors/alice",
+              "username" => "alice@pleroma"
+            },
+            local: false,
+            ap_id: "http://pleroma/pub/actors/alice",
+            username: "alice@pleroma"
+          }
         } ->
           :ok
       end)
@@ -1037,7 +1029,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -1052,7 +1044,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         })
 
       {:ok, relay} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Application",
             "name" => "Kazarma",
@@ -1073,6 +1065,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       %{
         data: %{
           "type" => "Follow",
+          "id" => "follow_object_id",
           "actor" => "http://pleroma/pub/actors/alice",
           "object" => "http://kazarma/-/relay"
         }
@@ -1086,6 +1079,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "actor" => "http://pleroma/pub/actors/alice",
           "object" => %{
             "type" => "Follow",
+            "id" => "follow_object_id",
             "object" => "http://kazarma/-/relay"
           }
         }
@@ -1116,30 +1110,31 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
       Kazarma.ActivityPub.TestServer
       |> expect(:unfollow, fn
-        %ActivityPub.Actor{
-          id: nil,
-          data: %{
-            "id" => "http://kazarma/-/relay",
-            "name" => "Kazarma",
-            "preferredUsername" => "relay",
-            "type" => "Application"
+        %{
+          actor: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://kazarma/-/relay",
+              "name" => "Kazarma",
+              "preferredUsername" => "relay",
+              "type" => "Application"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/relay",
+            username: "relay@kazarma"
           },
-          local: true,
-          ap_id: "http://kazarma/-/relay",
-          username: "relay@kazarma"
-        },
-        %ActivityPub.Actor{
-          data: %{
-            "id" => "http://pleroma/pub/actors/alice",
-            "name" => "Alice",
-            "preferredUsername" => "alice",
-            "type" => "Person",
-            "url" => "http://pleroma/pub/actors/alice",
-            "username" => "alice@pleroma"
-          },
-          local: false,
-          ap_id: "http://pleroma/pub/actors/alice",
-          username: "alice@pleroma"
+          object: %ActivityPub.Actor{
+            data: %{
+              "id" => "http://pleroma/pub/actors/alice",
+              "name" => "Alice",
+              "preferredUsername" => "alice",
+              "type" => "Person",
+              "url" => "http://pleroma/pub/actors/alice",
+              "username" => "alice@pleroma"
+            },
+            local: false,
+            ap_id: "http://pleroma/pub/actors/alice",
+            username: "alice@pleroma"
+          }
         } ->
           :ok
       end)

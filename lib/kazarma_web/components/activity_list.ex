@@ -34,7 +34,7 @@ defmodule KazarmaWeb.Components.ActivityList do
   end
 
   defp actor_for_object(%{data: %{"actor" => actor_id}}) do
-    case ActivityPub.Actor.get_cached_by_ap_id(actor_id) do
+    case ActivityPub.Actor.get_cached(ap_id: actor_id) do
       {:ok, actor} -> actor
       _ -> nil
     end

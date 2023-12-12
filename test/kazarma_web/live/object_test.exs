@@ -33,7 +33,7 @@ defmodule KazarmaWeb.ObjectTest do
           }
         })
 
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         public: true,
         local: true,
         data: %{
@@ -45,7 +45,7 @@ defmodule KazarmaWeb.ObjectTest do
         }
       })
 
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         public: true,
         local: true,
         data: %{
@@ -59,7 +59,7 @@ defmodule KazarmaWeb.ObjectTest do
       })
 
       {:ok, local_note} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           public: true,
           local: true,
           data: %{
@@ -72,7 +72,7 @@ defmodule KazarmaWeb.ObjectTest do
           }
         })
 
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         public: true,
         local: true,
         data: %{
@@ -85,7 +85,7 @@ defmodule KazarmaWeb.ObjectTest do
         }
       })
 
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         public: true,
         local: true,
         data: %{
@@ -99,7 +99,7 @@ defmodule KazarmaWeb.ObjectTest do
       })
 
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -118,7 +118,7 @@ defmodule KazarmaWeb.ObjectTest do
       |> ActivityPub.Actor.set_cache()
 
       {:ok, remote_note} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           public: true,
           local: false,
           data: %{

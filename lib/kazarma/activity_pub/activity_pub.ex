@@ -5,10 +5,10 @@ defmodule Kazarma.ActivityPub do
 
   use Kazarma.Config
 
-  defdelegate create(params, pointer \\ nil), to: @activitypub_server
+  defdelegate create(params), to: @activitypub_server
   defdelegate update(params), to: @activitypub_server
-  defdelegate follow(follower, followed), to: @activitypub_server
-  defdelegate unfollow(follower, followed), to: @activitypub_server
+  defdelegate follow(params), to: @activitypub_server
+  defdelegate unfollow(params), to: @activitypub_server
   defdelegate delete(object, local, delete_actor), to: @activitypub_server
   defdelegate accept(params), to: @activitypub_server
 end

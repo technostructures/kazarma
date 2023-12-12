@@ -10,9 +10,10 @@ defmodule KazarmaWeb.Object do
   @impl true
   def mount(%{"uuid" => uuid} = params, _session, socket) do
     with {:ok, _raw_uuid} <- Ecto.UUID.dump(uuid),
-         %ActivityPub.Object{data: %{"actor" => actor_id}} =
-           object <- ActivityPub.Object.get_by_id(uuid),
-         {:ok, actor} <- ActivityPub.Actor.get_or_fetch_by_ap_id(actor_id),
+         {:ok,
+          %ActivityPub.Object{data: %{"actor" => actor_id}} =
+            object} <- ActivityPub.Object.get_cached(id: uuid),
+         {:ok, actor} <- ActivityPub.Actor.get_cached_or_fetch(ap_id: actor_id),
          true <-
            valid_path?(params, actor, object) do
       actor_room = Kazarma.Bridge.get_room_by_remote_id(actor_id)
@@ -103,8 +104,8 @@ defmodule KazarmaWeb.Object do
   end
 
   defp traverse_replies_to(%{data: %{"inReplyTo" => reply_to_id}}) do
-    case ActivityPub.Object.get_cached_by_ap_id(reply_to_id) do
-      %{data: %{"type" => "Note"}} = reply_to ->
+    case ActivityPub.Object.get_cached(ap_id: reply_to_id) do
+      {:ok, %{data: %{"type" => "Note"}} = reply_to} ->
         [reply_to | traverse_replies_to(reply_to)]
 
       _ ->

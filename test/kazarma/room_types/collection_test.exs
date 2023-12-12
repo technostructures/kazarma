@@ -43,7 +43,7 @@ defmodule Kazarma.Matrix.CollectionTest do
 
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Group",
             "name" => "Group",
@@ -189,7 +189,7 @@ defmodule Kazarma.Matrix.CollectionTest do
 
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Group",
             "name" => "Group",
@@ -295,7 +295,7 @@ defmodule Kazarma.Matrix.CollectionTest do
       |> Bridge.create_room()
 
       {:ok, _group} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Group",
             "name" => "Group",
@@ -311,7 +311,7 @@ defmodule Kazarma.Matrix.CollectionTest do
         })
 
       {:ok, _alice} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -479,7 +479,7 @@ defmodule Kazarma.Matrix.CollectionTest do
 
     setup do
       {:ok, group} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "MN:Collection",
             "name" => "Group",
@@ -498,7 +498,7 @@ defmodule Kazarma.Matrix.CollectionTest do
       |> ActivityPub.Actor.format_remote_actor()
       |> ActivityPub.Actor.set_cache()
 
-      ActivityPub.Object.insert(%{data: %{"id" => "http://mobilizon/comments/note_id"}})
+      ActivityPub.Object.do_insert(%{data: %{"id" => "http://mobilizon/comments/note_id"}})
 
       %{
         data: %{"type" => "collection"},
@@ -555,8 +555,7 @@ defmodule Kazarma.Matrix.CollectionTest do
             "inReplyTo" => "http://mobilizon/comments/note_id"
           },
           to: ["http://mobilizon/@group/members"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
@@ -627,8 +626,7 @@ defmodule Kazarma.Matrix.CollectionTest do
             "type" => "Note"
           },
           to: ["http://mobilizon/@group/members"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 

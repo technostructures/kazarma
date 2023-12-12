@@ -5,10 +5,10 @@ defmodule Kazarma.ActivityPub.ServerBehaviour do
   Behaviour used to mock the `ActivityPub` module.
   """
 
-  @callback create(map(), String.t() | nil) :: {:ok, any()} | {:error, any()}
+  @callback create(map()) :: {:ok, any()} | {:error, any()}
   @callback update(map()) :: {:ok, any()} | {:error, any()}
-  @callback follow(map(), map()) :: {:ok, any()} | {:error, any()}
-  @callback unfollow(map(), map()) :: {:ok, any()} | {:error, any()}
+  @callback follow(map()) :: {:ok, any()} | {:error, any()}
+  @callback unfollow(map()) :: {:ok, any()} | {:error, any()}
   @callback delete(map(), bool, map()) :: {:ok, any()} | {:error, any()}
   @callback accept(map()) :: {:ok, any()} | {:error, any()}
 end

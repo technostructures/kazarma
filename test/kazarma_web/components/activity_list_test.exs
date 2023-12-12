@@ -16,7 +16,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
 
     setup do
       {:ok, %ActivityPub.Object{data: data}} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           local: true,
           deactivated: false,
           username: "alice@kazarma",
@@ -42,7 +42,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         })
 
       {:ok, _actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Bob",
@@ -57,7 +57,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         })
 
       {:ok, grandparent_object} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "local" => true,
           "data" => %{
             "type" => "Note",
@@ -73,7 +73,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         })
 
       {:ok, parent_object} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "local" => true,
           "data" => %{
             "type" => "Note",
@@ -97,7 +97,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         })
 
       {:ok, note_object} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "local" => true,
           "data" => %{
             "type" => "Note",
@@ -114,7 +114,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         })
 
       {:ok, non_note_object} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "local" => true,
           "data" => %{
             "type" => "Wallah",

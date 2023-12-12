@@ -6,19 +6,18 @@ defmodule Kazarma do
   """
 
   def search_user("http://" <> _ = address) do
-    ActivityPub.Actor.get_or_fetch_by_ap_id(address)
+    ActivityPub.Actor.get_cached_or_fetch(ap_id: address)
   end
 
   def search_user("https://" <> _ = address) do
-    ActivityPub.Actor.get_or_fetch_by_ap_id(address)
+    ActivityPub.Actor.get_cached_or_fetch(ap_id: address)
   end
 
   def search_user(username) do
     if String.match?(username, ~r/@[a-z0-9_.\-=]+:[a-z0-9\.-]+/) do
       Kazarma.Address.matrix_id_to_actor(username)
     else
-      String.replace_prefix(username, "@", "")
-      |> ActivityPub.Actor.get_or_fetch_by_username()
+      ActivityPub.Actor.get_cached_or_fetch(username: String.replace_prefix(username, "@", ""))
     end
   end
 end

@@ -43,7 +43,7 @@ defmodule Kazarma.Address do
       )
 
   def relay_actor do
-    {:ok, actor} = ActivityPub.Actor.get_cached_by_ap_id(relay_ap_id())
+    {:ok, actor} = ActivityPub.Actor.get_cached(ap_id: relay_ap_id())
     actor
   end
 
@@ -141,7 +141,7 @@ defmodule Kazarma.Address do
   end
 
   def ap_id_to_matrix(ap_id, types \\ [:remote_matrix, :local_matrix, :activity_pub]) do
-    case Actor.get_cached_by_ap_id(ap_id) do
+    case Actor.get_cached(ap_id: ap_id) do
       {:ok, %Actor{username: username}} ->
         ap_username_to_matrix_id(username, types)
 
@@ -222,7 +222,7 @@ defmodule Kazarma.Address do
   def matrix_id_to_actor(matrix_id, types \\ [:activity_pub, :local_matrix, :remote_matrix]) do
     case matrix_id_to_ap_username(matrix_id, types) do
       {:ok, username} ->
-        Actor.get_or_fetch_by_username(username)
+        Actor.get_cached_or_fetch(username: username)
 
       error ->
         error

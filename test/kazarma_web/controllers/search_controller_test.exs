@@ -10,7 +10,7 @@ defmodule KazarmaWeb.SearchControllerTest do
     # {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
 
     {:ok, actor} =
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         "data" => %{
           "type" => "Person",
           "name" => "Alice",

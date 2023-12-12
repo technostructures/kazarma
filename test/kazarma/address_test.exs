@@ -224,7 +224,7 @@ defmodule Kazarma.AddressTest do
   describe "matrix_id_to_actor" do
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
