@@ -7,7 +7,7 @@ defmodule KazarmaWeb.SearchControllerTest do
   setup :verify_on_exit!
 
   setup do
-    # {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+    # {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
     {:ok, actor} =
       ActivityPub.Object.do_insert(%{

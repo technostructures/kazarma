@@ -35,7 +35,7 @@ defmodule Kazarma.ActivityPub.Actor do
     avatar_url =
       profile["avatar_url"] && Kazarma.Matrix.Client.get_media_url(profile["avatar_url"])
 
-    {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+    {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
     build_actor(localpart, ap_id, profile["displayname"], avatar_url, keys)
   end
 
@@ -71,7 +71,7 @@ defmodule Kazarma.ActivityPub.Actor do
 
   def build_relay_actor do
     ap_id = Address.relay_ap_id()
-    {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+    {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
     %Actor{
       local: true,

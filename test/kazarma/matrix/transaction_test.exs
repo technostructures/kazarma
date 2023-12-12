@@ -205,7 +205,7 @@ defmodule Kazarma.Matrix.TransactionTest do
     end
 
     setup do
-      {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
       {:ok, _user} =
         Bridge.create_user(%{

@@ -16,7 +16,7 @@ defmodule KazarmaWeb.ObjectTest do
     setup :verify_on_exit!
 
     setup do
-      {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
       {:ok, _user} =
         Bridge.create_user(%{

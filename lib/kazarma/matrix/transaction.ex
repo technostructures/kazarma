@@ -241,7 +241,7 @@ defmodule Kazarma.Matrix.Transaction do
         to: [actor.data["followers"], "https://www.w3.org/ns/activitystreams#Public"],
         cc: [],
         actor: actor,
-        object: ActivityPubWeb.ActorView.render("actor.json", %{actor: actor})
+        object: ActivityPub.Web.ActorView.render("actor.json", %{actor: actor})
       }
       |> Kazarma.ActivityPub.update()
 
