@@ -5,7 +5,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   Implementation of `ActivityPub.Adapter`.
   """
   use Kazarma.Config
-  @behaviour ActivityPub.Adapter
+  @behaviour ActivityPub.Federator.Adapter
 
   alias Kazarma.Address
   alias Kazarma.Bridge
@@ -17,7 +17,7 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   require Logger
 
-  @impl ActivityPub.Adapter
+  @impl true
   def actor_url(actor) do
     Routes.activity_pub_url(Endpoint, :actor, server_for_url(actor), Address.localpart(actor))
   end
@@ -29,7 +29,9 @@ defmodule Kazarma.ActivityPub.Adapter do
   defp server_for_url(%Actor{local: true}), do: "-"
   defp server_for_url(%Actor{local: false} = actor), do: Address.server(actor)
 
-  @impl ActivityPub.Adapter
+  def federate_actor?(_, _, _), do: true
+
+  @impl true
   def context_url(uuid, actor) do
     Routes.activity_pub_url(
       Endpoint,
@@ -41,7 +43,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     )
   end
 
-  @impl ActivityPub.Adapter
+  @impl true
   def object_url(%{id: uuid, data: %{"type" => type}}, actor) do
     Routes.activity_pub_url(
       Endpoint,
@@ -64,14 +66,14 @@ defmodule Kazarma.ActivityPub.Adapter do
     )
   end
 
-  @impl ActivityPub.Adapter
+  @impl true
   def get_actor_by_username(username) do
     Logger.debug("asked for local Matrix user #{username}")
 
     Kazarma.ActivityPub.Actor.get_local_actor(username)
   end
 
-  @impl ActivityPub.Adapter
+  @impl true
   def update_local_actor(%Actor{} = actor, data) do
     Logger.debug("Kazarma.ActivityPub.Adapter.update_local_actor/2")
     Logger.error("this should no longer happen")
@@ -81,13 +83,13 @@ defmodule Kazarma.ActivityPub.Adapter do
     {:ok, actor}
   end
 
-  @impl ActivityPub.Adapter
+  @impl true
   def maybe_create_remote_actor(
         %Actor{
           username: username,
           ap_id: ap_id,
           data: %{"name" => name} = data
-        } = _actor
+        } = actor
       ) do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
@@ -111,27 +113,29 @@ defmodule Kazarma.ActivityPub.Adapter do
         type: :matrix
       )
 
-      :ok
+      {:ok, actor}
     else
       {:error, _code, %{"error" => error}} ->
         Logger.error(error)
+        {:ok, actor}
 
       {:error, error} ->
         Logger.error(error)
+        {:ok, actor}
 
       {:ok, _} ->
-        :ok
+        {:ok, actor}
 
       :ok ->
-        :ok
+        {:ok, actor}
 
       other ->
         Logger.debug(inspect(other))
-        :ok
+        {:ok, actor}
     end
   end
 
-  @impl ActivityPub.Adapter
+  @impl true
   def update_remote_actor(
         %Ecto.Changeset{changes: %{data: changes}, data: %{data: previous}} = changeset
       ) do
@@ -154,7 +158,7 @@ defmodule Kazarma.ActivityPub.Adapter do
   def update_remote_actor(_), do: :ok
 
   # @TODO: dispatch depending of existing Room record
-  @impl ActivityPub.Adapter
+  @impl true
   def handle_activity(
         %{
           data: %{"type" => "Create", "to" => to}
@@ -489,16 +493,51 @@ defmodule Kazarma.ActivityPub.Adapter do
     raise "get_redirect_url/1: not implemented"
   end
 
-  @impl ActivityPub.Adapter
+  @impl true
   def actor_html(conn, _username) do
     # KazarmaWeb.ActorController.show(conn, %{"username" => username})
     conn
   end
 
-  @impl ActivityPub.Adapter
+  @impl true
   def object_html(conn, _uuid) do
     # KazarmaWeb.ObjectController.show(conn, %{"uuid" => uuid})
     conn
+  end
+
+  @impl true
+  def external_followers_for_activity(_actor, _activity) do
+    {:ok, []}
+    # raise "external_followers_for_activity/2: not implemented"
+  end
+
+  @impl true
+  def get_actor_by_ap_id(ap_id) do
+    Logger.warning("get_actor_by_ap_id called (#{ap_id})")
+    %URI{host: host, path: path} = URI.parse(ap_id)
+
+    case Phoenix.Router.route_info(KazarmaWeb.Router, "GET", path, host) do
+      %{path_params: %{"server" => "-", "localpart" => localpart}} ->
+        get_actor_by_username(localpart)
+
+      _ ->
+        nil
+    end
+  end
+
+  @impl true
+  def get_locale() do
+    "und"
+  end
+
+  @impl true
+  def get_or_create_service_actor() do
+    Kazarma.ActivityPub.Actor.get_relay_actor()
+  end
+
+  @impl true
+  def maybe_publish_object(_object, _manually_fetching?) do
+    raise "maybe_publish_object/2: not implemented"
   end
 
   defp set_if_changed(previous_value, new_value, _update_fun)
