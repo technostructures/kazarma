@@ -47,13 +47,13 @@ defmodule Kazarmaweb.Components.ActivityListTests do
             "type" => "Person",
             "name" => "Bob",
             "preferredUsername" => "bob",
-            "url" => "http://kazarma/-/pub/actors/bob",
-            "id" => "http://kazarma/-/pub/actors/bob",
-            "username" => "bob@kazarma/-"
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
           },
           "local" => false,
           "public" => true,
-          "actor" => "http://kazarma/-/pub/actors/bob"
+          "actor" => "http://kazarma/-/bob"
         })
 
       {:ok, grandparent_object} =
@@ -145,18 +145,6 @@ defmodule Kazarmaweb.Components.ActivityListTests do
       note_object: note_object,
       grand_parent_object: grandparent_object
     } do
-      Kazarma.Matrix.TestClient
-      |> expect(:get_profile, 2, fn
-        "@bob:kazarma" ->
-          {:ok, %{"displayname" => "Bob", "avatar_url" => "mxc://server/new_avatar"}}
-
-        "@alice:kazarma" ->
-          {:ok, %{"displayname" => "Alice"}}
-      end)
-      |> expect(:client, fn ->
-        %{base_url: "http://matrix"}
-      end)
-
       render_component(&ActivityList.show/1, %{
         previous_objects: [grandparent_object],
         next_objects: [note_object],
@@ -188,12 +176,6 @@ defmodule Kazarmaweb.Components.ActivityListTests do
       actor_data: actor_data,
       non_note_object: non_note_object
     } do
-      Kazarma.Matrix.TestClient
-      |> expect(:get_profile, 1, fn
-        "@alice:kazarma" ->
-          {:ok, %{"displayname" => "Alice"}}
-      end)
-
       render_component(&ActivityList.show/1, %{
         actor: actor_data,
         previous_objects: [non_note_object],

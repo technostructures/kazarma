@@ -694,6 +694,8 @@ defmodule Kazarma.Matrix.TransactionTest do
           }
         })
 
+      ActivityPub.Object.do_insert(%{data: %{"id" => "http://pleroma/objects/reply_to"}})
+
       {:ok, _event} =
         Bridge.create_event(%{
           local_id: "reply_to_id",

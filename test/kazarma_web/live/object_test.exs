@@ -98,6 +98,21 @@ defmodule KazarmaWeb.ObjectTest do
         }
       })
 
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://kazarma/-/alice",
+            "id" => "http://kazarma/-/alice",
+            "username" => "alice@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/alice"
+        })
+
       {:ok, actor} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
@@ -111,6 +126,21 @@ defmodule KazarmaWeb.ObjectTest do
           "local" => false,
           "public" => true,
           "actor" => "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://pleroma/pub/actors/bob",
+            "id" => "http://pleroma/pub/actors/bob",
+            "username" => "bob@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/bob"
         })
 
       actor

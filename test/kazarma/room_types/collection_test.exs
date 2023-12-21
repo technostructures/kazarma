@@ -43,39 +43,42 @@ defmodule Kazarma.Matrix.CollectionTest do
 
     setup do
       {:ok, actor} =
+        {:ok, _actor} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
-            "type" => "Group",
-            "name" => "Group",
-            "preferredUsername" => "group",
-            "url" => "http://mobilizon/@group",
-            "id" => "http://mobilizon/@group",
-            "username" => "group",
-            "members" => "http://mobilizon/@group/members",
-            "endpoints" => %{"members" => "http://mobilizon/@group/members"}
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
           },
-          "local" => false,
-          "actor" => "http://mobilizon/@group",
-          "username" => "group"
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/bob"
         })
+
+      ActivityPub.Object.do_insert(%{
+        "data" => %{
+          "type" => "Group",
+          "name" => "Group",
+          "preferredUsername" => "group",
+          "url" => "http://mobilizon/@group",
+          "id" => "http://mobilizon/@group",
+          "username" => "group",
+          "members" => "http://mobilizon/@group/members",
+          "endpoints" => %{"members" => "http://mobilizon/@group/members"}
+        },
+        "local" => false,
+        "actor" => "http://mobilizon/@group",
+        "username" => "group"
+      })
 
       {:ok, actor: actor}
     end
 
     test "when receiving a Invite activity for a Matrix user it invites them to the collection room" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:register, fn
-        [
-          username: "_ap_group___mobilizon",
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => "_ap_group___mobilizon:kazarma"}}
-      end)
       |> expect(:create_room, fn
         [
           visibility: :private,
@@ -120,15 +123,6 @@ defmodule Kazarma.Matrix.CollectionTest do
       Kazarma.Matrix.TestClient
       |> expect(:get_profile, fn "@bob:kazarma" ->
         {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:register, fn
-        [
-          username: "_ap_group___mobilizon",
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => "_ap_group___mobilizon:kazarma"}}
       end)
 
       Kazarma.ActivityPub.TestServer
@@ -188,6 +182,21 @@ defmodule Kazarma.Matrix.CollectionTest do
     end
 
     setup do
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/bob"
+        })
+
       {:ok, actor} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
@@ -209,18 +218,6 @@ defmodule Kazarma.Matrix.CollectionTest do
 
     test "when receiving a Remove/Invite activity for a Matrix user in a collection room it kicks them" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:register, fn
-        [
-          username: "_ap_group___mobilizon",
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => "_ap_group___mobilizon:kazarma"}}
-      end)
       |> expect(:send_state_event, fn
         "!room:kazarma",
         "m.room.member",
@@ -330,23 +327,6 @@ defmodule Kazarma.Matrix.CollectionTest do
 
     test "when receiving a Note activity creating a discussion it forwards the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, 2, fn
-        [
-          username: "_ap_alice___mobilizon",
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => "_ap_alice___mobilizon:kazarma"}}
-
-        [
-          username: "_ap_group___mobilizon",
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => "_ap_group___mobilizon:kazarma"}}
-      end)
       |> expect(:get_state, fn
         "!room:kazarma",
         "m.room.member",
@@ -379,23 +359,6 @@ defmodule Kazarma.Matrix.CollectionTest do
 
     test "when receiving a Note activity continuing a discussion it forwards as a message with reply" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, 2, fn
-        [
-          username: "_ap_alice___mobilizon",
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => "_ap_alice___mobilizon:kazarma"}}
-
-        [
-          username: "_ap_group___mobilizon",
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => "_ap_group___mobilizon:kazarma"}}
-      end)
       |> expect(:get_state, fn
         "!room:kazarma",
         "m.room.member",
