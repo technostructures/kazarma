@@ -161,7 +161,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         %{href: "/-/alice", title: "@alice:kazarma"},
         "Alice"
       )
-      |> assert_html_include("div.avatar img", 1, %{
+      |> assert_html_include("div.avatar img", 3, %{
         src: "http://matrix/_matrix/media/r0/download/server/image_id",
         alt: "Alice's avatar"
       })
