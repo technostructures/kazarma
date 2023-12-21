@@ -113,7 +113,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
         :ok
       end)
 
-      assert :ok =
+      assert {:ok, _} =
                maybe_create_remote_actor(%ActivityPub.Actor{
                  username: "bob@pleroma",
                  ap_id: "http://pleroma/users/bob",
