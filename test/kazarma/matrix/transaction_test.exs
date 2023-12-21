@@ -1100,7 +1100,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           id: _,
           local: true,
           pointer_id: nil,
-          public: nil
+          public: false
         },
         true,
         %ActivityPub.Actor{

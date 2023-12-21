@@ -957,7 +957,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
             "id" => "http://kazarma/-/relay",
             "username" => "relay@kazarma"
           },
-          "local" => false,
+          "local" => true,
           "public" => true,
           "actor" => "http://kazarma/-/relay"
         })
