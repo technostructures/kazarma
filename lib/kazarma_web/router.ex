@@ -104,7 +104,7 @@ defmodule KazarmaWeb.Router do
     # get "/actors/:username/outbox", ActivityPubController, :noop
     get "/:server/:localpart/followers", ActivityPubController, :followers
     get "/:server/:localpart/following", ActivityPubController, :following
-    get "/:server/:localpart/outbox", ActivityPubController, :noop
+    get "/:server/:localpart/outbox", ActivityPubController, :outbox
   end
 
   # @TODO allow routes made for only local users

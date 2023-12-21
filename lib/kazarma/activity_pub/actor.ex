@@ -61,7 +61,7 @@ defmodule Kazarma.ActivityPub.Actor do
       "followers" => Routes.activity_pub_url(Endpoint, :followers, "-", local_username),
       "following" => Routes.activity_pub_url(Endpoint, :following, "-", local_username),
       "inbox" => Routes.activity_pub_url(Endpoint, :inbox, "-", local_username),
-      "outbox" => Routes.activity_pub_url(Endpoint, :noop, "-", local_username),
+      "outbox" => Routes.activity_pub_url(Endpoint, :outbox, "-", local_username),
       "manuallyApprovesFollowers" => false,
       endpoints: %{
         "sharedInbox" => Routes.activity_pub_url(Endpoint, :inbox)
@@ -96,7 +96,7 @@ defmodule Kazarma.ActivityPub.Actor do
       "followers" => Routes.activity_pub_url(Endpoint, :followers, "-", localpart),
       "following" => Routes.activity_pub_url(Endpoint, :following, "-", localpart),
       "inbox" => Routes.activity_pub_url(Endpoint, :inbox),
-      "outbox" => Routes.activity_pub_url(Endpoint, :noop, "-", localpart),
+      "outbox" => Routes.activity_pub_url(Endpoint, :outbox, "-", localpart),
       "manuallyApprovesFollowers" => false,
       endpoints: %{
         "sharedInbox" => Routes.activity_pub_url(Endpoint, :inbox)
