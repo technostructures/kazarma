@@ -73,7 +73,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
               :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
               "followers" => "http://kazarma/-/bob/followers",
-              "followings" => "http://kazarma/-/bob/following",
+              "following" => "http://kazarma/-/bob/following",
               "icon" => nil,
               "id" => "http://kazarma/-/bob",
               "inbox" => "http://kazarma/-/bob/inbox",
