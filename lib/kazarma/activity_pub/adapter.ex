@@ -381,7 +381,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           Logger.debug("unfollow back remote actor")
           {:ok, follower_actor} = ActivityPub.Actor.get_cached(ap_id: follower)
           Kazarma.ActivityPub.unfollow(%{actor: followed_actor, object: follower_actor})
-          {:ok, _} = Kazarma.RoomType.ApUser.deactivate_outbox(follower_actor)
+          Kazarma.RoomType.ApUser.deactivate_outbox(follower_actor)
         end
 
         :ok
