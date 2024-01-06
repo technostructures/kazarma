@@ -34,7 +34,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
                    "url" => "http://matrix/_matrix/media/r0/download/server/image_id"
                  },
                  "followers" => "http://kazarma/-/alice/followers",
-                 "followings" => "http://kazarma/-/alice/following",
+                 "following" => "http://kazarma/-/alice/following",
                  "inbox" => "http://kazarma/-/alice/inbox",
                  "outbox" => "http://kazarma/-/alice/outbox",
                  "manuallyApprovesFollowers" => false,
@@ -113,7 +113,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
         :ok
       end)
 
-      assert :ok =
+      assert {:ok, _} =
                maybe_create_remote_actor(%ActivityPub.Actor{
                  username: "bob@pleroma",
                  ap_id: "http://pleroma/users/bob",

@@ -11,8 +11,38 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
     setup :verify_on_exit!
 
     setup do
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/bob"
+        })
+
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Carole",
+            "preferredUsername" => "carole",
+            "url" => "http://kazarma/-/carole",
+            "id" => "http://kazarma/-/carole",
+            "username" => "carole@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/carole"
+        })
+
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -107,17 +137,6 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity for an existing conversation gets the corresponding room and forwards the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
       |> expect(:send_message, fn "!room:kazarma",
                                   {"hello \uFEFF", "hello"},
                                   [user_id: "@_ap_alice___pleroma:kazarma"] ->
@@ -147,21 +166,6 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity for an existing conversation with another mention for a Matrix it invites them" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
-      |> expect(:get_profile, 2, fn
-        "@bob:kazarma" ->
-          {:ok, %{"displayname" => "Bob"}}
-
-        "@carole:kazarma" ->
-          {:ok, %{"displayname" => "Carole"}}
-      end)
       |> expect(:send_state_event, fn
         "!room:kazarma",
         "m.room.member",
@@ -210,17 +214,6 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity for a first conversation creates a new room and sends forward the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
       |> expect(:create_room, fn
         [
           visibility: :private,
@@ -263,17 +256,6 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity with attachments and some text forwards the attachments and the text" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
       |> expect(:upload, 2, fn
         _examplejpg_data,
         [filename: "example.jpg", mimetype: "image/jpeg"],
@@ -321,17 +303,6 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity with attachments and no text forwards only the attachments" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
       |> expect(:upload, 2, fn
         _examplejpg_data,
         [filename: "example.jpg", mimetype: "image/jpeg"],
@@ -395,8 +366,23 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
           room_id: "!room:kazarma"
         })
 
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/bob"
+        })
+
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -435,17 +421,6 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity with a reply for an existing conversation gets the corresponding room and forwards the message with a reply" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
       |> expect(:send_message, fn "!room:kazarma",
                                   %{
                                     "msgtype" => "m.text",

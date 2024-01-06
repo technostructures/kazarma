@@ -7,9 +7,9 @@ defmodule KazarmaWeb.Actor do
 
   def get_actor(username) do
     if Application.get_env(:kazarma, :html_actor_view_include_remote, false) do
-      ActivityPub.Actor.get_or_fetch_by_username(username)
+      ActivityPub.Actor.get_cached_or_fetch(username: username)
     else
-      ActivityPub.Actor.get_cached_by_username(username)
+      ActivityPub.Actor.get_cached(username: username)
     end
   end
 

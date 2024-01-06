@@ -124,8 +124,7 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
             "type" => "Note"
           },
           to: ["https://www.w3.org/ns/activitystreams#Public"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "http://kazarma/-/bob/Note/1"}}}}
       end)
 
@@ -192,8 +191,7 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
             "type" => "Note"
           },
           to: ["https://www.w3.org/ns/activitystreams#Public", "http://kazarma/-/bob"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "http://kazarma/-/bob/Note/2"}}}}
       end)
 

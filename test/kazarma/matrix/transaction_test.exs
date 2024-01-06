@@ -205,7 +205,7 @@ defmodule Kazarma.Matrix.TransactionTest do
     end
 
     setup do
-      {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
       {:ok, _user} =
         Bridge.create_user(%{
@@ -390,7 +390,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
               "followers" => "http://kazarma/-/bob/followers",
-              "followings" => "http://kazarma/-/bob/following",
+              "following" => "http://kazarma/-/bob/following",
               "id" => "http://kazarma/-/bob",
               "inbox" => "http://kazarma/-/bob/inbox",
               "manuallyApprovesFollowers" => false,
@@ -414,8 +414,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             "type" => "ChatMessage"
           },
           to: ["alice@pleroma"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
@@ -446,7 +445,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
               "followers" => "http://kazarma/-/bob/followers",
-              "followings" => "http://kazarma/-/bob/following",
+              "following" => "http://kazarma/-/bob/following",
               "icon" => nil,
               "id" => "http://kazarma/-/bob",
               "inbox" => "http://kazarma/-/bob/inbox",
@@ -483,8 +482,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             "type" => "ChatMessage"
           },
           to: ["alice@pleroma"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
@@ -546,7 +544,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
               "followers" => "http://kazarma/-/bob/followers",
-              "followings" => "http://kazarma/-/bob/following",
+              "following" => "http://kazarma/-/bob/following",
               "id" => "http://kazarma/-/bob",
               "inbox" => "http://kazarma/-/bob/inbox",
               "manuallyApprovesFollowers" => false,
@@ -581,8 +579,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             ]
           },
           to: ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
@@ -626,7 +623,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
               "followers" => "http://kazarma/-/bob/followers",
-              "followings" => "http://kazarma/-/bob/following",
+              "following" => "http://kazarma/-/bob/following",
               "icon" => nil,
               "id" => "http://kazarma/-/bob",
               "inbox" => "http://kazarma/-/bob/inbox",
@@ -666,8 +663,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             "type" => "Note"
           },
           to: ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
@@ -697,6 +693,8 @@ defmodule Kazarma.Matrix.TransactionTest do
             "type" => "direct_message"
           }
         })
+
+      ActivityPub.Object.do_insert(%{data: %{"id" => "http://pleroma/objects/reply_to"}})
 
       {:ok, _event} =
         Bridge.create_event(%{
@@ -755,7 +753,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
               "followers" => "http://kazarma/-/bob/followers",
-              "followings" => "http://kazarma/-/bob/following",
+              "following" => "http://kazarma/-/bob/following",
               "id" => "http://kazarma/-/bob",
               "inbox" => "http://kazarma/-/bob/inbox",
               "manuallyApprovesFollowers" => false,
@@ -791,8 +789,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             ]
           },
           to: ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
@@ -818,7 +815,7 @@ defmodule Kazarma.Matrix.TransactionTest do
     setup :verify_on_exit!
 
     setup do
-      ActivityPub.Object.insert(%{data: %{"id" => "remote_id"}})
+      ActivityPub.Object.do_insert(%{data: %{"id" => "remote_id"}})
 
       {:ok, _event} =
         Bridge.create_event(%{
@@ -865,49 +862,51 @@ defmodule Kazarma.Matrix.TransactionTest do
 
       Kazarma.ActivityPub.TestServer
       |> expect(:follow, fn
-        %ActivityPub.Actor{
-          id: nil,
-          data: %{
-            :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
-            "capabilities" => %{"acceptsChatMessages" => true},
-            "followers" => "http://kazarma/-/bob/followers",
-            "followings" => "http://kazarma/-/bob/following",
-            "icon" => nil,
-            "id" => "http://kazarma/-/bob",
-            "inbox" => "http://kazarma/-/bob/inbox",
-            "manuallyApprovesFollowers" => false,
-            "name" => "Bob",
-            "outbox" => "http://kazarma/-/bob/outbox",
-            "preferredUsername" => "bob",
-            "type" => "Person"
+        %{
+          actor: %ActivityPub.Actor{
+            id: nil,
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/bob/followers",
+              "following" => "http://kazarma/-/bob/following",
+              "icon" => nil,
+              "id" => "http://kazarma/-/bob",
+              "inbox" => "http://kazarma/-/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Bob",
+              "outbox" => "http://kazarma/-/bob/outbox",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/bob",
+            username: "bob@kazarma",
+            deactivated: false,
+            pointer_id: nil
           },
-          local: true,
-          ap_id: "http://kazarma/-/bob",
-          username: "bob@kazarma",
-          deactivated: false,
-          pointer_id: nil
-        },
-        %ActivityPub.Actor{
-          id: nil,
-          data: %{
-            :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
-            "capabilities" => %{"acceptsChatMessages" => true},
-            "followers" => "http://kazarma/-/alice/followers",
-            "followings" => "http://kazarma/-/alice/following",
-            "icon" => nil,
-            "id" => "http://kazarma/-/alice",
-            "inbox" => "http://kazarma/-/alice/inbox",
-            "manuallyApprovesFollowers" => false,
-            "name" => "Alice",
-            "outbox" => "http://kazarma/-/alice/outbox",
-            "preferredUsername" => "alice",
-            "type" => "Person"
-          },
-          local: true,
-          ap_id: "http://kazarma/-/alice",
-          username: "alice@kazarma",
-          deactivated: false,
-          pointer_id: nil
+          object: %ActivityPub.Actor{
+            id: nil,
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/alice/followers",
+              "following" => "http://kazarma/-/alice/following",
+              "icon" => nil,
+              "id" => "http://kazarma/-/alice",
+              "inbox" => "http://kazarma/-/alice/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Alice",
+              "outbox" => "http://kazarma/-/alice/outbox",
+              "preferredUsername" => "alice",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/alice",
+            username: "alice@kazarma",
+            deactivated: false,
+            pointer_id: nil
+          }
         } ->
           {:ok}
       end)
@@ -937,7 +936,7 @@ defmodule Kazarma.Matrix.TransactionTest do
     setup :verify_on_exit!
 
     setup do
-      ActivityPub.Object.insert(%{data: %{"id" => "remote_id"}})
+      ActivityPub.Object.do_insert(%{data: %{"id" => "remote_id"}})
 
       {:ok, _event} =
         Bridge.create_event(%{
@@ -984,49 +983,51 @@ defmodule Kazarma.Matrix.TransactionTest do
 
       Kazarma.ActivityPub.TestServer
       |> expect(:unfollow, fn
-        %ActivityPub.Actor{
-          id: nil,
-          data: %{
-            :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
-            "capabilities" => %{"acceptsChatMessages" => true},
-            "followers" => "http://kazarma/-/bob/followers",
-            "followings" => "http://kazarma/-/bob/following",
-            "icon" => nil,
-            "id" => "http://kazarma/-/bob",
-            "inbox" => "http://kazarma/-/bob/inbox",
-            "manuallyApprovesFollowers" => false,
-            "name" => "Bob",
-            "outbox" => "http://kazarma/-/bob/outbox",
-            "preferredUsername" => "bob",
-            "type" => "Person"
+        %{
+          actor: %ActivityPub.Actor{
+            id: nil,
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/bob/followers",
+              "following" => "http://kazarma/-/bob/following",
+              "icon" => nil,
+              "id" => "http://kazarma/-/bob",
+              "inbox" => "http://kazarma/-/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Bob",
+              "outbox" => "http://kazarma/-/bob/outbox",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/bob",
+            username: "bob@kazarma",
+            deactivated: false,
+            pointer_id: nil
           },
-          local: true,
-          ap_id: "http://kazarma/-/bob",
-          username: "bob@kazarma",
-          deactivated: false,
-          pointer_id: nil
-        },
-        %ActivityPub.Actor{
-          id: nil,
-          data: %{
-            :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
-            "capabilities" => %{"acceptsChatMessages" => true},
-            "followers" => "http://kazarma/-/alice/followers",
-            "followings" => "http://kazarma/-/alice/following",
-            "icon" => nil,
-            "id" => "http://kazarma/-/alice",
-            "inbox" => "http://kazarma/-/alice/inbox",
-            "manuallyApprovesFollowers" => false,
-            "name" => "Alice",
-            "outbox" => "http://kazarma/-/alice/outbox",
-            "preferredUsername" => "alice",
-            "type" => "Person"
-          },
-          local: true,
-          ap_id: "http://kazarma/-/alice",
-          username: "alice@kazarma",
-          deactivated: false,
-          pointer_id: nil
+          object: %ActivityPub.Actor{
+            id: nil,
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/alice/followers",
+              "following" => "http://kazarma/-/alice/following",
+              "icon" => nil,
+              "id" => "http://kazarma/-/alice",
+              "inbox" => "http://kazarma/-/alice/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Alice",
+              "outbox" => "http://kazarma/-/alice/outbox",
+              "preferredUsername" => "alice",
+              "type" => "Person"
+            },
+            local: true,
+            ap_id: "http://kazarma/-/alice",
+            username: "alice@kazarma",
+            deactivated: false,
+            pointer_id: nil
+          }
         } ->
           {:ok}
       end)
@@ -1056,7 +1057,7 @@ defmodule Kazarma.Matrix.TransactionTest do
     setup :verify_on_exit!
 
     setup do
-      ActivityPub.Object.insert(%{data: %{"id" => "remote_id"}})
+      ActivityPub.Object.do_insert(%{data: %{"id" => "remote_id"}})
 
       {:ok, _event} =
         Bridge.create_event(%{
@@ -1099,7 +1100,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           id: _,
           local: true,
           pointer_id: nil,
-          public: nil
+          public: false
         },
         true,
         %ActivityPub.Actor{
@@ -1108,7 +1109,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
             "capabilities" => %{"acceptsChatMessages" => true},
             "followers" => "http://kazarma/-/bob/followers",
-            "followings" => "http://kazarma/-/bob/following",
+            "following" => "http://kazarma/-/bob/following",
             "icon" => nil,
             "id" => "http://kazarma/-/bob",
             "inbox" => "http://kazarma/-/bob/inbox",
@@ -1201,7 +1202,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
               "followers" => "http://kazarma/-/bob/followers",
-              "followings" => "http://kazarma/-/bob/following",
+              "following" => "http://kazarma/-/bob/following",
               "id" => "http://kazarma/-/bob",
               "inbox" => "http://kazarma/-/bob/inbox",
               "manuallyApprovesFollowers" => false,
@@ -1230,8 +1231,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             ]
           },
           to: ["alice@pleroma"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 
@@ -1281,7 +1281,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
               "followers" => "http://kazarma/-/bob/followers",
-              "followings" => "http://kazarma/-/bob/following",
+              "following" => "http://kazarma/-/bob/following",
               "id" => "http://kazarma/-/bob",
               "inbox" => "http://kazarma/-/bob/inbox",
               "manuallyApprovesFollowers" => false,
@@ -1307,8 +1307,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             "type" => "ChatMessage"
           },
           to: ["alice@pleroma"]
-        },
-        nil ->
+        } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => "object_id"}}}}
       end)
 

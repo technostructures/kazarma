@@ -75,7 +75,7 @@ defmodule Kazarma.Matrix.Client do
   end
 
   def upload_media(matrix_id, url) do
-    {:ok, %Tesla.Env{body: image_bin}} = ActivityPub.HTTP.get(url)
+    {:ok, %Tesla.Env{body: image_bin}} = ActivityPub.Federator.HTTP.get(url)
     filename = Path.basename(url)
     mimetype = MIME.from_path(filename)
 
@@ -545,7 +545,7 @@ defmodule Kazarma.Matrix.Client do
   defp msgtype_for_mimetype(_), do: "m.file"
 
   defp download_file(url) do
-    case ActivityPub.HTTP.get(url) do
+    case ActivityPub.Federator.HTTP.get(url) do
       {:ok, %Tesla.Env{body: file_bin}} -> {:ok, file_bin}
       error -> error
     end

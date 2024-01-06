@@ -11,8 +11,23 @@ defmodule Kazarma.RoomTypes.ChatTest do
     setup :verify_on_exit!
 
     setup do
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/bob"
+        })
+
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -77,22 +92,6 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity for a first conversation creates a new room and sends forward the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "@_ap_alice___pleroma:kazarma"}}
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:put_displayname, fn "@_ap_alice___pleroma:kazarma",
-                                     "Alice",
-                                     user_id: "@_ap_alice___pleroma:kazarma" ->
-        :ok
-      end)
       |> expect(:get_data, 2, fn
         "@_ap_alice___pleroma:kazarma", "m.direct", user_id: "@_ap_alice___pleroma:kazarma" ->
           {:ok, %{}}
@@ -150,22 +149,6 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity for an existing conversation gets the corresponding room and forwards the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "@_ap_alice___pleroma:kazarma"}}
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:put_displayname, fn "@_ap_alice___pleroma:kazarma",
-                                     "Alice",
-                                     user_id: "@_ap_alice___pleroma:kazarma" ->
-        :ok
-      end)
       |> expect(:get_data, fn "@_ap_alice___pleroma:kazarma",
                               "m.direct",
                               user_id: "@_ap_alice___pleroma:kazarma" ->
@@ -195,17 +178,6 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity with an attachement and some text forwards both the attachment and the text" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
       |> expect(:get_data, fn "@_ap_alice___pleroma:kazarma",
                               "m.direct",
                               user_id: "@_ap_alice___pleroma:kazarma" ->
@@ -242,17 +214,6 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity with an attachement and no text forwards only the attachment" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
       |> expect(:get_data, fn "@_ap_alice___pleroma:kazarma",
                               "m.direct",
                               user_id: "@_ap_alice___pleroma:kazarma" ->

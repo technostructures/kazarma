@@ -16,7 +16,7 @@ defmodule KazarmaWeb.ObjectTest do
     setup :verify_on_exit!
 
     setup do
-      {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
       {:ok, _user} =
         Bridge.create_user(%{
@@ -33,7 +33,7 @@ defmodule KazarmaWeb.ObjectTest do
           }
         })
 
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         public: true,
         local: true,
         data: %{
@@ -45,7 +45,7 @@ defmodule KazarmaWeb.ObjectTest do
         }
       })
 
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         public: true,
         local: true,
         data: %{
@@ -59,7 +59,7 @@ defmodule KazarmaWeb.ObjectTest do
       })
 
       {:ok, local_note} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           public: true,
           local: true,
           data: %{
@@ -72,7 +72,7 @@ defmodule KazarmaWeb.ObjectTest do
           }
         })
 
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         public: true,
         local: true,
         data: %{
@@ -85,7 +85,7 @@ defmodule KazarmaWeb.ObjectTest do
         }
       })
 
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         public: true,
         local: true,
         data: %{
@@ -98,8 +98,23 @@ defmodule KazarmaWeb.ObjectTest do
         }
       })
 
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://kazarma/-/alice",
+            "id" => "http://kazarma/-/alice",
+            "username" => "alice@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/alice"
+        })
+
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -113,12 +128,27 @@ defmodule KazarmaWeb.ObjectTest do
           "actor" => "http://pleroma/pub/actors/alice"
         })
 
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://pleroma/pub/actors/bob",
+            "id" => "http://pleroma/pub/actors/bob",
+            "username" => "bob@pleroma"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://pleroma/pub/actors/bob"
+        })
+
       actor
       |> ActivityPub.Actor.format_remote_actor()
       |> ActivityPub.Actor.set_cache()
 
       {:ok, remote_note} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           public: true,
           local: false,
           data: %{

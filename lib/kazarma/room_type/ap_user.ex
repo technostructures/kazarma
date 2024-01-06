@@ -174,7 +174,7 @@ defmodule Kazarma.RoomType.ApUser do
   end
 
   def create_outbox(ap_id) when is_binary(ap_id) do
-    case ActivityPub.Actor.get_cached_by_ap_id(ap_id) do
+    case ActivityPub.Actor.get_cached(ap_id: ap_id) do
       {:ok, actor} -> create_outbox(actor)
       error -> error
     end

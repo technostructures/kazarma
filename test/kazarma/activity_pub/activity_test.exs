@@ -23,6 +23,21 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     end
 
     setup do
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/bob"
+        })
+
       {:ok, _event} =
         Bridge.create_event(%{
           local_id: "local_id",
@@ -35,9 +50,6 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "when receiving a Delete activity for an existing object, gets the corresponding ids and forwards the redact event" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
       |> expect(:redact_message, fn "!room:kazarma", "local_id", nil, user_id: "@bob:kazarma" ->
         {:ok, "delete_event_id"}
       end)
@@ -65,7 +77,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     setup do
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -123,14 +135,6 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "it converts attachment" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
       |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
         :ok
       end)
@@ -173,8 +177,23 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     setup :verify_on_exit!
 
     setup do
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/bob"
+        })
+
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -224,19 +243,8 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "it converts mentions" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
       |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
         :ok
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
       end)
       |> expect(:send_state_event, fn
         "!room:kazarma",
@@ -312,8 +320,23 @@ defmodule Kazarma.ActivityPub.ActivityTest do
           }
         })
 
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/bob"
+        })
+
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -332,17 +355,6 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "when receiving a Block activity for a Matrix user it ignores the user and bans them from the actor room" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
       |> expect(:get_data, fn
         "@_ap_alice___pleroma:kazarma",
         "m.ignored_user_list",
@@ -369,17 +381,6 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "when receiving a Undo/Block activity for a Matrix user it unignores the user and unbans them from the actor room" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:register, fn [
-                                username: "_ap_alice___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "_ap_alice___pleroma:kazarma"}}
-      end)
       |> expect(:get_data, fn
         "@_ap_alice___pleroma:kazarma",
         "m.ignored_user_list",
@@ -409,6 +410,25 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     setup :set_mox_from_context
     setup :verify_on_exit!
 
+    setup do
+      {:ok, _actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/bob"
+        })
+
+      :ok
+    end
+
     def follow_fixture do
       %ActivityPub.Object{
         data: %{
@@ -435,11 +455,6 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     end
 
     test "when receiving a Follow activity for a Matrix user it accepts the follow" do
-      Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-
       Kazarma.ActivityPub.TestServer
       |> expect(:accept, fn
         %{
@@ -455,12 +470,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
             username: "bob@kazarma",
             deactivated: false
           },
-          object: %{
-            "actor" => "http://pleroma/pub/actors/alice",
-            "id" => "follow_object_id",
-            "object" => "http://kazarma/-/bob",
-            "type" => "Follow"
-          },
+          object: "follow_object_id",
           to: ["http://pleroma/pub/actors/alice"]
         } ->
           :ok
@@ -470,11 +480,6 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     end
 
     test "when receiving a Undo/Follow activity for a Matrix user it does nothing" do
-      Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-
       assert :ok == handle_activity(unfollow_fixture())
     end
   end

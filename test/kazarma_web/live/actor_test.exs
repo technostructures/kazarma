@@ -16,7 +16,7 @@ defmodule KazarmaWeb.ActorTest do
     setup :verify_on_exit!
 
     setup do
-      {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
       {:ok, _user} =
         Bridge.create_user(%{
@@ -33,7 +33,7 @@ defmodule KazarmaWeb.ActorTest do
           }
         })
 
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         data: %{
           "id" => "http://kazarma/-/alice/note/note1",
           "actor" => "http://kazarma/-/alice",
@@ -43,7 +43,7 @@ defmodule KazarmaWeb.ActorTest do
         }
       })
 
-      ActivityPub.Object.insert(%{
+      ActivityPub.Object.do_insert(%{
         data: %{
           "id" => "http://kazarma/-/alice/note/note2",
           "actor" => "http://kazarma/-/alice",
@@ -109,10 +109,10 @@ defmodule KazarmaWeb.ActorTest do
     setup :verify_on_exit!
 
     setup do
-      # {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+      # {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",
@@ -265,10 +265,10 @@ defmodule KazarmaWeb.ActorTest do
     setup :verify_on_exit!
 
     setup do
-      # {:ok, keys} = ActivityPub.Keys.generate_rsa_pem()
+      # {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
       {:ok, actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Alice",

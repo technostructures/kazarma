@@ -16,7 +16,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
 
     setup do
       {:ok, %ActivityPub.Object{data: data}} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           local: true,
           deactivated: false,
           username: "alice@kazarma",
@@ -31,7 +31,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
               "url" => "http://matrix/_matrix/media/r0/download/server/image_id"
             },
             "followers" => "http://kazarma/-/alice/followers",
-            "followings" => "http://kazarma/-/alice/following",
+            "following" => "http://kazarma/-/alice/following",
             "inbox" => "http://kazarma/-/alice/inbox",
             "outbox" => "http://kazarma/-/alice/outbox",
             "manuallyApprovesFollowers" => false,
@@ -42,22 +42,22 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         })
 
       {:ok, _actor} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
             "name" => "Bob",
             "preferredUsername" => "bob",
-            "url" => "http://kazarma/-/pub/actors/bob",
-            "id" => "http://kazarma/-/pub/actors/bob",
-            "username" => "bob@kazarma/-"
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
           },
           "local" => false,
           "public" => true,
-          "actor" => "http://kazarma/-/pub/actors/bob"
+          "actor" => "http://kazarma/-/bob"
         })
 
       {:ok, grandparent_object} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "local" => true,
           "data" => %{
             "type" => "Note",
@@ -73,7 +73,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         })
 
       {:ok, parent_object} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "local" => true,
           "data" => %{
             "type" => "Note",
@@ -97,7 +97,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         })
 
       {:ok, note_object} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "local" => true,
           "data" => %{
             "type" => "Note",
@@ -114,7 +114,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         })
 
       {:ok, non_note_object} =
-        ActivityPub.Object.insert(%{
+        ActivityPub.Object.do_insert(%{
           "local" => true,
           "data" => %{
             "type" => "Wallah",
@@ -145,18 +145,6 @@ defmodule Kazarmaweb.Components.ActivityListTests do
       note_object: note_object,
       grand_parent_object: grandparent_object
     } do
-      Kazarma.Matrix.TestClient
-      |> expect(:get_profile, 2, fn
-        "@bob:kazarma" ->
-          {:ok, %{"displayname" => "Bob", "avatar_url" => "mxc://server/new_avatar"}}
-
-        "@alice:kazarma" ->
-          {:ok, %{"displayname" => "Alice"}}
-      end)
-      |> expect(:client, fn ->
-        %{base_url: "http://matrix"}
-      end)
-
       render_component(&ActivityList.show/1, %{
         previous_objects: [grandparent_object],
         next_objects: [note_object],
@@ -173,7 +161,7 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         %{href: "/-/alice", title: "@alice:kazarma"},
         "Alice"
       )
-      |> assert_html_include("div.avatar img", 1, %{
+      |> assert_html_include("div.avatar img", 3, %{
         src: "http://matrix/_matrix/media/r0/download/server/image_id",
         alt: "Alice's avatar"
       })
@@ -188,12 +176,6 @@ defmodule Kazarmaweb.Components.ActivityListTests do
       actor_data: actor_data,
       non_note_object: non_note_object
     } do
-      Kazarma.Matrix.TestClient
-      |> expect(:get_profile, 1, fn
-        "@alice:kazarma" ->
-          {:ok, %{"displayname" => "Alice"}}
-      end)
-
       render_component(&ActivityList.show/1, %{
         actor: actor_data,
         previous_objects: [non_note_object],

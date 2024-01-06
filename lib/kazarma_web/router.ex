@@ -5,7 +5,7 @@ defmodule KazarmaWeb.Router do
   use KazarmaWeb, :router
 
   use MatrixAppServiceWeb.Routes
-  # use ActivityPubWeb.Router
+  # use ActivityPub.Web.Router
 
   pipeline :accepts_html do
     plug(:accepts, ["html"])
@@ -84,16 +84,16 @@ defmodule KazarmaWeb.Router do
 
   pipeline :signed_activity_pub do
     plug(:accepts, ["activity+json", "json"])
-    plug(ActivityPubWeb.Plugs.HTTPSignaturePlug)
+    plug(ActivityPub.Web.Plugs.HTTPSignaturePlug)
   end
 
-  scope "/.well-known", ActivityPubWeb do
+  scope "/.well-known", ActivityPub.Web do
     pipe_through(:well_known)
 
     get "/webfinger", WebFingerController, :webfinger
   end
 
-  scope "/", ActivityPubWeb do
+  scope "/", ActivityPub.Web do
     pipe_through(:activity_pub)
     pipe_through(:correct_params)
 
@@ -104,7 +104,7 @@ defmodule KazarmaWeb.Router do
     # get "/actors/:username/outbox", ActivityPubController, :noop
     get "/:server/:localpart/followers", ActivityPubController, :followers
     get "/:server/:localpart/following", ActivityPubController, :following
-    get "/:server/:localpart/outbox", ActivityPubController, :noop
+    get "/:server/:localpart/outbox", ActivityPubController, :outbox
   end
 
   # @TODO allow routes made for only local users
@@ -120,14 +120,14 @@ defmodule KazarmaWeb.Router do
     live("/:server/:localpart", Actor, :actor, as: :activity_pub)
   end
 
-  scope "/", ActivityPubWeb do
+  scope "/", ActivityPub.Web do
     pipe_through(:correct_params)
     pipe_through(:signed_activity_pub)
 
     post "/:server/:localpart/inbox", ActivityPubController, :inbox
   end
 
-  scope "/", ActivityPubWeb do
+  scope "/", ActivityPub.Web do
     pipe_through(:signed_activity_pub)
 
     post "/shared_inbox", ActivityPubController, :inbox

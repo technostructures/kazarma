@@ -27,7 +27,7 @@ defmodule Kazarma.Commands do
          {:ok, true} <- {:ok, receiver_id != user_id},
          {:ok, sender} <- Address.matrix_id_to_actor(user_id),
          {:ok, receiver} <- Address.matrix_id_to_actor(receiver_id) do
-      Kazarma.ActivityPub.follow(sender, receiver)
+      Kazarma.ActivityPub.follow(%{actor: sender, object: receiver})
     else
       nil ->
         {:error, :room_type_should_be_ap_user_room, room_id}
@@ -45,7 +45,7 @@ defmodule Kazarma.Commands do
            Bridge.get_room_by_local_id(room_id),
          {:ok, sender} <- Address.matrix_id_to_actor(user_id),
          {:ok, receiver} <- Address.matrix_id_to_actor(receiver_id) do
-      Kazarma.ActivityPub.unfollow(sender, receiver)
+      Kazarma.ActivityPub.unfollow(%{actor: sender, object: receiver})
     else
       nil ->
         {:error, :room_type_should_be_ap_user_room, room_id}

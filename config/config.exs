@@ -61,12 +61,12 @@ config :activity_pub, :mrf_simple,
   banner_removal: []
 
 config :activity_pub, :instance,
-  federation_publisher_modules: [ActivityPubWeb.Publisher],
+  federation_publisher_modules: [ActivityPub.Federator.APPublisher],
   federation_reachability_timeout_days: 7,
   federating: true,
   rewrite_policy: []
 
-config :http_signatures, adapter: ActivityPub.Signature
+config :http_signatures, adapter: ActivityPub.Safety.Signatures
 config :tesla, adapter: Tesla.Adapter.Hackney
 
 config :activity_pub, :http,
@@ -98,6 +98,18 @@ config :kazarma, KazarmaWeb.Gettext, default_locale: "en", locales: ~w(en fr es 
 config :kazarma, bridge_remote_matrix_users: false
 
 config :kazarma, prefix_puppet_username: "_ap_"
+
+config :hammer,
+  backend: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]}
+
+config :activity_pub, :mrf_simple,
+  media_removal: [],
+  media_nsfw: [],
+  report_removal: [],
+  accept: [],
+  avatar_removal: [],
+  banner_removal: [],
+  reject: []
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
