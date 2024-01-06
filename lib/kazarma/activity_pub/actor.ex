@@ -149,7 +149,14 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_puppet_actor(username) do
-    case Kazarma.Address.ap_username_to_matrix_id(username, [:remote_matrix, :local_matrix]) do
+    user_scope =
+      if Application.get_env(:kazarma, :bridge_remote_matrix_users) do
+        [:remote_matrix, :local_matrix]
+      else
+        [:local_matrix]
+      end
+
+    case Kazarma.Address.ap_username_to_matrix_id(username, user_scope) do
       {:ok, matrix_id} ->
         case Bridge.get_user_by_local_id(matrix_id) do
           %{data: %{"ap_data" => ap_data, "keys" => keys}} ->

@@ -22,4 +22,8 @@ defmodule Kazarma.Config do
   def frontpage_after_text() do
     Application.get_env(:kazarma, :frontpage_after_text)
   end
+
+  def show_search_form() do
+    Application.get_env(:kazarma, :html_search)
+  end
 end

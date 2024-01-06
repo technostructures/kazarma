@@ -1,11 +1,12 @@
 <.form
   :let={f}
+  :if={Kazarma.Config.show_search_form()}
   for={%{}}
   action={Routes.search_path(@socket, :search)}
   as={:search}
   phx-submit="search"
   class="w-full"
-  id="search"
+  id="search-form"
 >
   <div class="flex flex-row items-center justify-between">
     <div class="flex-1 self-stretch">

@@ -67,7 +67,6 @@ config :kazarma, html_actor_view_include_remote: System.get_env("HTML_AP") == "t
 # Frontend configuration
 ########################
 
-# @TODO: document
 config :kazarma, frontpage_help: System.get_env("FRONTPAGE_HELP") != "false"
 config :kazarma, frontpage_before_text: System.get_env("FRONTPAGE_BEFORE_TEXT")
 config :kazarma, frontpage_after_text: System.get_env("FRONTPAGE_AFTER_TEXT")
