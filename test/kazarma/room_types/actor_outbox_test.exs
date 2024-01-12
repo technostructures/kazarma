@@ -15,9 +15,10 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
   # Those are accounts created on public ActivityPub instances
   @pleroma_user_server "pleroma.interhacker.space"
-  @pleroma_user_name "test_user_bob2"
-  @pleroma_user_displayname "Bob"
-  @pleroma_user_ap_id "https://pleroma.interhacker.space/users/test_user_bob2"
+  @pleroma_user_name "pierre"
+  @pleroma_user_displayname "Pierre"
+  @pleroma_user_full_username "pierre@pleroma.interhacker.space"
+  @pleroma_user_ap_id "https://pleroma.interhacker.space/users/pierre"
   @pleroma_puppet_username "_ap_#{@pleroma_user_name}___#{@pleroma_user_server}"
   @pleroma_puppet_address "@#{@pleroma_puppet_username}:kazarma"
 
@@ -95,25 +96,25 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",
             "content" =>
-              "<span class=\"h-card\"><a href=\"https://pleroma.interhacker.space/users/test_user_bob2\" class=\"u-url mention\">@<span>test_user_bob2@pleroma.interhacker.space</span></a></span>hello",
+              "<span class=\"h-card\"><a href=\"#{@pleroma_user_ap_id}\" class=\"u-url mention\">@<span>#{@pleroma_user_full_username}</span></a></span>hello",
             "context" => _,
             "conversation" => _,
             "tag" => [
               %{
-                "href" => "https://pleroma.interhacker.space/users/test_user_bob2",
-                "name" => "@test_user_bob2@pleroma.interhacker.space",
+                "href" => "#{@pleroma_user_ap_id}",
+                "name" => "@#{@pleroma_user_full_username}",
                 "type" => "Mention"
               }
             ],
             "to" => [
               "https://www.w3.org/ns/activitystreams#Public",
-              "https://pleroma.interhacker.space/users/test_user_bob2"
+              "#{@pleroma_user_ap_id}"
             ],
             "type" => "Note"
           },
           to: [
             "https://www.w3.org/ns/activitystreams#Public",
-            "https://pleroma.interhacker.space/users/test_user_bob2"
+            "#{@pleroma_user_ap_id}"
           ]
         } ->
           {:ok, %{object: %ActivityPub.Object{data: %{"id" => :object_id}}}}

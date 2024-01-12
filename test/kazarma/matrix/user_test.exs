@@ -7,7 +7,8 @@ defmodule Kazarma.Matrix.UserTest do
 
   # This is an account created on a public ActivityPub instance
   @ap_user_server "pleroma.interhacker.space"
-  @ap_user_name "test_user_bob2"
+  @ap_user_name "pierre"
+  @ap_user_displayname "Pierre"
   @ap_puppet_username "_ap_#{@ap_user_name}___#{@ap_user_server}"
   @ap_puppet_matrix_id "@#{@ap_puppet_username}:kazarma"
 
@@ -27,7 +28,7 @@ defmodule Kazarma.Matrix.UserTest do
           {:ok, %{"user_id" => @ap_puppet_matrix_id}}
       end)
       |> expect(:put_displayname, fn
-        @ap_puppet_matrix_id, "Bob", user_id: @ap_puppet_matrix_id ->
+        @ap_puppet_matrix_id, @ap_user_displayname, user_id: @ap_puppet_matrix_id ->
           :ok
       end)
 
