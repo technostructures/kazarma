@@ -4,7 +4,7 @@ Upstream-Contact: Pierre de Lacroix <pierre@pdelacroix.com>
 Source: https://gitlab.com/kazarma/kazarma
 
 Files: wiki/* priv/gettext/* infra/* .env* assets/static/* .gitsecret/* .dockerignore .gitignore .gitmodules README.md CHANGELOG.md doc_diagrams/* mix.lock .tool-versions assets/.babelrc assets/.tool-versions assets/package-lock.json assets/package.json CONTRIBUTORS.txt .renovaterc.json lib/**/*.html.heex .github/FUNDING.yml priv/dashboard_metrics.json priv/dashboard_logs.json .gitpod.yml
-Copyright: 2020-2023 The Kazarma Team
+Copyright: 2020-2024 The Kazarma Team
 License: AGPL-3.0-only
 
 Files: CODE_OF_CONDUCT.md
