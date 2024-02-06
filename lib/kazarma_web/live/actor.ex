@@ -28,10 +28,12 @@ defmodule KazarmaWeb.Actor do
     put_session_locale(session)
 
     case get_actor(username) do
-      {:ok, actor} ->
+      {:ok, %{data: data} = actor} ->
         public_activities = public_activities(actor)
 
-        page_title = String.replace(actor.data["name"], ~r/(?<=.{20})(.+)/s, "...")
+        name = Map.get(data, "name") || Map.get(data, "preferredUsername")
+
+        page_title = String.replace(name, ~r/(?<=.{20})(.+)/s, "...")
 
         {
           :ok,
