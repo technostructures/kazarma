@@ -90,7 +90,8 @@ defmodule Kazarma.ActivityPub.Actor do
       "preferredUsername" => localpart,
       "capabilities" => %{"acceptsChatMessages" => false},
       "id" => ap_id,
-      "type" => "Application",
+      # required to follow on Lemmy
+      "type" => "Person",
       "name" => "Kazarma",
       # "icon" => avatar_url && %{"type" => "Image", "url" => avatar_url},
       "followers" => Routes.activity_pub_url(Endpoint, :followers, "-", localpart),
