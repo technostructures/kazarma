@@ -118,6 +118,72 @@ defmodule Kazarma.RoomType.ApUser do
     end
   end
 
+  def create_from_ap(
+        %{
+          object: %Object{
+            data:
+              %{
+                "type" => "Page",
+                "actor" => from_id
+              } = object_data
+          }
+        } = activity
+      ) do
+    Kazarma.Logger.log_received_activity(activity,
+      obj_type: "Page",
+      label: "Public Page activity"
+    )
+
+    with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
+         %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}} <-
+           get_room_for_public_create(object_data) do
+      Client.join(from_matrix_id, room_id)
+
+      Map.get(object_data, "tag", [])
+      |> Enum.filter(fn tag -> Map.get(tag, "type") == "Mention" end)
+      |> Enum.each(fn %{"name" => mentioned_username} ->
+        case Address.ap_username_to_matrix_id(mentioned_username) do
+          {:ok, mentioned_matrix_id} ->
+            Client.invite(room_id, from_matrix_id, mentioned_matrix_id)
+
+          _ ->
+            nil
+        end
+      end)
+
+      # attachments = Map.get(object_data, "attachment")
+
+      Activity.send_message_and_attachment(from_matrix_id, room_id, object_data, []) |> dbg()
+    end
+  end
+
+  def create_from_ap(
+        %{
+          data: %{"object" => object},
+          object: %Ecto.Association.NotLoaded{}
+        } = activity
+      )
+      when is_binary(object) do
+    create_from_ap(%{activity | object: ActivityPub.Object.normalize(object)})
+  end
+
+  def create_from_ap(activity) do
+    Kazarma.Logger.log_received_activity(activity,
+      obj_type: "Note",
+      label: "Unhandled Create activity"
+    )
+  end
+
+  defp get_room_for_public_create(%{"audience" => [group_id]}) do
+    case get_outbox(group_id) do
+      {:ok, room} ->
+        room
+
+      _ ->
+        nil
+    end
+  end
+
   defp get_room_for_public_create(%{"inReplyTo" => reply_to_ap_id} = object_data)
        when not is_nil(reply_to_ap_id) do
     case Bridge.get_events_by_remote_id(reply_to_ap_id) do
@@ -143,6 +209,10 @@ defmodule Kazarma.RoomType.ApUser do
       _ ->
         nil
     end
+  end
+
+  defp get_room_for_public_create(_object_data) do
+    dbg("Can't find room for public create")
   end
 
   def create_from_event(event, room) do
