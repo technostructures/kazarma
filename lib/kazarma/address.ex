@@ -47,6 +47,25 @@ defmodule Kazarma.Address do
     actor
   end
 
+  # @TODO: make configurable
+  def application_localpart, do: "kazarma"
+
+  def application_username, do: "#{application_localpart()}@#{domain()}"
+
+  def application_matrix_id, do: "@#{application_localpart()}:#{domain()}"
+
+  def application_ap_id,
+    do:
+      KazarmaWeb.Router.Helpers.index_url(
+        KazarmaWeb.Endpoint,
+        :index
+      )
+
+  def application_actor do
+    {:ok, actor} = ActivityPub.Actor.get_cached(ap_id: application_ap_id())
+    actor
+  end
+
   def get_username_localpart(username) do
     username
     |> String.replace_suffix("@#{Kazarma.Address.domain()}", "")
