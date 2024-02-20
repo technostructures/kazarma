@@ -32,7 +32,8 @@ defmodule Kazarma.ActivityPub.Activity do
     case create(
            type: Keyword.get(params, :type, "Note"),
            sender: sender,
-           receivers_id: Keyword.fetch!(params, :to),
+           to: Keyword.fetch!(params, :to),
+           cc: Keyword.get(params, :cc, []),
            context: Keyword.get(params, :context, make_context(replied_activity, sender)),
            in_reply_to: make_in_reply_to(replied_activity),
            content:
@@ -65,8 +66,10 @@ defmodule Kazarma.ActivityPub.Activity do
         "content" => Keyword.fetch!(params, :content),
         "actor" => sender.ap_id,
         "attributedTo" => Keyword.fetch!(params, :attributed_to),
-        "to" => Keyword.fetch!(params, :receivers_id),
-        "conversation" => Keyword.get(params, :context)
+        "to" => Keyword.fetch!(params, :to),
+        "cc" => Keyword.get(params, :cc, []),
+        "conversation" => Keyword.get(params, :context),
+        "tag" => Keyword.get(params, :tags, [])
       }
       |> maybe_put("context", Keyword.get(params, :context))
       |> maybe_put("attachment", Keyword.get(params, :attachment))
@@ -77,8 +80,9 @@ defmodule Kazarma.ActivityPub.Activity do
     create_params = %{
       actor: Keyword.fetch!(params, :sender),
       context: Keyword.get(params, :context),
-      to: Keyword.fetch!(params, :receivers_id),
-      object: object
+      to: Keyword.fetch!(params, :to),
+      object: object,
+      additional: %{"cc" => Keyword.get(params, :cc, [])}
     }
 
     {:ok, _activity} = Kazarma.ActivityPub.create(create_params)
