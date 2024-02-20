@@ -90,7 +90,8 @@ defmodule Kazarma.ActivityPub.Actor do
       "preferredUsername" => localpart,
       "capabilities" => %{"acceptsChatMessages" => false},
       "id" => ap_id,
-      "type" => "Application",
+      # required to follow on Lemmy
+      "type" => "Person",
       "name" => "Kazarma",
       # "icon" => avatar_url && %{"type" => "Image", "url" => avatar_url},
       "followers" => Routes.activity_pub_url(Endpoint, :followers, "-", localpart),
@@ -98,6 +99,39 @@ defmodule Kazarma.ActivityPub.Actor do
       "inbox" => Routes.activity_pub_url(Endpoint, :inbox),
       "outbox" => Routes.activity_pub_url(Endpoint, :outbox, "-", localpart),
       "manuallyApprovesFollowers" => false,
+      endpoints: %{
+        "sharedInbox" => Routes.activity_pub_url(Endpoint, :inbox)
+      }
+    }
+  end
+
+  def build_application_actor do
+    ap_id = Address.application_ap_id()
+    {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
+
+    %Actor{
+      local: true,
+      deactivated: false,
+      username: Address.application_username(),
+      ap_id: ap_id,
+      data: build_application_actor_data(ap_id),
+      keys: keys
+    }
+  end
+
+  def build_application_actor_data(ap_id) do
+    localpart = Address.application_localpart()
+    {:ok, date_time} = DateTime.now("Etc/UTC")
+
+    %{
+      "id" => ap_id,
+      "preferredUsername" => localpart,
+      "type" => "Application",
+      "name" => "Kazarma",
+      # "icon" => avatar_url && %{"type" => "Image", "url" => avatar_url},
+      "inbox" => Routes.activity_pub_url(Endpoint, :inbox),
+      "outbox" => Routes.activity_pub_url(Endpoint, :outbox, "-", localpart),
+      "published" => DateTime.to_iso8601(date_time, :extended),
       endpoints: %{
         "sharedInbox" => Routes.activity_pub_url(Endpoint, :inbox)
       }
@@ -116,18 +150,52 @@ defmodule Kazarma.ActivityPub.Actor do
     username =
       if String.contains?(username, "@"), do: username, else: "#{username}@#{Address.domain()}"
 
-    if username == Address.relay_username() do
-      get_relay_actor()
-    else
-      get_puppet_actor(username)
+    cond do
+      username == Address.relay_username() ->
+        get_relay_actor()
+
+      username == Address.application_username() ->
+        get_application_actor()
+
+      true ->
+        get_puppet_actor(username)
     end
   end
 
+  # @TODO rename this function as it's unclear what it does
+  # `get_or_create_relay_actor`?
   def get_relay_actor() do
     matrix_id = Address.relay_matrix_id()
 
     with nil <- Bridge.get_user_by_local_id(matrix_id),
          actor <- build_relay_actor(),
+         {:ok, user} <-
+           Bridge.create_user(%{
+             local_id: matrix_id,
+             remote_id: actor.ap_id,
+             data: %{"ap_data" => actor.data, "keys" => actor.keys}
+           }) do
+      Kazarma.Logger.log_created_puppet(user,
+        type: :ap
+      )
+
+      {:ok, actor}
+    else
+      %{data: %{"ap_data" => ap_data, "keys" => keys}} ->
+        {:ok, build_actor_from_data(ap_data, keys)}
+
+      _ ->
+        {:error, :not_found}
+    end
+  end
+
+  # @TODO rename this function as it's unclear what it does
+  # `get_or_create_application_actor`?
+  def get_application_actor() do
+    matrix_id = Address.application_matrix_id()
+
+    with nil <- Bridge.get_user_by_local_id(matrix_id),
+         actor <- build_application_actor(),
          {:ok, user} <-
            Bridge.create_user(%{
              local_id: matrix_id,

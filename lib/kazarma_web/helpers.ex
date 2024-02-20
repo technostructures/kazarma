@@ -8,6 +8,8 @@ defmodule KazarmaWeb.Helpers do
 
   def display_name(%ActivityPub.Actor{data: %{"name" => name}}), do: name
 
+  def display_name(%ActivityPub.Actor{data: %{"preferredUsername" => name}}), do: name
+
   def ap_username(%ActivityPub.Actor{username: username}), do: "@" <> username
 
   def main_address(%ActivityPub.Actor{local: true} = actor), do: matrix_id(actor)

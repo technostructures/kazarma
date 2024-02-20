@@ -17,7 +17,21 @@ defmodule KazarmaWeb.LiveOrJsonPlug do
         %{plug: Phoenix.LiveView.Plug, phoenix_live_view: lv, path_params: _path_params} ->
           {_view, action, _opts, _live_session} = lv
 
-          apply(ActivityPub.Web.ActivityPubController, action, [conn, conn.params])
+          # we make an exception for Lemmy application actor
+          {action, params} =
+            if action == :index do
+              {:actor,
+               %{
+                 "_format" => "activity+json",
+                 "localpart" => Kazarma.Address.application_localpart(),
+                 "server" => "-",
+                 "username" => Kazarma.Address.application_username()
+               }}
+            else
+              {action, conn.params}
+            end
+
+          apply(ActivityPub.Web.ActivityPubController, action, [conn, params])
           |> Plug.Conn.halt()
       end
     end

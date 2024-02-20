@@ -609,6 +609,249 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     end
   end
 
+  describe "activity handler (handle_activity/1) for public Page" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      {:ok, actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Alice",
+            "preferredUsername" => "alice",
+            "url" => "http://lemmy/u/alice",
+            "id" => "http://lemmy/u/alice",
+            "username" => "alice@lemmy"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://lemmy/u/alice"
+        })
+
+      {:ok, community} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Group",
+            "name" => "Community",
+            "preferredUsername" => "community",
+            "url" => "http://lemmy/c/community",
+            "id" => "http://lemmy/c/community",
+            "username" => "community@lemmy"
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => "http://lemmy/c/community"
+        })
+
+      {:ok, actor: actor, community: community}
+    end
+
+    def public_page_fixture do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://lemmy/c/community",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ],
+          "cc" => [],
+          "actor" => "http://lemmy/u/alice"
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Page",
+            "id" => "page_id",
+            "actor" => "http://lemmy/u/alice",
+            "attributedTo" => "http://lemmy/u/alice",
+            "content" => "<p>Page description</p>\n",
+            "name" => "Page title",
+            "mediaType" => "text/html",
+            "source" => %{
+              "content" => "Page description",
+              "mediaType" => "text/markdown"
+            },
+            "audience" => ["http://lemmy/c/community"],
+            "sensitive" => false
+          }
+        }
+      }
+    end
+
+    def public_page_with_link_fixture do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://lemmy/c/community",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ],
+          "cc" => [],
+          "actor" => "http://lemmy/u/alice"
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Page",
+            "id" => "page_id",
+            "actor" => "http://lemmy/u/alice",
+            "attributedTo" => "http://lemmy/u/alice",
+            "name" => "Page title",
+            "attachment" => [%{"type" => "Link", "url" => [%{"href" => "https://kazar.ma/"}]}],
+            "audience" => ["http://lemmy/c/community"],
+            "sensitive" => false
+          }
+        }
+      }
+    end
+
+    def public_page_with_link_and_description_fixture do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://lemmy/c/community",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ],
+          "cc" => [],
+          "actor" => "http://lemmy/u/alice"
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Page",
+            "id" => "page_id",
+            "actor" => "http://lemmy/u/alice",
+            "attributedTo" => "http://lemmy/u/alice",
+            "content" => "<p>Page description</p>\n",
+            "name" => "Page title",
+            "mediaType" => "text/html",
+            "source" => %{
+              "content" => "Page description",
+              "mediaType" => "text/markdown"
+            },
+            "attachment" => [%{"type" => "Link", "url" => [%{"href" => "https://kazar.ma/"}]}],
+            "audience" => ["http://lemmy/c/community"],
+            "sensitive" => false
+          }
+        }
+      }
+    end
+
+    test "receiving a public page forwards it to the puppet's timeline room" do
+      Kazarma.Matrix.TestClient
+      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___lemmy:kazarma" ->
+        :ok
+      end)
+      |> expect(:send_message, fn "!room:kazarma",
+                                  %{
+                                    "body" => "Page title\n\nPage description \uFEFF",
+                                    "format" => "org.matrix.custom.html",
+                                    "formatted_body" =>
+                                      "<h3>Page title</h3><p>Page description</p>\n",
+                                    "msgtype" => "m.text"
+                                  },
+                                  [user_id: "@_ap_alice___lemmy:kazarma"] ->
+        {:ok, "event_id"}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://lemmy/c/community",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@_ap_community___lemmy:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok = handle_activity(public_page_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "page_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Bridge.list_events()
+    end
+
+    test "receiving a public page with link forwards it to the puppet's timeline room" do
+      Kazarma.Matrix.TestClient
+      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___lemmy:kazarma" ->
+        :ok
+      end)
+      |> expect(:send_message, fn "!room:kazarma",
+                                  %{
+                                    "body" => "Page title\nhttps://kazar.ma/ \uFEFF",
+                                    "format" => "org.matrix.custom.html",
+                                    "formatted_body" =>
+                                      "<a href=\"https://kazar.ma/\"><h3>Page title</h3></a>",
+                                    "msgtype" => "m.text"
+                                  },
+                                  [user_id: "@_ap_alice___lemmy:kazarma"] ->
+        {:ok, "event_id"}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://lemmy/c/community",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@_ap_community___lemmy:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok = handle_activity(public_page_with_link_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "page_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Bridge.list_events()
+    end
+
+    test "receiving a public page with link and description forwards it to the puppet's timeline room" do
+      Kazarma.Matrix.TestClient
+      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___lemmy:kazarma" ->
+        :ok
+      end)
+      |> expect(:send_message, fn "!room:kazarma",
+                                  %{
+                                    "body" =>
+                                      "Page title\nhttps://kazar.ma/\n\nPage description \uFEFF",
+                                    "format" => "org.matrix.custom.html",
+                                    "formatted_body" =>
+                                      "<a href=\"https://kazar.ma/\"><h3>Page title</h3></a><p>Page description</p>\n",
+                                    "msgtype" => "m.text"
+                                  },
+                                  [user_id: "@_ap_alice___lemmy:kazarma"] ->
+        {:ok, "event_id"}
+      end)
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://lemmy/c/community",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@_ap_community___lemmy:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok = handle_activity(public_page_with_link_and_description_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "event_id",
+                 remote_id: "page_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Bridge.list_events()
+    end
+  end
+
   describe "When an actor follows the relay actor" do
     setup :set_mox_from_context
     setup :verify_on_exit!

@@ -39,7 +39,8 @@ defmodule KazarmaWeb.Router do
   end
 
   scope "/", KazarmaWeb do
-    pipe_through :accepts_html
+    # this is needed for Lemmy root application
+    pipe_through :accepts_html_and_json
     pipe_through :browser
 
     live "/", Index, :index, as: :index

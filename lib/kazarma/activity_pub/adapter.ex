@@ -88,7 +88,7 @@ defmodule Kazarma.ActivityPub.Adapter do
         %Actor{
           username: username,
           ap_id: ap_id,
-          data: %{"name" => name} = data
+          data: data
         } = actor
       ) do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
@@ -98,6 +98,7 @@ defmodule Kazarma.ActivityPub.Adapter do
            Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub]),
          {:ok, %{"user_id" => ^matrix_id}} <-
            Kazarma.Matrix.Client.register(matrix_id) do
+      name = Map.get(data, "name") || Map.get(data, "preferredUsername")
       Kazarma.Matrix.Client.put_displayname(matrix_id, name)
       avatar_url = get_in(data, ["icon", "url"])
       if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
@@ -112,6 +113,8 @@ defmodule Kazarma.ActivityPub.Adapter do
       Kazarma.Logger.log_created_puppet(user,
         type: :matrix
       )
+
+      Kazarma.RoomType.ApUser.create_outbox_if_public_group(actor)
 
       {:ok, actor}
     else

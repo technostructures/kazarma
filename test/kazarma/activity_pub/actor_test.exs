@@ -234,4 +234,27 @@ defmodule Kazarma.ActivityPub.ActorTest do
                })
     end
   end
+
+  describe "ActivityPub request for the application Actor" do
+    setup :verify_on_exit!
+
+    test "when asked for an existing matrix users returns the corresponding actor and persists it in database" do
+      assert {:ok,
+              %ActivityPub.Actor{
+                data: %{
+                  :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+                  "id" => "http://kazarma/",
+                  "inbox" => "http://kazarma/shared_inbox",
+                  "name" => "Kazarma",
+                  "outbox" => "http://kazarma/-/kazarma/outbox",
+                  "preferredUsername" => "kazarma",
+                  "type" => "Application"
+                },
+                local: true,
+                ap_id: "http://kazarma/",
+                username: "kazarma@kazarma",
+                deactivated: false
+              }} = Kazarma.ActivityPub.Actor.get_local_actor("kazarma@kazarma")
+    end
+  end
 end
