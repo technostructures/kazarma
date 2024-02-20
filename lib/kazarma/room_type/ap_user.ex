@@ -173,6 +173,18 @@ defmodule Kazarma.RoomType.ApUser do
     end
   end
 
+  # Lemmy groups, always public
+  def create_outbox_if_public_group(
+        %ActivityPub.Actor{data: %{"type" => "Group", "postingRestrictedToMods" => _}} = actor
+      ) do
+    {:ok, relay} = Kazarma.ActivityPub.Actor.get_relay_actor()
+
+    Kazarma.ActivityPub.follow(%{actor: relay, object: actor})
+    create_outbox(actor)
+  end
+
+  def create_outbox_if_public_group(_), do: nil
+
   def create_outbox(ap_id) when is_binary(ap_id) do
     case ActivityPub.Actor.get_cached(ap_id: ap_id) do
       {:ok, actor} -> create_outbox(actor)

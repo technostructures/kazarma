@@ -114,6 +114,8 @@ defmodule Kazarma.ActivityPub.Adapter do
         type: :matrix
       )
 
+      Kazarma.RoomType.ApUser.create_outbox_if_public_group(actor)
+
       {:ok, actor}
     else
       {:error, _code, %{"error" => error}} ->
