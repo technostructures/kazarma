@@ -153,8 +153,8 @@ defmodule Kazarma.ActivityPub.Activity do
     }
   end
 
-  def mention_name(%{local: true, data: %{"preferredUsername" => name}}), do: name
-  def mention_name(%{local: false, username: name}), do: name
+  def mention_name(%{data: %{"preferredUsername" => name}}), do: name
+  def mention_name(%{username: name}), do: name
 
   def attachment_from_matrix_event_content(%{"msgtype" => "m.text"}), do: nil
 
