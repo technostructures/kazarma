@@ -2,8 +2,8 @@
     "brand": "Matrix side",
     "default_server_config": {
         "m.homeserver": {
-            "base_url": "http://matrix.kazarma.local",
-            "server_name": "kazarma.local"
+            "base_url": "http://matrix.kazarma.com",
+            "server_name": "kazarma.com"
         }
     },
     "roomDirectory": {

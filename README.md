@@ -58,15 +58,15 @@ docker run -d \
 
 This should run containers with those services:
 
-- [kazarma.kazarma.local](http://kazarma.kazarma.local) -> Kazarma itself
-- [matrix.kazarma.local](http://matrix.kazarma.local) -> Matrix server
-- [kazarma.local](http://kazarma.local) -> serves .well-known routes that allow
-  Matrix and Kazarma.ActivityPub to use simple `kazarma.local` domain (for
+- [kazarma.kazarma.com](http://kazarma.kazarma.com) -> Kazarma itself
+- [matrix.kazarma.com](http://matrix.kazarma.com) -> Matrix server
+- [kazarma.com](http://kazarma.com) -> serves .well-known routes that allow
+  Matrix and Kazarma.ActivityPub to use simple `kazarma.com` domain (for
   users, etc)
-- [pleroma.local](http://pleroma.local) -> Pleroma, should be able to address
-  Matrix users using `kazarma.local` domain
-- [element.local](http://element.local) -> Element, will connect to Synapse,
-  should then be able to address Pleroma users using `pleroma.local` domain
+- [pleroma.com](http://pleroma.com) -> Pleroma, should be able to address
+  Matrix users using `kazarma.com` domain
+- [element.com](http://element.com) -> Element, will connect to Synapse,
+  should then be able to address Pleroma users using `pleroma.com` domain
 
 You can also start an IEx console:
 
@@ -79,11 +79,11 @@ docker compose run --rm kazarma iex -S mix
 On macOS, instead of `docker-hoster` you need to add the following domains to your `/etc/hosts` file:
 ```
 # Kazarma development domains
-127.0.0.1 kazarma.local
-127.0.0.1 kazarma.kazarma.local
-127.0.0.1 matrix.kazarma.local
-127.0.0.1 pleroma.local
-127.0.0.1 element.local
+127.0.0.1 kazarma.com
+127.0.0.1 kazarma.kazarma.com
+127.0.0.1 matrix.kazarma.com
+127.0.0.1 pleroma.com
+127.0.0.1 element.com
 ```
 
 Then the `docker-compose.yml` file should (at least) expose the `80` port in the `traefik` container:

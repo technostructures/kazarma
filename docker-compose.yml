@@ -34,10 +34,10 @@ services:
       - traefik.enable=true
       - traefik.http.services.kazarma.loadbalancer.server.port=4000
       - traefik.http.routers.kazarma.entryPoints=http
-      - traefik.http.routers.kazarma.rule=Host(`kazarma.kazarma.local`)
+      - traefik.http.routers.kazarma.rule=Host(`kazarma.kazarma.com`)
       # - traefik.http.routers.kazarma.middlewares=https_redirect
       - traefik.http.routers.kazarmas.entryPoints=https
-      - traefik.http.routers.kazarmas.rule=Host(`kazarma.kazarma.local`)
+      - traefik.http.routers.kazarmas.rule=Host(`kazarma.kazarma.com`)
       - traefik.http.routers.kazarmas.tls=true
     environment:
       - AP_BASE_PATH=/
@@ -57,13 +57,13 @@ services:
       - traefik.enable=true
       - traefik.http.services.matrix.loadbalancer.server.port=8008
       - traefik.http.routers.matrix.entryPoints=http
-      - traefik.http.routers.matrix.rule=Host(`matrix.kazarma.local`)
+      - traefik.http.routers.matrix.rule=Host(`matrix.kazarma.com`)
       # - traefik.http.routers.matrix.middlewares=https_redirect
       - traefik.http.routers.matrixs.entryPoints=https
-      - traefik.http.routers.matrixs.rule=Host(`matrix.kazarma.local`)
+      - traefik.http.routers.matrixs.rule=Host(`matrix.kazarma.com`)
       - traefik.http.routers.matrixs.tls=true
     environment:
-      - SYNAPSE_SERVER_NAME=kazarma.local
+      - SYNAPSE_SERVER_NAME=kazarma.com
       - SYNAPSE_REPORT_STATS=no
       - SYNAPSE_ENABLE_REGISTRATION=yes
       - SYNAPSE_LOG_LEVEL=INFO
@@ -91,10 +91,10 @@ services:
   #     - traefik.enable=true
   #     - traefik.http.services.matrix.loadbalancer.server.port=8008
   #     - traefik.http.routers.matrix.entryPoints=http
-  #     - traefik.http.routers.matrix.rule=Host(`matrix.kazarma.local`)
+  #     - traefik.http.routers.matrix.rule=Host(`matrix.kazarma.com`)
   #     # - traefik.http.routers.matrix.middlewares=https_redirect
   #     - traefik.http.routers.matrixs.entryPoints=https
-  #     - traefik.http.routers.matrixs.rule=Host(`matrix.kazarma.local`)
+  #     - traefik.http.routers.matrixs.rule=Host(`matrix.kazarma.com`)
   #     - traefik.http.routers.matrixs.tls=true
   #   # ports:
   #   #   - 8008:8008
@@ -118,7 +118,7 @@ services:
 
   delegation:
     image: nginx:1.25
-    hostname: kazarma.local
+    hostname: kazarma.com
     volumes:
       - ./infra/dev/delegation/matrix:/usr/share/nginx/html/.well-known/matrix:ro
       - ./infra/dev/delegation/host-meta:/usr/share/nginx/html/.well-known/host-meta:ro
@@ -126,10 +126,10 @@ services:
       - traefik.enable=true
       - traefik.http.services.delegation.loadbalancer.server.port=80
       - traefik.http.routers.delegation.entryPoints=http
-      - traefik.http.routers.delegation.rule=Host(`kazarma.local`)
+      - traefik.http.routers.delegation.rule=Host(`kazarma.com`)
       # - traefik.http.routers.delegation.middlewares=https_redirect
       - traefik.http.routers.delegations.entryPoints=https
-      - traefik.http.routers.delegations.rule=Host(`kazarma.local`)
+      - traefik.http.routers.delegations.rule=Host(`kazarma.com`)
       - traefik.http.routers.delegations.tls=true
 
   element:
@@ -138,17 +138,17 @@ services:
       - traefik.enable=true
       - traefik.http.services.element.loadbalancer.server.port=80
       - traefik.http.routers.element.entryPoints=http
-      - traefik.http.routers.element.rule=Host(`element.local`)
+      - traefik.http.routers.element.rule=Host(`element.com`)
       # - traefik.http.routers.elements.middlewares=https_redirect
       - traefik.http.routers.elements.entryPoints=https
-      - traefik.http.routers.elements.rule=Host(`element.local`)
+      - traefik.http.routers.elements.rule=Host(`element.com`)
       - traefik.http.routers.elements.tls=true
     volumes:
       - ./infra/dev/element/config.json:/app/config.json
 
   pleroma:
     environment:
-    - DOMAIN=pleroma.local
+    - DOMAIN=pleroma.com
     - DB_HOST=postgres_pleroma
     - DB_PASS=postgres
     image: teslamint/pleroma:stable
@@ -158,10 +158,10 @@ services:
       - traefik.enable=true
       - traefik.http.services.pleroma.loadbalancer.server.port=4000
       - traefik.http.routers.pleroma.entryPoints=http
-      - traefik.http.routers.pleroma.rule=Host(`pleroma.local`)
+      - traefik.http.routers.pleroma.rule=Host(`pleroma.com`)
       # - traefik.http.routers.pleroma.middlewares=https_redirect
       - traefik.http.routers.pleromas.entryPoints=https
-      - traefik.http.routers.pleromas.rule=Host(`pleroma.local`)
+      - traefik.http.routers.pleromas.rule=Host(`pleroma.com`)
       - traefik.http.routers.pleromas.tls=true
     restart: unless-stopped
     depends_on:
@@ -205,12 +205,13 @@ services:
     networks:
       default:
         aliases:
-          - pleroma.local
-          - element.local
-          - kazarma.local
-          - grafana.local
-          - kazarma.kazarma.local
-          - matrix.kazarma.local
+          - pleroma.com
+          - element.com
+          - kazarma.com
+          - grafana.com
+          - kazarma.kazarma.com
+          - matrix.kazarma.com
+          - lemmy.com
 
 
   postgres_kazarma:

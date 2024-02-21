@@ -1,5 +1,5 @@
 {
 	"m.homeserver": {
-		"base_url": "http://matrix.kazarma.local"
+		"base_url": "http://matrix.kazarma.com"
 	}
 }

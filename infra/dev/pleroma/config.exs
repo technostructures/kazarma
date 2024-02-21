@@ -11,7 +11,7 @@ config :pleroma, :instance,
   registrations_open: true
 
 config :cors_plug,
-  origin: ["http://pleroma.local", "https://pleroma.local"]
+  origin: ["http://pleroma.com", "https://pleroma.com"]
 
 config :pleroma, Pleroma.Emails.Mailer, enabled: false
 
