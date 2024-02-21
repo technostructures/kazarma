@@ -343,7 +343,7 @@ defmodule Kazarma.Matrix.Transaction do
        ]),
        do:
          add_additional_mentions(
-           ~s(<span class="h-card"><a href="#{ap_id}" class="u-url mention">@<span>#{username}</span></a></span>) <>
+           ~s(<span class="h-card"><a href="#{ap_id}" class="u-url mention">@<span>#{username}</span></a></span> ) <>
              content,
            rest
          )
