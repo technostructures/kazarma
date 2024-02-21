@@ -312,7 +312,7 @@ defmodule Kazarma.Matrix.Transaction do
   defp ap_mention_from_matrix_id(matrix_id) do
     case Address.matrix_id_to_actor(matrix_id) do
       {:ok, actor} ->
-        ~s(<span class="h-card"><a href="#{actor.ap_id}" class="u-url mention">@<span>#{Kazarma.ActivityPub.Activity.mention_name(actor)}</span></a></span>)
+        ~s(<span class="h-card"><a href="#{actor.data["url"] || actor.ap_id}" class="u-url mention">@<span>#{Kazarma.ActivityPub.Activity.mention_name(actor)}</span></a></span>)
 
       _ ->
         case Address.matrix_id_to_ap_username(matrix_id) do
