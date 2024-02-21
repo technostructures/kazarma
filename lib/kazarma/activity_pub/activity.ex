@@ -410,8 +410,7 @@ defmodule Kazarma.ActivityPub.Activity do
 
       parse_and_update_content(
         current_content,
-        username_without_at,
-        ap_id,
+        actor,
         {"a", [{"href", "https://matrix.to/#/" <> matrix_id}], [display_name]}
       )
     end)
@@ -435,7 +434,6 @@ defmodule Kazarma.ActivityPub.Activity do
 
   def convert_mentions(content, nil, _), do: content
 
-  # @TODO stop using tags since Mobilizon does mentions without tags
   def convert_mentions(content, tags, convert_fun) do
     Enum.reduce(tags, content, fn
       %{"type" => "Mention", "href" => ap_id, "name" => username}, content ->
@@ -451,10 +449,11 @@ defmodule Kazarma.ActivityPub.Activity do
     end)
   end
 
-  def parse_and_update_content(content, username_without_at, ap_id, replacement) do
+  def parse_and_update_content(content, actor, replacement) do
     update_fun = fn
       {"span", span_attrs, [{"a", a_attrs, ["@", {"span", _, [_username_without_at]}]}]} = elem ->
-        if {"class", "h-card"} in span_attrs && {"href", ap_id} in a_attrs &&
+        if {"class", "h-card"} in span_attrs &&
+             ({"href", actor.data["url"]} in a_attrs || {"href", actor.ap_id} in a_attrs) &&
              {"class", "u-url mention"} in a_attrs do
           replacement
         else
