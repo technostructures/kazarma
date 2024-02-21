@@ -453,7 +453,7 @@ defmodule Kazarma.ActivityPub.Activity do
 
   def parse_and_update_content(content, username_without_at, ap_id, replacement) do
     update_fun = fn
-      {"span", span_attrs, [{"a", a_attrs, ["@", {"span", _, [^username_without_at]}]}]} = elem ->
+      {"span", span_attrs, [{"a", a_attrs, ["@", {"span", _, [_username_without_at]}]}]} = elem ->
         if {"class", "h-card"} in span_attrs && {"href", ap_id} in a_attrs &&
              {"class", "u-url mention"} in a_attrs do
           replacement
