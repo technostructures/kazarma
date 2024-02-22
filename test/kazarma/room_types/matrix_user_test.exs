@@ -184,8 +184,7 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
           object: %{
             "actor" => "http://kazarma/-/alice",
             "attributedTo" => "http://kazarma/-/alice",
-            "content" =>
-              "<span class=\"h-card\"><a href=\"http://kazarma/-/bob\" class=\"u-url mention\">@<span>bob@kazarma</span></a></span> Hello you",
+            "content" => "Hello you",
             "tag" => [%{"href" => "http://kazarma/-/bob", "name" => "@bob", "type" => "Mention"}],
             "to" => ["https://www.w3.org/ns/activitystreams#Public", "http://kazarma/-/bob"],
             "type" => "Note"

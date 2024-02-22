@@ -97,8 +97,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           object: %{
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",
-            "content" =>
-              "<span class=\"h-card\"><a href=\"#{@pleroma_user_ap_id}\" class=\"u-url mention\">@<span>#{@pleroma_user_full_username}</span></a></span> hello",
+            "content" => "hello",
             "context" => _,
             "conversation" => _,
             "tag" => [

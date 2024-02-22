@@ -570,8 +570,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           object: %{
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",
-            "content" =>
-              "<span class=\"h-card\"><a href=\"#{@pleroma_user_ap_id}\" class=\"u-url mention\">@<span>#{@pleroma_user_full_username}</span></a></span> hello",
+            "content" => "hello",
             "context" => "http://pleroma/contexts/context",
             "conversation" => "http://pleroma/contexts/context",
             "to" => ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"],
@@ -781,8 +780,7 @@ defmodule Kazarma.Matrix.TransactionTest do
           object: %{
             "actor" => "http://kazarma/-/bob",
             "attributedTo" => "http://kazarma/-/bob",
-            "content" =>
-              "<span class=\"h-card\"><a href=\"#{@pleroma_user_ap_id}\" class=\"u-url mention\">@<span>#{@pleroma_user_full_username}</span></a></span> hello",
+            "content" => "hello",
             "context" => "http://pleroma/contexts/context",
             "conversation" => "http://pleroma/contexts/context",
             "to" => ["https://#{@pleroma_user_server}/users/#{@pleroma_user_name}"],

@@ -36,8 +36,7 @@ defmodule Kazarma.ActivityPub.Activity do
            cc: Keyword.get(params, :cc, []),
            context: Keyword.get(params, :context, make_context(replied_activity, sender)),
            in_reply_to: make_in_reply_to(replied_activity),
-           content:
-             Kazarma.Matrix.Transaction.build_text_content(event.content, additional_mentions),
+           content: Kazarma.Matrix.Transaction.build_text_content(event.content),
            attachment: attachment_from_matrix_event_content(event.content),
            tags: tags,
            name: Keyword.get(params, :name),

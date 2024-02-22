@@ -288,6 +288,8 @@ defmodule Kazarma.Matrix.Transaction do
 
   def get_mentions_from_event_content(_), do: []
 
+  def build_text_content(content, additional_mentions \\ [])
+
   def build_text_content(
         %{
           "msgtype" => "m.text",
@@ -336,6 +338,13 @@ defmodule Kazarma.Matrix.Transaction do
     Regex.replace(~r/\<mx\-reply\>.*\<\/mx\-reply\>/s, content, "")
   end
 
+  # we keep the code in case we want to automatically add mentions in content,
+  # but we don't use it now since it's unclear for Matrix users that the
+  # content has changed and it's weird when mentioning Lemmy communities to
+  # create posts.
+  # Mentions still appear with a dedicated UI in Pleroma and create
+  # notifications in Mastodon (because they are part of the `tag` properties of
+  # objects)
   defp add_additional_mentions(content, []), do: content
 
   defp add_additional_mentions(content, [
