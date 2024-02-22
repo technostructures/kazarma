@@ -129,7 +129,7 @@ defmodule KazarmaWeb.Helpers do
            {"data-phx-link", "redirect"},
            {"data-phx-link-state", "push"},
            {"title", username}
-         ], ["@" <> actor.data["preferredUsername"] || username]}
+         ], ["@" <> (actor.data["preferredUsername"] || username)]}
       )
     end)
   end
@@ -156,7 +156,7 @@ defmodule KazarmaWeb.Helpers do
 
   defp mention_tag(url, preferred_username, username) do
     """
-    <a href="<%= url %>" data-phx-link="redirect" data-phx-link-state="push" title="<%= username %>"><%= "@" <> preferred_username || username %></a>
+    <a href="<%= url %>" data-phx-link="redirect" data-phx-link-state="push" title="<%= username %>">@<%= preferred_username || username %></a>
     """
     |> EEx.eval_string(
       url: url,
