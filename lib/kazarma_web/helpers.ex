@@ -71,7 +71,6 @@ defmodule KazarmaWeb.Helpers do
 
     content
     |> format_mentions_html(tag)
-    |> format_mentions_text(tag)
     |> HtmlSanitizeEx.html5()
   end
 
@@ -81,7 +80,6 @@ defmodule KazarmaWeb.Helpers do
     tag = Map.get(data, "tag")
 
     source
-    |> format_mentions_html(tag)
     |> format_mentions_text(tag)
     |> HtmlSanitizeEx.html5()
   end
