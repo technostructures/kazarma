@@ -23,6 +23,8 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
   @pleroma_puppet_address "@#{@pleroma_puppet_username}:kazarma"
 
   describe "When sending a message to a timeline room" do
+    @describetag :external
+
     setup :set_mox_from_context
     setup :verify_on_exit!
 

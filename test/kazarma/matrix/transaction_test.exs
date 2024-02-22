@@ -28,6 +28,8 @@ defmodule Kazarma.Matrix.TransactionTest do
   @mastodon_puppet_address "@#{@mastodon_puppet_username}:kazarma"
 
   describe "User invitation" do
+    @describetag :external
+
     setup :set_mox_from_context
     setup :verify_on_exit!
 
@@ -501,6 +503,8 @@ defmodule Kazarma.Matrix.TransactionTest do
   end
 
   describe "Message reception in multiuser room" do
+    @describetag :external
+
     setup :set_mox_from_context
     setup :verify_on_exit!
 
@@ -682,6 +686,8 @@ defmodule Kazarma.Matrix.TransactionTest do
   end
 
   describe "Message reception with reply in multiuser room" do
+    @describetag :external
+
     setup :set_mox_from_context
     setup :verify_on_exit!
 

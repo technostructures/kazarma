@@ -13,6 +13,8 @@ defmodule Kazarma.Matrix.UserTest do
   @ap_puppet_matrix_id "@#{@ap_puppet_username}:kazarma"
 
   describe "User search (Synapse asks the application service for a user in its namespace)" do
+    @describetag :external
+
     setup :set_mox_from_context
     setup :verify_on_exit!
 

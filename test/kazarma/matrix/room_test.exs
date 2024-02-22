@@ -12,6 +12,8 @@ defmodule Kazarma.Matrix.RoomTest do
   @ap_puppet_matrix_timeline "##{@ap_puppet_username}:kazarma"
 
   describe "Room search (Synapse asks the application service for a room in its namespace)" do
+    @describetag :external
+
     setup :set_mox_from_context
     setup :verify_on_exit!
 
