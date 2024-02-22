@@ -20,10 +20,6 @@ defmodule KazarmaWeb.Components.Object do
     ""
   end
 
-  def display_body(assigns) do
-    ~H(<%= raw(text_content(@object\)\) %>)
-  end
-
   def header(assigns) do
     ~H"""
     <div class="flex flex-row flex-wrap items-center">
@@ -124,9 +120,9 @@ defmodule KazarmaWeb.Components.Object do
       <div class="card-body p-4">
         <.header actor={@actor} object={@object} socket={@socket} />
         <div class={"mt-0 mb-0 divider #{if @type == :main, do: "before:bg-[#ffb7a4] after:bg-[#ffb7a4]"}"} />
-        <p class="object-content">
-          <.display_body object={@object} />
-        </p>
+        <div class="object-content">
+          <%= raw(text_content(@object)) %>
+        </div>
       </div>
       <div :if={@type == :replied_to} class="self-end align-center reply_icon">
         <.replied_icon class="w-10 h-10 m-2 -ml-5 replied_icon" />
