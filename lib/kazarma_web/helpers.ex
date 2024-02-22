@@ -117,11 +117,9 @@ defmodule KazarmaWeb.Helpers do
   defp format_mentions_html(content, tags) do
     Kazarma.ActivityPub.Activity.convert_mentions(content, tags, fn current_content,
                                                                     actor,
-                                                                    ap_id,
+                                                                    _ap_id,
                                                                     username,
                                                                     _matrix_id ->
-      "@" <> username_without_at = username
-
       Kazarma.ActivityPub.Activity.parse_and_update_content(
         current_content,
         actor,
@@ -129,8 +127,9 @@ defmodule KazarmaWeb.Helpers do
          [
            {"href", Kazarma.ActivityPub.Adapter.actor_path(actor)},
            {"data-phx-link", "redirect"},
-           {"data-phx-link-state", "push"}
-         ], [username]}
+           {"data-phx-link-state", "push"},
+           {"title", username}
+         ], ["@" <> actor.data["preferredUsername"] || username]}
       )
     end)
   end
@@ -146,18 +145,23 @@ defmodule KazarmaWeb.Helpers do
       String.replace(
         current_content,
         username,
-        mention_tag(Kazarma.ActivityPub.Adapter.actor_path(actor), username)
+        mention_tag(
+          Kazarma.ActivityPub.Adapter.actor_path(actor),
+          actor.data["preferredUsername"],
+          username
+        )
       )
     end)
   end
 
-  defp mention_tag(url, name) do
+  defp mention_tag(url, preferred_username, username) do
     """
-    <a href="<%= url %>" data-phx-link="redirect" data-phx-link-state="push"><%= name %></a>
+    <a href="<%= url %>" data-phx-link="redirect" data-phx-link-state="push" title="<%= username %>"><%= "@" <> preferred_username || username %></a>
     """
     |> EEx.eval_string(
       url: url,
-      name: name
+      preferred_username: preferred_username,
+      name: username
     )
   end
 end
