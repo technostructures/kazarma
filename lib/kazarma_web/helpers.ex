@@ -126,8 +126,7 @@ defmodule KazarmaWeb.Helpers do
 
       Kazarma.ActivityPub.Activity.parse_and_update_content(
         current_content,
-        username_without_at,
-        ap_id,
+        actor,
         {"a",
          [
            {"href", Kazarma.ActivityPub.Adapter.actor_path(actor)},
