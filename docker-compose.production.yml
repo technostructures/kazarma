@@ -16,17 +16,29 @@ services:
       - DATABASE_HOST=postgres
       - DATABASE_DB=kazarma
       - DATABASE_USERNAME=kazarma
-      - DATABASE_PASSWORD
-      - SECRET_KEY_BASE
-      - HOMESERVER_TOKEN
-      - ACCESS_TOKEN
-      - MATRIX_URL
-      - HOST
-      - ACTIVITY_PUB_DOMAIN
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - HOMESERVER_TOKEN=${HOMESERVER_TOKEN}
+      - ACCESS_TOKEN=${ACCESS_TOKEN}
+      - MATRIX_URL=${MATRIX_URL}
+      - HOST=${HOST}
+      - ACTIVITY_PUB_DOMAIN=${ACTIVITY_PUB_DOMAIN}
       - PUPPET_PREFIX
       - BRIDGE_REMOTE
       - HTML_SEARCH
       - HTML_AP
+      - LOG_LEVEL
+      - RELEASE_LEVEL
+      - SENTRY_ENABLED
+      - SENTRY_DSN
+      - LOKI_ENABLED
+      - LOKI_HOST
+      - LOKI_ORG_ID
+      - METRICS_ENABLED
+      - METRICS_PORT
+      - GRAFANA_ENABLED
+      - GRAFANA_HOST
+      - GRAFANA_TOKEN
     depends_on:
       - postgres
 
