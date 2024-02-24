@@ -65,15 +65,18 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       %{
         data: %{
           "type" => "Create",
+          "actor" => "http://pleroma/pub/actors/alice",
           "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
           data: %{
             "type" => "Note",
+            "context" => "conversation1",
             "source" => "hello",
             "id" => "note_id",
             "actor" => "http://pleroma/pub/actors/alice",
-            "conversation" => "http://pleroma/pub/contexts/context",
+            "attributedTo" => "http://pleroma/pub/actors/alice",
+            "to" => ["http://kazarma/-/bob"],
             "attachment" => nil
           }
         }
@@ -84,15 +87,18 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       %{
         data: %{
           "type" => "Create",
+          "actor" => "http://pleroma/pub/actors/alice",
           "to" => ["http://kazarma/-/bob", "http://kazarma/-/carole"]
         },
         object: %ActivityPub.Object{
           data: %{
             "type" => "Note",
+            "context" => "conversation1",
             "source" => "hello",
             "id" => "note_id",
             "actor" => "http://pleroma/pub/actors/alice",
-            "conversation" => "http://pleroma/pub/contexts/context",
+            "attributedTo" => "http://pleroma/pub/actors/alice",
+            "to" => ["http://kazarma/-/bob", "http://kazarma/-/carole"],
             "attachment" => nil
           }
         }
@@ -109,11 +115,11 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         object: %ActivityPub.Object{
           data: %{
             "type" => "Note",
+            "context" => "conversation1",
             "actor" => "http://pleroma/pub/actors/alice",
+            "attributedTo" => "http://pleroma/pub/actors/alice",
             "content" => "hello",
             "id" => "note_id",
-            "context" => "http://pleroma.local/contexts/aabbccddeeff",
-            "conversation" => "http://pleroma.local/contexts/aabbccddeeff",
             "attachment" => [
               %{
                 "mediaType" => "image/jpeg",
@@ -129,7 +135,8 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
               }
             ],
             "source" => "hello",
-            "summary" => "something"
+            "summary" => "something",
+            "to" => ["http://kazarma/-/bob"]
           }
         }
       }
@@ -145,7 +152,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
       %{
         local_id: "!room:kazarma",
-        remote_id: "http://pleroma/pub/contexts/context",
+        remote_id: "conversation1",
         data: %{
           "type" => "direct_message",
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
@@ -182,7 +189,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
       %{
         local_id: "!room:kazarma",
-        remote_id: "http://pleroma/pub/contexts/context",
+        remote_id: "conversation1",
         data: %{
           "type" => "direct_message",
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
@@ -195,7 +202,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       assert [
                %MatrixAppService.Bridge.Room{
                  local_id: "!room:kazarma",
-                 remote_id: "http://pleroma/pub/contexts/context",
+                 remote_id: "conversation1",
                  data: %{
                    "type" => "direct_message",
                    "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma", "@carole:kazarma"]
@@ -237,7 +244,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       assert [
                %MatrixAppService.Bridge.Room{
                  local_id: "!room:kazarma",
-                 remote_id: "http://pleroma/pub/contexts/context",
+                 remote_id: "conversation1",
                  data: %{
                    "type" => "direct_message",
                    "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
@@ -282,7 +289,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
       %{
         local_id: "!room:kazarma",
-        remote_id: "http://pleroma.local/contexts/aabbccddeeff",
+        remote_id: "conversation1",
         data: %{
           "type" => "direct_message",
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
@@ -329,7 +336,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
       %{
         local_id: "!room:kazarma",
-        remote_id: "http://pleroma.local/contexts/aabbccddeeff",
+        remote_id: "conversation1",
         data: %{
           "type" => "direct_message",
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]
@@ -403,16 +410,19 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       %{
         data: %{
           "type" => "Create",
+          "actor" => "http://pleroma/pub/actors/alice",
           "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
           data: %{
             "type" => "Note",
+            "context" => "conversation1",
             "source" => "hello",
             "id" => "note_id",
             "actor" => "http://pleroma/pub/actors/alice",
+            "attributedTo" => "http://pleroma/pub/actors/alice",
             "inReplyTo" => "http://pleroma/pub/objects/reply_to",
-            "conversation" => "http://pleroma/pub/contexts/context",
+            "to" => ["http://kazarma/-/bob"],
             "attachment" => nil
           }
         }
@@ -437,7 +447,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
       %{
         local_id: "!room:kazarma",
-        remote_id: "http://pleroma/pub/contexts/context",
+        remote_id: "conversation1",
         data: %{
           "type" => "direct_message",
           "to" => ["@_ap_alice___pleroma:kazarma", "@bob:kazarma"]

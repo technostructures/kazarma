@@ -21,7 +21,7 @@ defmodule Kazarma.RoomType.DirectMessage do
             data:
               %{
                 "actor" => from,
-                "conversation" => conversation
+                "context" => conversation
               } = object_data
           }
         } = _activity

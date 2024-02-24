@@ -160,7 +160,6 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   def update_remote_actor(_), do: :ok
 
-  # @TODO: dispatch depending of existing Room record
   @impl true
   def handle_activity(
         %{
@@ -168,46 +167,31 @@ defmodule Kazarma.ActivityPub.Adapter do
         } = activity
       ) do
     result =
-      if "https://www.w3.org/ns/activitystreams#Public" in to do
-        Kazarma.RoomType.ApUser.create_from_ap(activity)
-      else
-        case activity do
-          %{
-            object: %Object{
-              data: %{
-                "type" => "ChatMessage"
-              }
-            }
-          } ->
-            Kazarma.Logger.log_received_activity(activity, label: "Chat")
-            Kazarma.RoomType.Chat.create_from_ap(activity)
+      cond do
+        # Public activities are for AP rooms
+        "https://www.w3.org/ns/activitystreams#Public" in to ->
+          Kazarma.RoomType.ApUser.create_from_ap(activity)
 
-          %{
-            data: %{"to" => _},
-            object: %Object{
-              data: %{
-                "id" => _,
-                "actor" => _,
-                "conversation" => _
-              }
-            }
-          } ->
-            Kazarma.Logger.log_received_activity(activity, label: "Direct message")
-            Kazarma.RoomType.DirectMessage.create_from_ap(activity)
+        # ChatMessage objects are Pleroma-like chats
+        activity.object.data["type"] == "ChatMessage" ->
+          Kazarma.Logger.log_received_activity(activity, label: "Chat")
+          Kazarma.RoomType.Chat.create_from_ap(activity)
 
-          %{
-            data: %{"actor" => _},
-            object: %Object{
-              data: %{
-                "id" => _,
-                "attributedTo" => _,
-                "to" => [_]
-              }
-            }
-          } ->
-            Kazarma.Logger.log_received_activity(activity, label: "To collection")
-            Kazarma.RoomType.Collection.create_from_ap(activity)
-        end
+        # Direct messages are when all AP IDs in `to` are actors
+        Enum.all?(to, fn ap_id ->
+          match?({:ok, _}, ActivityPub.Actor.get_cached_or_fetch(ap_id: ap_id))
+        end) ->
+          Kazarma.Logger.log_received_activity(activity, label: "Direct message")
+          Kazarma.RoomType.DirectMessage.create_from_ap(activity)
+
+        # Mobilizon internal discussions have a `attributedTo` property set to
+        # the group actor
+        match?(
+          {:ok, %ActivityPub.Actor{data: %{"type" => "Group"}}},
+          ActivityPub.Actor.get_cached_or_fetch(ap_id: activity.object.data["attributedTo"])
+        ) ->
+          Kazarma.Logger.log_received_activity(activity, label: "To collection")
+          Kazarma.RoomType.Collection.create_from_ap(activity)
       end
 
     case result do
