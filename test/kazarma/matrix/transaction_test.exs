@@ -578,7 +578,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             "tag" => [
               %{
                 "href" => "https://#{@pleroma_user_server}/users/#{@pleroma_user_name}",
-                "name" => "@#{@pleroma_user_name}@#{@pleroma_user_server}",
+                "name" => "@#{@pleroma_user_name}",
                 "type" => "Mention"
               }
             ]
@@ -789,7 +789,7 @@ defmodule Kazarma.Matrix.TransactionTest do
             "tag" => [
               %{
                 "href" => "https://#{@pleroma_user_server}/users/#{@pleroma_user_name}",
-                "name" => "@#{@pleroma_user_name}@#{@pleroma_user_server}",
+                "name" => "@#{@pleroma_user_name}",
                 "type" => "Mention"
               }
             ]

@@ -103,7 +103,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
             "tag" => [
               %{
                 "href" => "#{@pleroma_user_ap_id}",
-                "name" => "@#{@pleroma_user_full_username}",
+                "name" => "@#{@pleroma_user_name}",
                 "type" => "Mention"
               }
             ],
