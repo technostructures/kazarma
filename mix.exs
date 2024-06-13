@@ -25,7 +25,9 @@ defmodule Kazarma.MixProject do
         "coveralls.post": :test,
         "coveralls.html": :test
       ],
-      releases: [kazarma: [applications: [svadilfari: :permanent, prom_ex: :permanent]]]
+      # temporarily disable svadilfari
+      releases: [kazarma: [applications: [prom_ex: :permanent]]]
+      # releases: [kazarma: [applications: [svadilfari: :permanent, prom_ex: :permanent]]]
     ]
   end
 
