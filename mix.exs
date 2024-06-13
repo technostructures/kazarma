@@ -50,8 +50,8 @@ defmodule Kazarma.MixProject do
     [
       {:phoenix, "~> 1.7.0"},
       {:phoenix_ecto, "~> 4.4"},
-      {:ecto, "~> 3.9.0"},
-      {:ecto_sql, "~> 3.9.0"},
+      {:ecto, "~> 3.11.2"},
+      {:ecto_sql, "~> 3.11.2"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_live_dashboard, "~> 0.8.0"},
       {:telemetry_metrics, "~> 0.6"},
@@ -78,9 +78,10 @@ defmodule Kazarma.MixProject do
       {:floki, ">= 0.30.0"},
       {:phoenix_live_view, "~> 0.20.1"},
       {:phoenix_live_reload, "~> 1.4.1", only: :dev},
-      {:html_sanitize_ex, "~> 1.4"},
+      {:html_sanitize_ex, "~> 1.4.3"},
       {:ex_cldr_dates_times, "~> 2.0"},
-      {:svadilfari, github: "akasprzok/svadilfari", ref: "6e55a2f"},
+      # {:svadilfari, github: "akasprzok/svadilfari", ref: "6e55a2f"},
+      # {:pc, "~> 1.15.0", override: true, manager: :rebar3},
       {:tesla, "~> 1.7", override: true},
       {:excoveralls, "~> 0.17", only: :test}
     ]
