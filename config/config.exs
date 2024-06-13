@@ -72,6 +72,7 @@ config :tesla, adapter: Tesla.Adapter.Hackney
 config :activity_pub, :http,
   proxy_url: nil,
   send_user_agent: true,
+  user_agent: "kazarma bridge",
   adapter: [
     ssl_options: [
       verify: :verify_peer,
