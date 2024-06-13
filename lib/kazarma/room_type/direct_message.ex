@@ -57,7 +57,7 @@ defmodule Kazarma.RoomType.DirectMessage do
 
       {:ok, room_id}
     else
-      %Room{local_id: local_id, data: %{"to" => to}} = room ->
+      %Room{local_id: local_id, data: %{"to" => _to}} = room ->
         maybe_invite_new_users(room, creator, invites)
         {:ok, local_id}
 

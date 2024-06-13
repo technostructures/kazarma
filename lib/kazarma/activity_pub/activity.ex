@@ -403,9 +403,9 @@ defmodule Kazarma.ActivityPub.Activity do
   defp add_reply(content, _, room_id), do: {content, room_id}
 
   defp convert_mentions_html(content, tags) do
-    convert_mentions(content, tags, fn current_content, actor, ap_id, username, matrix_id ->
+    convert_mentions(content, tags, fn current_content, actor, _ap_id, username, matrix_id ->
       display_name = actor.data["name"]
-      "@" <> username_without_at = username
+      "@" <> _username_without_at = username
 
       parse_and_update_content(
         current_content,
