@@ -65,7 +65,7 @@ defmodule Kazarma.MixProject do
       {:activity_pub, "~> 0.1.0", path: "./activity_pub"},
       {:polyjuice_client, path: "./polyjuice_client", override: true},
       {:matrix_app_service, path: "./matrix_app_service"},
-      {:ex_doc, "~> 0.29", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: :test},
       {:junit_formatter, "~> 3.1", only: :test},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
