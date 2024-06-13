@@ -99,8 +99,9 @@ logger_backends =
     {true, true} ->
       [
         :console,
-        Sentry.LoggerBackend,
-        Svadilfari
+        Sentry.LoggerBackend
+        # temporarily disable svadilfari
+        # Svadilfari
       ]
 
     {true, false} ->
@@ -111,8 +112,9 @@ logger_backends =
 
     {false, true} ->
       [
-        :console,
-        Svadilfari
+        :console
+        # temporarily disable svadilfari
+        # Svadilfari
       ]
 
     {false, false} ->
@@ -181,21 +183,22 @@ org_id = System.get_env("LOKI_ORG_ID")
 
 loki_client_opts = if org_id, do: [org_id: org_id], else: []
 
-if loki_enabled do
-  config :logger, :svadilfari,
-    metadata: [:request_id],
-    max_buffer: 10,
-    client: [
-      url: System.fetch_env!("LOKI_HOST"),
-      opts: loki_client_opts
-    ],
-    format: "\n[$metadata] $message\n",
-    labels: [
-      {"service", "kazarma"},
-      {"env", release_level}
-    ],
-    derived_labels: {Kazarma.Logger, :derive_level}
-end
+# temporarily disable svadilfari
+# if loki_enabled do
+#   config :logger, :svadilfari,
+#     metadata: [:request_id],
+#     max_buffer: 10,
+#     client: [
+#       url: System.fetch_env!("LOKI_HOST"),
+#       opts: loki_client_opts
+#     ],
+#     format: "\n[$metadata] $message\n",
+#     labels: [
+#       {"service", "kazarma"},
+#       {"env", release_level}
+#     ],
+#     derived_labels: {Kazarma.Logger, :derive_level}
+# end
 
 default_locale = System.get_env("DEFAULT_LOCALE")
 
