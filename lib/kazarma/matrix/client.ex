@@ -478,7 +478,7 @@ defmodule Kazarma.Matrix.Client do
     end
   end
 
-  def is_administrator(room_id, user_id) do
+  def user_is_administrator(room_id, user_id) do
     case get_power_level_for_user(room_id, user_id) do
       n when is_integer(n) ->
         n >= 100

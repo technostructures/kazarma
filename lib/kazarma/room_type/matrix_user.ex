@@ -54,7 +54,7 @@ defmodule Kazarma.RoomType.MatrixUser do
   end
 
   def maybe_set_outbox_type(room_id, user_id) do
-    if Client.is_administrator(room_id, user_id) do
+    if Client.user_is_administrator(room_id, user_id) do
       case Address.matrix_id_to_actor(user_id) do
         {:ok, %Actor{ap_id: ap_id}} ->
           {:ok, room} = insert_bridge_room(room_id, user_id, ap_id)
@@ -73,7 +73,7 @@ defmodule Kazarma.RoomType.MatrixUser do
   end
 
   # def maybe_unset_outbox_type(room_id, user_id) do
-  #   if Client.is_administrator(room_id, user_id) do
+  #   if Client.user_is_administrator(room_id, user_id) do
   #     delete_bridge_room(room_id, user_id, ap_id)
   #   end
   # end

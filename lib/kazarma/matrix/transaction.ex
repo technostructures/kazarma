@@ -66,7 +66,7 @@ defmodule Kazarma.Matrix.Transaction do
   def new_event(%Event{type: "m.room.message", room_id: room_id} = event) do
     Kazarma.Logger.log_received_event(event, label: "Message")
 
-    if !is_tagged_message(event) do
+    if !tagged_message?(event) do
       case Bridge.get_room_by_local_id(room_id) do
         %Room{data: %{"type" => "chat"}} = room ->
           Kazarma.RoomType.Chat.create_from_event(
@@ -104,7 +104,7 @@ defmodule Kazarma.Matrix.Transaction do
           redacts: _redacts
         } = event
       ) do
-    if !is_tagged_redact(event) do
+    if !tagged_redact?(event) do
       Kazarma.Logger.log_received_event(event, label: "Redaction")
 
       Kazarma.ActivityPub.Activity.forward_redaction(event)
@@ -259,17 +259,17 @@ defmodule Kazarma.Matrix.Transaction do
     end
   end
 
-  defp is_tagged_message(%Event{content: %{"body" => body}}) do
+  defp tagged_message?(%Event{content: %{"body" => body}}) do
     String.ends_with?(body, " \ufeff")
   end
 
-  defp is_tagged_message(_), do: false
+  defp tagged_message?(_), do: false
 
-  defp is_tagged_redact(%Event{content: %{"reason" => reason}}) do
+  defp tagged_redact?(%Event{content: %{"reason" => reason}}) do
     String.ends_with?(reason, " \ufeff")
   end
 
-  defp is_tagged_redact(_), do: false
+  defp tagged_redact?(_), do: false
 
   def get_mentions_from_event_content(%{
         "msgtype" => "m.text",

@@ -68,7 +68,7 @@ defmodule Kazarma.MixProject do
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: :test},
       {:junit_formatter, "~> 3.1", only: :test},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4.0", only: [:dev, :test], runtime: false},
       {:hackney, "~> 1.18.0", override: true},
       {:oban, "~> 2.13"},

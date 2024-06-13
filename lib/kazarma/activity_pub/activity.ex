@@ -365,7 +365,7 @@ defmodule Kazarma.ActivityPub.Activity do
   end
 
   defp make_content(object_data) do
-    dbg(object_data)
+    object_data
   end
 
   defp process_message_text(content, tags) do

@@ -102,24 +102,13 @@ defmodule Kazarma.Address do
   def parse_ap_username(username) do
     regex = ~r/^@?(?<localpart>[#{@ap_chars}\-\.=]+)@(?<domain>#{@valid_domain})/
 
-    sub_regex =
-      ~r/(?<localpart>[#{@ap_chars}]+)#{@ap_puppet_separation}(?<domain>#{@valid_domain})/
-
     username = if String.contains?(username, "@"), do: username, else: "#{username}@#{domain()}"
 
     case Regex.named_captures(regex, username) do
       %{"localpart" => localpart, "domain" => domain} ->
         if domain in [domain(), KazarmaWeb.Endpoint.host()] do
           # local ActivityPub user (puppet)
-          case Regex.named_captures(sub_regex, localpart) do
-            %{"localpart" => sub_localpart, "domain" => sub_domain} ->
-              # remote Matrix user
-              {:remote_matrix, sub_localpart, sub_domain}
-
-            nil ->
-              # local Matrix user
-              {:local_matrix, localpart}
-          end
+          parse_ap_username_localpart(localpart)
         else
           # remote ActivityPub user
           {:activity_pub, localpart, domain}
@@ -127,6 +116,21 @@ defmodule Kazarma.Address do
 
       nil ->
         {:error, :invalid_address}
+    end
+  end
+
+  defp parse_ap_username_localpart(localpart) do
+    regex =
+      ~r/(?<localpart>[#{@ap_chars}]+)#{@ap_puppet_separation}(?<domain>#{@valid_domain})/
+
+    case Regex.named_captures(regex, localpart) do
+      %{"localpart" => sub_localpart, "domain" => sub_domain} ->
+        # remote Matrix user
+        {:remote_matrix, sub_localpart, sub_domain}
+
+      nil ->
+        # local Matrix user
+        {:local_matrix, localpart}
     end
   end
 

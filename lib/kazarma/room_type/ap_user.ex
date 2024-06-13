@@ -153,7 +153,7 @@ defmodule Kazarma.RoomType.ApUser do
 
       # attachments = Map.get(object_data, "attachment")
 
-      Activity.send_message_and_attachment(from_matrix_id, room_id, object_data, []) |> dbg()
+      Activity.send_message_and_attachment(from_matrix_id, room_id, object_data, [])
     end
   end
 
@@ -212,7 +212,7 @@ defmodule Kazarma.RoomType.ApUser do
   end
 
   defp get_room_for_public_create(_object_data) do
-    dbg("Can't find room for public create")
+    Logger.debug("Can't find room for public create")
   end
 
   def create_from_event(event, room) do
