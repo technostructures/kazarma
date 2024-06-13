@@ -69,7 +69,7 @@ defmodule Kazarma.MixProject do
       {:mox, "~> 1.0", only: :test},
       {:junit_formatter, "~> 3.1", only: :test},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.2.0", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4.0", only: [:dev, :test], runtime: false},
       {:hackney, "~> 1.18.0", override: true},
       {:oban, "~> 2.13"},
       {:logger_file_backend, "~> 0.0.13"},
