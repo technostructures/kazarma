@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2020-2024 The Kazarma Team
 # SPDX-License-Identifier: AGPL-3.0-only
-defmodule Kazarma.Matrix.CollectionTest do
+defmodule Kazarma.RoomTypes.CollectionTest do
   @moduledoc false
 
   use Kazarma.DataCase
@@ -72,6 +72,25 @@ defmodule Kazarma.Matrix.CollectionTest do
         "local" => false,
         "actor" => "http://mobilizon/@group",
         "username" => "group"
+      })
+
+      ActivityPub.Object.do_insert(%{
+        "data" => %{
+          "attributedTo" => "http://mobilizon/@group",
+          "first" => %{
+            "attributedTo" => "http://mobilizon/@group",
+            "id" => "http://mobilizon/@group/members?page=1",
+            "orderedItems" => [],
+            "partOf" => "http://mobilizon/@group/members",
+            "type" => "OrderedCollectionPage"
+          },
+          "id" => "http://mobilizon/@group/members",
+          "totalItems" => 0,
+          "type" => "OrderedCollection"
+        },
+        "local" => false,
+        "actor" => "http://mobilizon/@group/members",
+        "username" => "group_members"
       })
 
       {:ok, actor: actor}

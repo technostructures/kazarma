@@ -74,13 +74,14 @@ defmodule Kazarma.RoomTypes.ChatTest do
             "content" => "hello",
             "id" => "chat_message_id",
             "attachment" => %{
-              "mediaType" => "image/jpeg",
+              "mediaType" => "image/svg+xml",
               "name" => nil,
               "type" => "Document",
               "url" => [
                 %{
-                  "href" => "http://example.com/example.jpg",
-                  "mediaType" => "image/jpeg",
+                  "href" =>
+                    "https://technostructures.org/app/themes/technostructures/resources/logo.svg",
+                  "mediaType" => "image/svg+xml",
                   "type" => "Link"
                 }
               ]
@@ -185,7 +186,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
       end)
       |> expect(:upload, fn
         _examplejpg_data,
-        [filename: "example.jpg", mimetype: "image/jpeg"],
+        [filename: "logo.svg", mimetype: "image/svg+xml"],
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "mxc://serveur/example"}
       end)
@@ -221,7 +222,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
       end)
       |> expect(:upload, fn
         _examplejpg_data,
-        [filename: "example.jpg", mimetype: "image/jpeg"],
+        [filename: "logo.svg", mimetype: "image/svg+xml"],
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "mxc://serveur/example"}
       end)

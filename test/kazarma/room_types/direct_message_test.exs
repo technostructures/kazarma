@@ -122,16 +122,18 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
             "id" => "note_id",
             "attachment" => [
               %{
-                "mediaType" => "image/jpeg",
+                "mediaType" => "image/svg+xml",
                 "name" => nil,
                 "type" => "Document",
-                "url" => "http://example.com/example.jpg"
+                "url" =>
+                  "https://technostructures.org/app/themes/technostructures/resources/logo.svg"
               },
               %{
-                "mediaType" => "image/jpeg",
+                "mediaType" => "image/png",
                 "name" => nil,
                 "type" => "Document",
-                "url" => "http://example.com/example2.jpg"
+                "url" =>
+                  "https://technostructures.org/app/themes/technostructures/resources/favicon.png"
               }
             ],
             "source" => "hello",
@@ -265,12 +267,12 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       Kazarma.Matrix.TestClient
       |> expect(:upload, 2, fn
         _examplejpg_data,
-        [filename: "example.jpg", mimetype: "image/jpeg"],
+        [filename: "logo.svg", mimetype: "image/svg+xml"],
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "mxc://serveur/example"}
 
         _examplejpg_data,
-        [filename: "example2.jpg", mimetype: "image/jpeg"],
+        [filename: "favicon.png", mimetype: "image/png"],
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "mxc://serveur/example2"}
       end)
@@ -312,12 +314,12 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       Kazarma.Matrix.TestClient
       |> expect(:upload, 2, fn
         _examplejpg_data,
-        [filename: "example.jpg", mimetype: "image/jpeg"],
+        [filename: "logo.svg", mimetype: "image/svg+xml"],
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "mxc://serveur/example"}
 
         _examplejpg_data,
-        [filename: "example2.jpg", mimetype: "image/jpeg"],
+        [filename: "favicon.png", mimetype: "image/png"],
         [user_id: "@_ap_alice___pleroma:kazarma"] ->
           {:ok, "mxc://serveur/example2"}
       end)

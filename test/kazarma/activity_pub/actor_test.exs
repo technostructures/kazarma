@@ -186,7 +186,11 @@ defmodule Kazarma.ActivityPub.ActorTest do
                  data: %{
                    "id" => "http://pleroma/users/bob",
                    "name" => "Bob",
-                   "icon" => %{"type" => "Image", "url" => "https://via.placeholder.com/150"}
+                   "icon" => %{
+                     "type" => "Image",
+                     "url" =>
+                       "https://technostructures.org/app/themes/technostructures/resources/favicon.png"
+                   }
                  }
                })
     end
@@ -221,13 +225,19 @@ defmodule Kazarma.ActivityPub.ActorTest do
                  changes: %{
                    data: %{
                      "name" => "new_name",
-                     "icon" => %{"url" => "https://via.placeholder.com/150"}
+                     "icon" => %{
+                       "url" =>
+                         "https://technostructures.org/app/themes/technostructures/resources/favicon.png"
+                     }
                    }
                  },
                  data: %{
                    data: %{
                      "name" => "old_name",
-                     "icon" => %{"url" => "https://via.placeholder.com/300"},
+                     "icon" => %{
+                       "url" =>
+                         "https://technostructures.org/app/themes/technostructures/resources/logo.svg"
+                     },
                      "id" => "http://kazarma/-/alice"
                    }
                  }
