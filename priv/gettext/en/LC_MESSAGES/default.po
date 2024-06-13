@@ -8,15 +8,15 @@
 # # to merge POT files into PO files.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2023-11-04 16:34+0000\n"
-"Last-Translator: Pierre de Lacroix <pierre@pdelacroix.com>\n"
+"PO-Revision-Date: 2024-05-05 20:07+0000\n"
+"Last-Translator: OpenVisor <info@openvisor.ch>\n"
 "Language-Team: English <https://hosted.weblate.org/projects/kazarma/kazarma/"
 "en/>\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.5.3\n"
 
 #: lib/kazarma_web/controllers/search_controller.ex:17
 #: lib/kazarma_web/live/actor.ex:68 lib/kazarma_web/live/index.ex:31
@@ -186,7 +186,7 @@ msgstr "For a Matrix user, use their Matrix ID (@user:server)"
 
 #: lib/kazarma_web/live/index.html.heex:26
 msgid "For an ActivityPub user, user either:"
-msgstr "For an ActivityPub user, user either:"
+msgstr "For an ActivityPub user, use either:"
 
 #: lib/kazarma_web/live/index.html.heex:50
 msgid "From ActivityPub"
@@ -220,8 +220,8 @@ msgid ""
 "If your Mobilizon intance federates with Kazarma, you can add this user to a "
 "group."
 msgstr ""
-"If your Mobilizon intance federates with Kazarma, you can add this user to a "
-"group."
+"If your Mobilizon instance federates with Kazarma, you can add this user to "
+"a group."
 
 #: lib/kazarma_web/components/profile.ex:105
 #: lib/kazarma_web/components/profile.ex:154
@@ -326,7 +326,7 @@ msgstr "This user can be mentioned in a public post."
 msgid ""
 "This user can receive direct messages (posts with a \"private\" visibility."
 msgstr ""
-"This user can receive direct messages (posts with a \"private\" visibility."
+"This user can receive direct messages (posts with a \"private\" visibility)."
 
 #: lib/kazarma_web/components/profile.ex:178
 msgid "This user has opted-in to public activity bridging."
@@ -388,16 +388,14 @@ msgstr ""
 "public room if it exists."
 
 #: lib/kazarma_web/live/index.html.heex:61
-#, fuzzy
 msgid ""
 "It can be direct messages, or following of the relay actor to opt-in to "
 "public activites bridging."
 msgstr ""
 "It can be direct messages, or following of the relay actor to opt-in to "
-"public activites bridging."
+"public activities bridging."
 
 #: lib/kazarma_web/live/index.html.heex:60
-#, fuzzy
 msgid "Kazarma waits for explicit user action to bridge activities and events."
 msgstr "Kazarma waits for explicit user action to bridge activities and events."
 
