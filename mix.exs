@@ -60,7 +60,7 @@ defmodule Kazarma.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.22"},
       {:jason, "~> 1.3"},
-      {:plug_cowboy, "~> 2.6.0", override: true},
+      {:plug_cowboy, "~> 2.7.0", override: true},
       {:httpoison, "~> 1.5"},
       {:ex_cldr, "~> 2.33"},
       {:ex_cldr_plugs, "~> 1.2"},
