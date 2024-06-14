@@ -85,7 +85,7 @@ defmodule Kazarma.MixProject do
       # {:svadilfari, github: "akasprzok/svadilfari", ref: "6e55a2f"},
       # {:pc, "~> 1.15.0", override: true, manager: :rebar3},
       {:tesla, "~> 1.7", override: true},
-      {:excoveralls, "~> 0.17", only: :test}
+      {:excoveralls, "~> 0.18", only: :test}
     ]
   end
 
