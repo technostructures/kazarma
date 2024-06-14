@@ -17,6 +17,8 @@ defmodule Kazarma.RoomType.ApUser do
   alias MatrixAppService.Bridge.Event, as: BridgeEvent
   alias MatrixAppService.Bridge.Room
 
+  require Logger
+
   def create_from_ap(
         %{
           object: %Object{
@@ -213,6 +215,8 @@ defmodule Kazarma.RoomType.ApUser do
 
   defp get_room_for_public_create(_object_data) do
     Logger.debug("Can't find room for public create")
+
+    nil
   end
 
   def create_from_event(event, room) do
