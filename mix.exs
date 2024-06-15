@@ -61,7 +61,7 @@ defmodule Kazarma.MixProject do
       {:gettext, "~> 0.24"},
       {:jason, "~> 1.3"},
       {:plug_cowboy, "~> 2.7.0", override: true},
-      {:httpoison, "~> 1.5"},
+      {:httpoison, "~> 2.0"},
       {:ex_cldr, "~> 2.33"},
       {:ex_cldr_plugs, "~> 1.2"},
       {:activity_pub, "~> 0.1.0", path: "./activity_pub"},
