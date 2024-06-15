@@ -93,7 +93,6 @@ defmodule KazarmaWeb.ActorTest do
       assert html =~ "This user is not bridged."
     end
 
-    @tag skip: "very weird flaky test"
     test "it shows an error and redirects if the user is not found", %{conn: conn} do
       Kazarma.Matrix.TestClient
       |> expect(:get_profile, fn "@not_found:kazarma" ->
