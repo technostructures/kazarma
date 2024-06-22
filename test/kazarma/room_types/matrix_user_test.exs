@@ -6,6 +6,7 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
   use Kazarma.DataCase
 
   import Kazarma.Matrix.Transaction
+  import Kazarma.MatrixMocks
   alias MatrixAppService.Event
   alias Kazarma.Bridge
 
@@ -25,17 +26,12 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
 
     test "it saves the room as a matrix user room" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_state, fn "!foo:kazarma", "m.room.power_levels", "" ->
-        {:ok,
-         %{
-           "users" => %{
-             "@bob:kazarma" => 100
-           }
-         }}
-      end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
+      |> expect_get_state_as("!foo:kazarma", "m.room.power_levels", "", %{
+        "users" => %{
+          "@bob:kazarma" => 100
+        }
+      })
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
 
       assert {:ok,
               %MatrixAppService.Bridge.Room{
@@ -55,14 +51,11 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
 
     test "it doesn't save the room as a matrix user room if the user is not an administrator in the room" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_state, fn "!foo:kazarma", "m.room.power_levels", "" ->
-        {:ok,
-         %{
-           "users" => %{
-             "@bob:kazarma" => 50
-           }
-         }}
-      end)
+      |> expect_get_state_as("!foo:kazarma", "m.room.power_levels", "", %{
+        "users" => %{
+          "@bob:kazarma" => 50
+        }
+      })
 
       assert nil == new_event(set_outbox_event_fixture())
 
@@ -97,9 +90,7 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
 
     test "it forwards the message from the user on ActivityPub" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
@@ -159,13 +150,8 @@ defmodule Kazarma.RoomTypes.MatrixUserTest do
 
     test "it forwards the message on ActivityPub with a mention to the relevant user" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, 2, fn
-        "@alice:kazarma" ->
-          {:ok, %{"displayname" => "Alice"}}
-
-        "@bob:kazarma" ->
-          {:ok, %{"displayname" => "Bob"}}
-      end)
+      |> expect_get_profile("@alice:kazarma", %{"displayname" => "Alice"})
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn

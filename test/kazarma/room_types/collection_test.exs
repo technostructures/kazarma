@@ -7,6 +7,7 @@ defmodule Kazarma.RoomTypes.CollectionTest do
 
   alias Kazarma.Bridge
   import Kazarma.ActivityPub.Adapter
+  import Kazarma.MatrixMocks
 
   describe "activity handler (handle_activity/1) for Invite activity" do
     setup :set_mox_from_context
@@ -98,7 +99,8 @@ defmodule Kazarma.RoomTypes.CollectionTest do
 
     test "when receiving a Invite activity for a Matrix user it invites them to the collection room" do
       Kazarma.Matrix.TestClient
-      |> expect(:create_room, fn
+      |> expect_create_room(
+        "@_ap_group___mobilizon:kazarma",
         [
           visibility: :private,
           topic: nil,
@@ -107,17 +109,16 @@ defmodule Kazarma.RoomTypes.CollectionTest do
           room_version: "5",
           name: "Group"
         ],
-        [user_id: "@_ap_group___mobilizon:kazarma"] ->
-          {:ok, %{"room_id" => "!room:kazarma"}}
-      end)
-      |> expect(:send_state_event, fn
+        "!room:kazarma"
+      )
+      |> expect_send_state_event(
+        "@_ap_group___mobilizon:kazarma",
         "!room:kazarma",
         "m.room.member",
         "@bob:kazarma",
         %{"membership" => "invite"},
-        [user_id: "@_ap_group___mobilizon:kazarma"] ->
-          {:ok, "!invite_event"}
-      end)
+        "!invite_event"
+      )
 
       assert :ok == handle_activity(invite_fixture())
 
@@ -140,9 +141,10 @@ defmodule Kazarma.RoomTypes.CollectionTest do
 
     test "when the user accepts the invitation it sends an Accept/Invite activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
+      |> expect_get_profile(
+        "@bob:kazarma",
+        %{"displayname" => "Bob"}
+      )
 
       Kazarma.ActivityPub.TestServer
       |> expect(:accept, fn
@@ -237,14 +239,14 @@ defmodule Kazarma.RoomTypes.CollectionTest do
 
     test "when receiving a Remove/Invite activity for a Matrix user in a collection room it kicks them" do
       Kazarma.Matrix.TestClient
-      |> expect(:send_state_event, fn
+      |> expect_send_state_event(
+        "@_ap_group___mobilizon:kazarma",
         "!room:kazarma",
         "m.room.member",
         "@bob:kazarma",
         %{"membership" => "leave"},
-        [user_id: "@_ap_group___mobilizon:kazarma"] ->
-          {:ok, "!invite_event"}
-      end)
+        "!invite_event"
+      )
 
       %{
         data: %{"type" => "collection"},
@@ -346,14 +348,15 @@ defmodule Kazarma.RoomTypes.CollectionTest do
 
     test "when receiving a Note activity creating a discussion it forwards the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_state, fn
+      |> expect_get_state(
+        "@_ap_group___mobilizon:kazarma",
         "!room:kazarma",
         "m.room.member",
         "@_ap_alice___mobilizon:kazarma",
-        [user_id: "@_ap_group___mobilizon:kazarma"] ->
-          %{"membership" => "join"}
-      end)
-      |> expect(:send_message, fn
+        %{"membership" => "join"}
+      )
+      |> expect_send_message(
+        "@_ap_alice___mobilizon:kazarma",
         "!room:kazarma",
         %{
           "body" => "hello \uFEFF",
@@ -361,9 +364,8 @@ defmodule Kazarma.RoomTypes.CollectionTest do
           "formatted_body" => "hello",
           "msgtype" => "m.text"
         },
-        [user_id: "@_ap_alice___mobilizon:kazarma"] ->
-          {:ok, "event_id"}
-      end)
+        "event_id"
+      )
 
       assert :ok = handle_activity(note_fixture())
 
@@ -378,14 +380,15 @@ defmodule Kazarma.RoomTypes.CollectionTest do
 
     test "when receiving a Note activity continuing a discussion it forwards as a message with reply" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_state, fn
+      |> expect_get_state(
+        "@_ap_group___mobilizon:kazarma",
         "!room:kazarma",
         "m.room.member",
         "@_ap_alice___mobilizon:kazarma",
-        [user_id: "@_ap_group___mobilizon:kazarma"] ->
-          %{"membership" => "join"}
-      end)
-      |> expect(:send_message, fn
+        %{"membership" => "join"}
+      )
+      |> expect_send_message(
+        "@_ap_alice___mobilizon:kazarma",
         "!room:kazarma",
         %{
           "body" => "hello \uFEFF",
@@ -394,9 +397,8 @@ defmodule Kazarma.RoomTypes.CollectionTest do
           "msgtype" => "m.text",
           "m.relates_to" => %{"m.in_reply_to" => %{"event_id" => "reply_to_id"}}
         },
-        [user_id: "@_ap_alice___mobilizon:kazarma"] ->
-          {:ok, "event_id"}
-      end)
+        "event_id"
+      )
 
       %{
         local_id: "reply_to_id",
@@ -494,9 +496,7 @@ defmodule Kazarma.RoomTypes.CollectionTest do
 
     test "when receiving an event that's not a reply it creates a new group discussion" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
@@ -566,9 +566,7 @@ defmodule Kazarma.RoomTypes.CollectionTest do
 
     test "when receiving an event replying to a discussion it forwards the message to the corresponding discussion" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn

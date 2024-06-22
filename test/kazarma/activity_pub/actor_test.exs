@@ -6,16 +6,18 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
   alias Kazarma.Bridge
   import Kazarma.ActivityPub.Adapter
+  import Kazarma.MatrixMocks
 
   describe "ActivityPub request for a local user (get_actor_by_username/1)" do
     setup :verify_on_exit!
 
     test "when asked for an existing matrix users returns the corresponding actor and persists it in database" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn -> %{base_url: "http://matrix"} end)
-      |> expect(:get_profile, fn "@alice:kazarma" ->
-        {:ok, %{"displayname" => "Alice", "avatar_url" => "mxc://server/image_id"}}
-      end)
+      |> expect_client()
+      |> expect_get_profile("@alice:kazarma", %{
+        "displayname" => "Alice",
+        "avatar_url" => "mxc://server/image_id"
+      })
 
       assert {:ok, %{keys: keys} = actor} = get_actor_by_username("alice")
 
@@ -78,10 +80,11 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
     test "when asked for an existing remote matrix users returns the corresponding actor and persists it in database" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn -> %{base_url: "http://matrix"} end)
-      |> expect(:get_profile, fn "@alice:remote" ->
-        {:ok, %{"displayname" => "Alice", "avatar_url" => "mxc://server/image_id"}}
-      end)
+      |> expect_client()
+      |> expect_get_profile("@alice:remote", %{
+        "displayname" => "Alice",
+        "avatar_url" => "mxc://server/image_id"
+      })
 
       assert {:ok, %{keys: keys} = actor} = get_actor_by_username("alice___remote")
 
@@ -144,9 +147,7 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
     test "when asked for a nonexisting matrix users returns an error tuple" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@nonexisting:kazarma" ->
-        {:error, :not_found}
-      end)
+      |> expect_get_profile_not_found("@nonexisting:kazarma")
 
       assert {:error, :not_found} = get_actor_by_username("nonexisting")
     end
@@ -157,27 +158,13 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
     test "it registers a puppet user" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, fn [
-                                username: "_ap_bob___pleroma",
-                                device_id: "KAZARMA_APP_SERVICE",
-                                initial_device_display_name: "Kazarma",
-                                registration_type: "m.login.application_service"
-                              ] ->
-        {:ok, %{"user_id" => "@_ap_bob___pleroma:kazarma"}}
-      end)
-      |> expect(:put_displayname, fn "@_ap_bob___pleroma:kazarma",
-                                     "Bob",
-                                     user_id: "@_ap_bob___pleroma:kazarma" ->
-        :ok
-      end)
-      |> expect(:upload, fn _blob, _opts, user_id: "@_ap_bob___pleroma:kazarma" ->
-        {:ok, "mxc://server/media_id"}
-      end)
-      |> expect(:put_avatar_url, fn "@_ap_bob___pleroma:kazarma",
-                                    "mxc://server/media_id",
-                                    user_id: "@_ap_bob___pleroma:kazarma" ->
-        :ok
-      end)
+      |> expect_register(%{
+        username: "_ap_bob___pleroma",
+        matrix_id: "@_ap_bob___pleroma:kazarma",
+        displayname: "Bob"
+      })
+      |> expect_upload_something("@_ap_bob___pleroma:kazarma", "mxc://server/media_id")
+      |> expect_put_avatar_url("@_ap_bob___pleroma:kazarma", "mxc://server/media_id")
 
       assert {:ok, _} =
                maybe_create_remote_actor(%ActivityPub.Actor{
@@ -202,17 +189,9 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
     test "it update the puppet profile" do
       Kazarma.Matrix.TestClient
-      |> expect(:put_displayname, fn
-        "@alice:kazarma", "new_name", user_id: "@alice:kazarma" -> :ok
-      end)
-      |> expect(:upload, fn _blob, _opts, user_id: "@alice:kazarma" ->
-        {:ok, "mxc://server/media_id"}
-      end)
-      |> expect(:put_avatar_url, fn "@alice:kazarma",
-                                    "mxc://server/media_id",
-                                    user_id: "@alice:kazarma" ->
-        :ok
-      end)
+      |> expect_put_displayname("@alice:kazarma", "new_name")
+      |> expect_upload_something("@alice:kazarma", "mxc://server/media_id")
+      |> expect_put_avatar_url("@alice:kazarma", "mxc://server/media_id")
 
       {:ok, _user} =
         Bridge.create_user(%{
