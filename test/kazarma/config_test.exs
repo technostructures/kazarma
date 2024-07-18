@@ -4,7 +4,6 @@ defmodule Kazarma.ConfigTest do
   use Kazarma.DataCase, async: false
   use KazarmaWeb.ConnCase
 
-  import Plug.Conn
   import Phoenix.ConnTest
   import Phoenix.LiveViewTest
   @endpoint KazarmaWeb.Endpoint

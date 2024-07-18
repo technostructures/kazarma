@@ -105,8 +105,6 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         object: %ActivityPub.Object{
           data: %{
             "type" => "Note",
-            "content" =>
-              ~S(<p><span class="h-card"><a href="http://kazarma/-/bob" class="u-url mention">@<span>bob@kazarma.kazarma.local</span></a></span> hello</p>),
             "source" => "@bob@kazarma.kazarma.local hello",
             "id" => "note_id",
             "actor" => "http://pleroma/pub/actors/alice",

@@ -5,7 +5,6 @@ defmodule Kazarma.MatrixMocks do
 
   require Kazarma.Mocks
   import Kazarma.Mocks
-  import Mox, except: [expect: 3, expect: 4]
 
   def expect_client(client) do
     client

@@ -4,12 +4,9 @@
 defmodule KazarmaWeb.IndexTest do
   use KazarmaWeb.ConnCase
 
-  import Plug.Conn
   import Phoenix.ConnTest
   import Phoenix.LiveViewTest
   @endpoint KazarmaWeb.Endpoint
-
-  alias Kazarma.Bridge
 
   describe "search" do
     setup :set_mox_from_context

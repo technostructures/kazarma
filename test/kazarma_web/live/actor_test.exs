@@ -4,7 +4,6 @@
 defmodule KazarmaWeb.ActorTest do
   use KazarmaWeb.ConnCase
 
-  import Plug.Conn
   import Phoenix.ConnTest
   import Phoenix.LiveViewTest
   @endpoint KazarmaWeb.Endpoint
@@ -297,7 +296,7 @@ defmodule KazarmaWeb.ActorTest do
           remote_id: "http://pleroma/pub/actors/alice"
         })
 
-      {:ok, view, html} = live(conn, "/pleroma/alice")
+      {:ok, view, _html} = live(conn, "/pleroma/alice")
 
       view
       |> render_hook(:search, %{"search" => %{"address" => "http://pleroma/pub/actors/alice"}})
@@ -313,7 +312,7 @@ defmodule KazarmaWeb.ActorTest do
           remote_id: "http://pleroma/pub/actors/alice"
         })
 
-      {:ok, view, html} = live(conn, "/pleroma/alice")
+      {:ok, view, _html} = live(conn, "/pleroma/alice")
 
       view
       |> render_hook(:search, %{"search" => %{"address" => "http://pleroma/pub/actors/bob"}})

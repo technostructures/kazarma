@@ -4,7 +4,6 @@
 defmodule KazarmaWeb.ObjectTest do
   use KazarmaWeb.ConnCase
 
-  import Plug.Conn
   import Phoenix.ConnTest
   import Phoenix.LiveViewTest
   @endpoint KazarmaWeb.Endpoint
@@ -210,7 +209,7 @@ defmodule KazarmaWeb.ObjectTest do
           remote_id: "http://pleroma/pub/actors/alice"
         })
 
-      {:ok, view, html} = live(conn, "/-/alice/note/#{local_note.id}")
+      {:ok, view, _html} = live(conn, "/-/alice/note/#{local_note.id}")
 
       view
       |> render_hook(:search, %{"search" => %{"address" => "http://pleroma/pub/actors/alice"}})
@@ -229,7 +228,7 @@ defmodule KazarmaWeb.ObjectTest do
           remote_id: "http://pleroma/pub/actors/alice"
         })
 
-      {:ok, view, html} = live(conn, "/-/alice/note/#{local_note.id}")
+      {:ok, view, _html} = live(conn, "/-/alice/note/#{local_note.id}")
 
       view
       |> render_hook(:search, %{"search" => %{"address" => "http://pleroma/pub/actors/bob"}})
