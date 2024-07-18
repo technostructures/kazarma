@@ -42,4 +42,10 @@ config :kazarma, frontpage_help: true
 config :kazarma, frontpage_before_text: nil
 config :kazarma, frontpage_after_text: nil
 
-config :logger, level: :debug
+log_level =
+  case System.get_env("LOG_LEVEL") do
+    nil -> :critical
+    level -> String.to_atom(level)
+  end
+
+config :logger, level: log_level
