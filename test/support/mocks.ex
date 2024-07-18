@@ -40,17 +40,16 @@ defmodule Kazarma.Mocks do
         unquote(callback_with_error(callback, __CALLER__))
       )
     end
+
+    # expanded = Macro.expand(ret, __ENV__) |> Macro.to_string()
   end
 
   defp callback_with_error({:fn, _, clauses} = callback, caller) do
-    {:fn, [],
-     [
-       {:->, [],
-        [
-          catch_all_patterns(clauses),
-          callback_case(callback, caller)
-        ]}
-     ]}
+    quote do
+      fn unquote_splicing(catch_all_patterns(clauses)) ->
+        unquote(callback_case(callback, caller))
+      end
+    end
   end
 
   # Replace a list of pattern with a list of catch-all patterns.
@@ -97,7 +96,7 @@ defmodule Kazarma.Mocks do
   defp callback_case({:fn, _, [{:->, _, [[], body]}]}, _caller), do: body
 
   defp callback_case({:fn, _, [_ | _] = clauses} = callback, caller) do
-    case_clauses = Enum.map(clauses, &case_clause/1) ++ error_clause(callback, caller)
+    case_clauses = Enum.map(clauses, &case_clause(&1, caller)) ++ error_clause(callback, caller)
 
     quote do
       case unquote(unique_or_tuple(catch_all_patterns(clauses))) do
@@ -107,40 +106,24 @@ defmodule Kazarma.Mocks do
   end
 
   defp unique_or_tuple([pattern]), do: pattern
+  # defp unique_or_tuple([pattern]), do: {:{}, [], [pattern]}
   defp unique_or_tuple([_ | _] = patterns), do: {:{}, [], patterns}
 
-  defp case_clause({:->, env, [patterns, body]}) do
+  defp case_clause({:->, env, [patterns, body]}, caller) do
     pattern =
       patterns
-      |> Enum.map(&fix_ignored/1)
+      |> Enum.map(&ExUnit.Assertions.__expand_pattern__(&1, caller))
       |> unique_or_tuple()
 
     {:->, env, [[pattern], body]}
   end
 
-  defp fix_ignored(pattern) do
-    Macro.prewalk(pattern, fn
-      {id, env, rest} = node when is_atom(id) ->
-        case Atom.to_string(id) do
-          "_" <> _ ->
-            {:_, env, nil}
-
-          _ ->
-            node
-        end
-
-      other ->
-        other
-    end)
-  end
-
   defp error_clause({:fn, _, clauses} = callback, caller) do
-    # @TODO: handle pins
-    pins = []
-
     body =
       Enum.map(clauses, fn
-        {:->, _env, [patterns, _body]} = clause ->
+        {:->, _env, [patterns, _body]} ->
+          pins = collect_pins_from_pattern(patterns, Macro.Env.vars(caller))
+
           expanded_patterns = Enum.map(patterns, &Macro.expand(&1, caller))
           # {:->, _env, [expanded_patterns, _body]}  = Macro.expand(clause, __CALLER__)
 
@@ -172,5 +155,39 @@ defmodule Kazarma.Mocks do
     quote do
       Tuple.to_list(right)
     end
+  end
+
+  defp collect_pins_from_pattern(list, vars) when is_list(list) do
+    Enum.map(list, &collect_pins_from_pattern(&1, vars))
+    |> Enum.concat()
+  end
+
+  defp collect_pins_from_pattern(expr, vars) do
+    {_, pins} =
+      Macro.prewalk(expr, %{}, fn
+        {:quote, _, [_]}, acc ->
+          {:ok, acc}
+
+        {:quote, _, [_, _]}, acc ->
+          {:ok, acc}
+
+        {:^, _, [var]}, acc ->
+          identifier = var_context(var)
+
+          if identifier in vars do
+            {:ok, Map.put(acc, var_context(var), var)}
+          else
+            {:ok, acc}
+          end
+
+        form, acc ->
+          {form, acc}
+      end)
+
+    Enum.to_list(pins)
+  end
+
+  defp var_context({name, meta, context}) do
+    {name, meta[:counter] || context}
   end
 end
