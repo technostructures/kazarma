@@ -5,6 +5,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
   alias Kazarma.Bridge
   import Kazarma.ActivityPub.Adapter
+  import Kazarma.MatrixMocks
 
   describe "activity handler (handle_activity/1) for Delete activity" do
     setup :set_mox_from_context
@@ -50,9 +51,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "when receiving a Delete activity for an existing object, gets the corresponding ids and forwards the redact event" do
       Kazarma.Matrix.TestClient
-      |> expect(:redact_message, fn "!room:kazarma", "local_id", nil, user_id: "@bob:kazarma" ->
-        {:ok, "delete_event_id"}
-      end)
+      |> expect_redact_message("@bob:kazarma", "!room:kazarma", "local_id", "delete_event_id")
 
       assert :ok == handle_activity(delete_fixture())
 
@@ -106,8 +105,6 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         object: %ActivityPub.Object{
           data: %{
             "type" => "Note",
-            "content" =>
-              ~S(<p><span class="h-card"><a href="http://kazarma/-/bob" class="u-url mention">@<span>bob@kazarma.kazarma.local</span></a></span> hello</p>),
             "source" => "@bob@kazarma.kazarma.local hello",
             "id" => "note_id",
             "actor" => "http://pleroma/pub/actors/alice",
@@ -135,10 +132,9 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "it converts attachment" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
-        :ok
-      end)
-      |> expect(:send_message, fn
+      |> expect_join("@_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         %{
           "body" =>
@@ -148,15 +144,14 @@ defmodule Kazarma.ActivityPub.ActivityTest do
             "<img src=\"http://matrix/_matrix/media/r0/download/server/image_id\" title=\"aabbccddeeffgg\">",
           "msgtype" => "m.text"
         },
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "event_id"}
-      end)
-      |> expect(:upload, fn
+        "event_id"
+      )
+      |> expect_upload(
+        "@_ap_alice___pleroma:kazarma",
         "<!doctype html>\n<html>\n<head>\n    <title>Example Domain</title>\n\n    <meta charset=\"utf-8\" />\n    <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <style type=\"text/css\">\n    body {\n        background-color: #f0f0f2;\n        margin: 0;\n        padding: 0;\n        font-family: -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", \"Open Sans\", \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n        \n    }\n    div {\n        width: 600px;\n        margin: 5em auto;\n        padding: 2em;\n        background-color: #fdfdff;\n        border-radius: 0.5em;\n        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);\n    }\n    a:link, a:visited {\n        color: #38488f;\n        text-decoration: none;\n    }\n    @media (max-width: 700px) {\n        div {\n            margin: 0 auto;\n            width: auto;\n        }\n    }\n    </style>    \n</head>\n\n<body>\n<div>\n    <h1>Example Domain</h1>\n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>\n</div>\n</body>\n</html>\n",
         [filename: "example.com", mimetype: "application/octet-stream"],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "http://matrix/_matrix/media/r0/download/server/image_id"}
-      end)
+        "http://matrix/_matrix/media/r0/download/server/image_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -243,18 +238,17 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "it converts mentions" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
-        :ok
-      end)
-      |> expect(:send_state_event, fn
+      |> expect_join("@_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_send_state_event(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         "m.room.member",
         "@_ap_bob___kazarma.kazarma.local:kazarma",
         %{"membership" => "invite"},
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "!invite_event"}
-      end)
-      |> expect(:send_message, fn
+        "!invite_event"
+      )
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         %{
           "body" => "@bob:kazarma hello \uFEFF",
@@ -262,9 +256,8 @@ defmodule Kazarma.ActivityPub.ActivityTest do
           "formatted_body" => "<p><a href=\"https://matrix.to/#/@bob:kazarma\">Bob</a> hello</p>",
           "msgtype" => "m.text"
         },
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "event_id"}
-      end)
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -355,52 +348,36 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "when receiving a Block activity for a Matrix user it ignores the user and bans them from the actor room" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_data, fn
+      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.ignored_user_list", %{})
+      |> expect_put_data("@_ap_alice___pleroma:kazarma", "m.ignored_user_list", %{
+        "@bob:kazarma" => %{}
+      })
+      |> expect_send_state_event(
         "@_ap_alice___pleroma:kazarma",
-        "m.ignored_user_list",
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, %{}}
-      end)
-      |> expect(:put_data, fn
-        "@_ap_alice___pleroma:kazarma",
-        "m.ignored_user_list",
-        %{"@bob:kazarma" => %{}},
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          :ok
-      end)
-      |> expect(:send_state_event, fn "local_id",
-                                      "m.room.member",
-                                      "@bob:kazarma",
-                                      %{"membership" => "ban"},
-                                      [user_id: "@_ap_alice___pleroma:kazarma"] ->
+        "local_id",
+        "m.room.member",
+        "@bob:kazarma",
+        %{"membership" => "ban"},
         :ok
-      end)
+      )
 
       assert :ok == handle_activity(block_fixture())
     end
 
     test "when receiving a Undo/Block activity for a Matrix user it unignores the user and unbans them from the actor room" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_data, fn
+      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.ignored_user_list", %{
+        "@bob:kazarma" => %{}
+      })
+      |> expect_put_data("@_ap_alice___pleroma:kazarma", "m.ignored_user_list", %{})
+      |> expect_send_state_event(
         "@_ap_alice___pleroma:kazarma",
-        "m.ignored_user_list",
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, %{"@bob:kazarma" => %{}}}
-      end)
-      |> expect(:put_data, fn
-        "@_ap_alice___pleroma:kazarma",
-        "m.ignored_user_list",
-        %{},
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          :ok
-      end)
-      |> expect(:send_state_event, fn "local_id",
-                                      "m.room.member",
-                                      "@bob:kazarma",
-                                      %{"membership" => "leave"},
-                                      [user_id: "@_ap_alice___pleroma:kazarma"] ->
+        "local_id",
+        "m.room.member",
+        "@bob:kazarma",
+        %{"membership" => "leave"},
         :ok
-      end)
+      )
 
       assert :ok == handle_activity(unblock_fixture())
     end

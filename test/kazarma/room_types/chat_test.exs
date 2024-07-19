@@ -5,6 +5,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
   alias Kazarma.Bridge
   import Kazarma.ActivityPub.Adapter
+  import Kazarma.MatrixMocks
 
   describe "activity handler (handle_activity/1) for ChatMessage" do
     setup :set_mox_from_context
@@ -93,18 +94,13 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity for a first conversation creates a new room and sends forward the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_data, 2, fn
-        "@_ap_alice___pleroma:kazarma", "m.direct", user_id: "@_ap_alice___pleroma:kazarma" ->
-          {:ok, %{}}
-      end)
-      |> expect(:put_data, fn
+      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.direct", %{})
+      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.direct", %{})
+      |> expect_put_data("@_ap_alice___pleroma:kazarma", "m.direct", %{
+        "@bob:kazarma" => ["!room:kazarma"]
+      })
+      |> expect_create_room(
         "@_ap_alice___pleroma:kazarma",
-        "m.direct",
-        %{"@bob:kazarma" => ["!room:kazarma"]},
-        user_id: "@_ap_alice___pleroma:kazarma" ->
-          :ok
-      end)
-      |> expect(:create_room, 1, fn
         [
           visibility: :private,
           name: nil,
@@ -113,19 +109,19 @@ defmodule Kazarma.RoomTypes.ChatTest do
           invite: ["@bob:kazarma"],
           room_version: "5"
         ],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, %{"room_id" => "!room:kazarma"}}
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  %{
-                                    "body" => "hello \uFEFF",
-                                    "format" => "org.matrix.custom.html",
-                                    "formatted_body" => "hello",
-                                    "msgtype" => "m.text"
-                                  },
-                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+        "!room:kazarma"
+      )
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
+        "!room:kazarma",
+        %{
+          "body" => "hello \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" => "hello",
+          "msgtype" => "m.text"
+        },
+        "event_id"
+      )
 
       assert :ok = handle_activity(chat_message_fixture())
 
@@ -150,21 +146,20 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity for an existing conversation gets the corresponding room and forwards the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_data, fn "@_ap_alice___pleroma:kazarma",
-                              "m.direct",
-                              user_id: "@_ap_alice___pleroma:kazarma" ->
-        {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  %{
-                                    "body" => "hello \uFEFF",
-                                    "format" => "org.matrix.custom.html",
-                                    "formatted_body" => "hello",
-                                    "msgtype" => "m.text"
-                                  },
-                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.direct", %{
+        "@bob:kazarma" => ["!room:kazarma"]
+      })
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
+        "!room:kazarma",
+        %{
+          "body" => "hello \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" => "hello",
+          "msgtype" => "m.text"
+        },
+        "event_id"
+      )
 
       assert :ok = handle_activity(chat_message_fixture())
 
@@ -179,18 +174,15 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity with an attachement and some text forwards both the attachment and the text" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_data, fn "@_ap_alice___pleroma:kazarma",
-                              "m.direct",
-                              user_id: "@_ap_alice___pleroma:kazarma" ->
-        {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
-      end)
-      |> expect(:upload, fn
-        _examplejpg_data,
-        [filename: "logo.svg", mimetype: "image/svg+xml"],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "mxc://serveur/example"}
-      end)
-      |> expect(:send_message, fn
+      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.direct", %{
+        "@bob:kazarma" => ["!room:kazarma"]
+      })
+      |> expect_upload_something(
+        "@_ap_alice___pleroma:kazarma",
+        "mxc://serveur/example"
+      )
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         %{
           "body" => "hello\nmxc://serveur/example \uFEFF",
@@ -198,9 +190,8 @@ defmodule Kazarma.RoomTypes.ChatTest do
           "formatted_body" => "hello<br><img src=\"mxc://serveur/example\" title=\"Attachment\">",
           "msgtype" => "m.text"
         },
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "event_id1"}
-      end)
+        "event_id1"
+      )
 
       assert :ok = handle_activity(chat_message_with_attachment_fixture())
 
@@ -215,18 +206,15 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity with an attachement and no text forwards only the attachment" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_data, fn "@_ap_alice___pleroma:kazarma",
-                              "m.direct",
-                              user_id: "@_ap_alice___pleroma:kazarma" ->
-        {:ok, %{"@bob:kazarma" => ["!room:kazarma"]}}
-      end)
-      |> expect(:upload, fn
-        _examplejpg_data,
-        [filename: "logo.svg", mimetype: "image/svg+xml"],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "mxc://serveur/example"}
-      end)
-      |> expect(:send_message, fn
+      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.direct", %{
+        "@bob:kazarma" => ["!room:kazarma"]
+      })
+      |> expect_upload_something(
+        "@_ap_alice___pleroma:kazarma",
+        "mxc://serveur/example"
+      )
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         %{
           "body" => "mxc://serveur/example \uFEFF",
@@ -234,9 +222,8 @@ defmodule Kazarma.RoomTypes.ChatTest do
           "formatted_body" => "<img src=\"mxc://serveur/example\" title=\"Attachment\">",
           "msgtype" => "m.text"
         },
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "event_id"}
-      end)
+        "event_id"
+      )
 
       chat_message =
         update_in(

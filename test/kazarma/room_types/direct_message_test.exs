@@ -5,6 +5,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
   alias Kazarma.Bridge
   import Kazarma.ActivityPub.Adapter
+  import Kazarma.MatrixMocks
 
   describe "activity handler (handle_activity/1) for private Note" do
     setup :set_mox_from_context
@@ -146,11 +147,12 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity for an existing conversation gets the corresponding room and forwards the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:send_message, fn "!room:kazarma",
-                                  {"hello \uFEFF", "hello"},
-                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
+        "!room:kazarma",
+        {"hello \uFEFF", "hello"},
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -175,19 +177,20 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity for an existing conversation with another mention for a Matrix it invites them" do
       Kazarma.Matrix.TestClient
-      |> expect(:send_state_event, fn
+      |> expect_send_state_event(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         "m.room.member",
         "@carole:kazarma",
         %{"membership" => "invite"},
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "!invite_event"}
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  {"hello \uFEFF", "hello"},
-                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+        "!invite_event"
+      )
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
+        "!room:kazarma",
+        {"hello \uFEFF", "hello"},
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -223,7 +226,8 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity for a first conversation creates a new room and sends forward the message" do
       Kazarma.Matrix.TestClient
-      |> expect(:create_room, fn
+      |> expect_create_room(
+        "@_ap_alice___pleroma:kazarma",
         [
           visibility: :private,
           name: nil,
@@ -232,14 +236,14 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
           invite: ["@bob:kazarma"],
           room_version: "5"
         ],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, %{"room_id" => "!room:kazarma"}}
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  {"hello \uFEFF", "hello"},
-                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+        "!room:kazarma"
+      )
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
+        "!room:kazarma",
+        {"hello \uFEFF", "hello"},
+        "event_id"
+      )
 
       assert :ok = handle_activity(note_fixture())
 
@@ -265,18 +269,16 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity with attachments and some text forwards the attachments and the text" do
       Kazarma.Matrix.TestClient
-      |> expect(:upload, 2, fn
-        _examplejpg_data,
-        [filename: "logo.svg", mimetype: "image/svg+xml"],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "mxc://serveur/example"}
-
-        _examplejpg_data,
-        [filename: "favicon.png", mimetype: "image/png"],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "mxc://serveur/example2"}
-      end)
-      |> expect(:send_message, fn
+      |> expect_upload_something(
+        "@_ap_alice___pleroma:kazarma",
+        "mxc://serveur/example"
+      )
+      |> expect_upload_something(
+        "@_ap_alice___pleroma:kazarma",
+        "mxc://serveur/example2"
+      )
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         %{
           "body" => "hello\nmxc://serveur/example\nmxc://serveur/example2 \uFEFF",
@@ -285,9 +287,8 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
             "hello<br><img src=\"mxc://serveur/example\" title=\"Attachment\"><br><img src=\"mxc://serveur/example2\" title=\"Attachment\">",
           "msgtype" => "m.text"
         },
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "event_id"}
-      end)
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -312,18 +313,16 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity with attachments and no text forwards only the attachments" do
       Kazarma.Matrix.TestClient
-      |> expect(:upload, 2, fn
-        _examplejpg_data,
-        [filename: "logo.svg", mimetype: "image/svg+xml"],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "mxc://serveur/example"}
-
-        _examplejpg_data,
-        [filename: "favicon.png", mimetype: "image/png"],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "mxc://serveur/example2"}
-      end)
-      |> expect(:send_message, fn
+      |> expect_upload_something(
+        "@_ap_alice___pleroma:kazarma",
+        "mxc://serveur/example"
+      )
+      |> expect_upload_something(
+        "@_ap_alice___pleroma:kazarma",
+        "mxc://serveur/example2"
+      )
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         %{
           "body" => "mxc://serveur/example\nmxc://serveur/example2 \uFEFF",
@@ -332,9 +331,8 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
             "<img src=\"mxc://serveur/example\" title=\"Attachment\"><br><img src=\"mxc://serveur/example2\" title=\"Attachment\">",
           "msgtype" => "m.text"
         },
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "event_id"}
-      end)
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -433,19 +431,20 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
 
     test "when receiving a Note activity with a reply for an existing conversation gets the corresponding room and forwards the message with a reply" do
       Kazarma.Matrix.TestClient
-      |> expect(:send_message, fn "!room:kazarma",
-                                  %{
-                                    "msgtype" => "m.text",
-                                    "body" => "hello \uFEFF",
-                                    "m.relates_to" => %{
-                                      "m.in_reply_to" => %{
-                                        "event_id" => "local_id"
-                                      }
-                                    }
-                                  },
-                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
+        "!room:kazarma",
+        %{
+          "msgtype" => "m.text",
+          "body" => "hello \uFEFF",
+          "m.relates_to" => %{
+            "m.in_reply_to" => %{
+              "event_id" => "local_id"
+            }
+          }
+        },
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",

@@ -9,6 +9,7 @@ defmodule Kazarma.Matrix.TransactionTest do
   use Kazarma.DataCase
 
   import Kazarma.Matrix.Transaction
+  import Kazarma.MatrixMocks
   alias Kazarma.Bridge
   alias MatrixAppService.Event
 
@@ -90,33 +91,16 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when a puppet user is invited to a direct room a Bridge record is created and the room is joined" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!direct_room:kazarma", user_id: @pleroma_puppet_address ->
-        :ok
-      end)
-      |> expect(:register, fn
-        [
-          username: @pleroma_puppet_username,
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => @pleroma_puppet_address}}
-      end)
-      |> expect(:put_displayname, fn
-        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
-          :ok
-      end)
-      |> expect(:get_data, fn
-        @pleroma_puppet_address, "m.direct", user_id: @pleroma_puppet_address ->
-          {:ok, %{}}
-      end)
-      |> expect(:put_data, fn
-        @pleroma_puppet_address,
-        "m.direct",
-        %{"@alice:kazarma" => ["!direct_room:kazarma"]},
-        user_id: @pleroma_puppet_address ->
-          :ok
-      end)
+      |> expect_join(@pleroma_puppet_address, "!direct_room:kazarma")
+      |> expect_register(%{
+        username: @pleroma_puppet_username,
+        matrix_id: @pleroma_puppet_address,
+        displayname: @pleroma_user_displayname
+      })
+      |> expect_get_data(@pleroma_puppet_address, "m.direct", %{})
+      |> expect_put_data(@pleroma_puppet_address, "m.direct", %{
+        "@alice:kazarma" => ["!direct_room:kazarma"]
+      })
 
       assert :ok == new_event(invitation_event_direct_fixture())
 
@@ -131,41 +115,19 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when a puppet user is invited to a multiuser room a Bridge record is created and the room is joined" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn
-        "@alice:kazarma" ->
-          {:ok, %{"displayname" => "Alice"}}
-      end)
-      |> expect(:register, 2, fn
-        [
-          username: @pleroma_puppet_username,
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => @pleroma_puppet_address}}
-
-        [
-          username: @mastodon_puppet_username,
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => @mastodon_puppet_address}}
-      end)
-      |> expect(:put_displayname, 2, fn
-        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
-          :ok
-
-        @mastodon_puppet_address, @mastodon_user_displayname, user_id: @mastodon_puppet_address ->
-          :ok
-      end)
-      |> expect(:join, 2, fn
-        "!room:kazarma", user_id: @pleroma_puppet_address ->
-          :ok
-
-        "!room:kazarma", user_id: @mastodon_puppet_address ->
-          :ok
-      end)
+      |> expect_get_profile("@alice:kazarma", %{"displayname" => "Alice"})
+      |> expect_register(%{
+        username: @pleroma_puppet_username,
+        matrix_id: @pleroma_puppet_address,
+        displayname: @pleroma_user_displayname
+      })
+      |> expect_register(%{
+        username: @mastodon_puppet_username,
+        matrix_id: @mastodon_puppet_address,
+        displayname: @mastodon_user_displayname
+      })
+      |> expect_join(@pleroma_puppet_address, "!room:kazarma")
+      |> expect_join(@mastodon_puppet_address, "!room:kazarma")
 
       assert :ok == new_event(invitation_event_multiuser_fixture_pleroma())
 
@@ -231,35 +193,30 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "it does nothing if nothing has changed" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        %{base_url: "http://matrix"}
-      end)
+      |> expect_client()
 
       assert :ok == new_event(profile_update_fixture("old_name", "mxc://server/old_avatar"))
     end
 
     test "it does nothing if not confirmed by profile" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        %{base_url: "http://matrix"}
-      end)
-      |> expect(:get_profile, fn
-        "@alice:kazarma" ->
-          {:ok, %{"displayname" => "old_name", "avatar_url" => "mxc://server/old_avatar"}}
-      end)
+      |> expect_client()
+      |> expect_get_profile("@alice:kazarma", %{
+        "displayname" => "old_name",
+        "avatar_url" => "mxc://server/old_avatar"
+      })
 
       assert :ok == new_event(profile_update_fixture("new_name", "mxc://server/new_avatar"))
     end
 
     test "it updates the avatar if it has changed" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, 2, fn ->
-        %{base_url: "http://matrix"}
-      end)
-      |> expect(:get_profile, fn
-        "@alice:kazarma" ->
-          {:ok, %{"displayname" => "old_name", "avatar_url" => "mxc://server/new_avatar"}}
-      end)
+      |> expect_client()
+      |> expect_client()
+      |> expect_get_profile("@alice:kazarma", %{
+        "displayname" => "old_name",
+        "avatar_url" => "mxc://server/new_avatar"
+      })
 
       Kazarma.ActivityPub.TestServer
       |> expect(:update, fn
@@ -293,41 +250,39 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "it updates the displayname if it has changed" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn ->
-        %{base_url: "http://matrix"}
-      end)
-      |> expect(:get_profile, fn
-        "@alice:kazarma" ->
-          Kazarma.ActivityPub.TestServer
-          |> expect(:update, fn
-            %{
-              actor: %ActivityPub.Actor{
-                ap_id: "http://kazarma/users/alice",
-                data: %{
-                  "icon" => %{
-                    "url" => "http://matrix/_matrix/media/r0/download/server/old_avatar"
-                  },
-                  "id" => "http://kazarma/users/alice",
-                  "name" => "new_name",
-                  "preferredUsername" => "alice"
-                },
-                local: true,
-                username: "alice@kazarma"
-              },
-              cc: [],
-              object: %{
-                "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/old_avatar"},
-                "id" => "http://kazarma/users/alice",
-                "name" => "new_name",
-                "preferredUsername" => "alice",
-                "url" => "http://kazarma/users/alice"
-              },
-              to: [nil, "https://www.w3.org/ns/activitystreams#Public"]
-            } ->
-              :ok
-          end)
+      |> expect_client()
+      |> expect_get_profile("@alice:kazarma", %{
+        "displayname" => "new_name",
+        "avatar_url" => "mxc://server/old_avatar"
+      })
 
-          {:ok, %{"displayname" => "new_name", "avatar_url" => "mxc://server/old_avatar"}}
+      Kazarma.ActivityPub.TestServer
+      |> expect(:update, fn
+        %{
+          actor: %ActivityPub.Actor{
+            ap_id: "http://kazarma/users/alice",
+            data: %{
+              "icon" => %{
+                "url" => "http://matrix/_matrix/media/r0/download/server/old_avatar"
+              },
+              "id" => "http://kazarma/users/alice",
+              "name" => "new_name",
+              "preferredUsername" => "alice"
+            },
+            local: true,
+            username: "alice@kazarma"
+          },
+          cc: [],
+          object: %{
+            "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/old_avatar"},
+            "id" => "http://kazarma/users/alice",
+            "name" => "new_name",
+            "preferredUsername" => "alice",
+            "url" => "http://kazarma/users/alice"
+          },
+          to: [nil, "https://www.w3.org/ns/activitystreams#Public"]
+        } ->
+          :ok
       end)
 
       assert :ok == new_event(profile_update_fixture("new_name", "mxc://server/old_avatar"))
@@ -381,9 +336,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a message it forwards it as ChatMessage activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
@@ -435,10 +388,8 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a message with an attachment it forwards it in a ChatMessage activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn -> %{base_url: "http://example.org"} end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
+      |> expect_client()
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
@@ -474,7 +425,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               "type" => "Document",
               "url" => [
                 %{
-                  "href" => "http://example.org/_matrix/media/r0/download/kazarma/aabbccddeeffgg",
+                  "href" => "http://matrix/_matrix/media/r0/download/kazarma/aabbccddeeffgg",
                   "mediaType" => "image/jpeg",
                   "type" => "Link"
                 }
@@ -524,22 +475,12 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a message it forwards it as Note activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:register, fn
-        [
-          username: @pleroma_puppet_username,
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => @pleroma_puppet_address}}
-      end)
-      |> expect(:put_displayname, fn
-        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
-          :ok
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+      |> expect_register(%{
+        username: @pleroma_puppet_username,
+        matrix_id: @pleroma_puppet_address,
+        displayname: @pleroma_user_displayname
+      })
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
@@ -601,23 +542,13 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a message with an attachment it forwards it in a Note activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:client, fn -> %{base_url: "http://example.org"} end)
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:register, fn
-        [
-          username: @pleroma_puppet_username,
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => @pleroma_puppet_address}}
-      end)
-      |> expect(:put_displayname, fn
-        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
-          :ok
-      end)
+      |> expect_client()
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+      |> expect_register(%{
+        username: @pleroma_puppet_username,
+        matrix_id: @pleroma_puppet_address,
+        displayname: @pleroma_user_displayname
+      })
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
@@ -654,7 +585,7 @@ defmodule Kazarma.Matrix.TransactionTest do
               "type" => "Document",
               "url" => [
                 %{
-                  "href" => "http://example.org/_matrix/media/r0/download/kazarma/aabbccddeeffgg",
+                  "href" => "http://matrix/_matrix/media/r0/download/kazarma/aabbccddeeffgg",
                   "mediaType" => "image/jpeg",
                   "type" => "Link"
                 }
@@ -734,22 +665,12 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a message with reply it forwards it as Note activity with reply" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:register, fn
-        [
-          username: @pleroma_puppet_username,
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => @pleroma_puppet_address}}
-      end)
-      |> expect(:put_displayname, fn
-        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
-          :ok
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+      |> expect_register(%{
+        username: @pleroma_puppet_username,
+        matrix_id: @pleroma_puppet_address,
+        displayname: @pleroma_user_displayname
+      })
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
@@ -859,12 +780,8 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "the follow is executed" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:get_profile, fn "@alice:kazarma" ->
-        {:ok, %{"displayname" => "Alice"}}
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+      |> expect_get_profile("@alice:kazarma", %{"displayname" => "Alice"})
 
       Kazarma.ActivityPub.TestServer
       |> expect(:follow, fn
@@ -980,12 +897,8 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "the unfollow is executed" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:get_profile, fn "@alice:kazarma" ->
-        {:ok, %{"displayname" => "Alice"}}
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+      |> expect_get_profile("@alice:kazarma", %{"displayname" => "Alice"})
 
       Kazarma.ActivityPub.TestServer
       |> expect(:unfollow, fn
@@ -1095,9 +1008,7 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "when receiving a redaction event it forwards it as Delete activity" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
 
       Kazarma.ActivityPub.TestServer
       |> expect(:delete, fn
@@ -1191,13 +1102,8 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "it removes mx-reply tags and convert mentions" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, 2, fn
-        "@bob:kazarma" ->
-          {:ok, %{"displayname" => "Bob"}}
-
-        "@alice:kazarma" ->
-          {:ok, %{"displayname" => "Alice"}}
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+      |> expect_get_profile("@alice:kazarma", %{"displayname" => "Alice"})
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
@@ -1270,13 +1176,8 @@ defmodule Kazarma.Matrix.TransactionTest do
 
     test "it removes mx-reply tags and convert mentions" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, 3, fn
-        "@bob:kazarma" ->
-          {:ok, %{"displayname" => "Bob"}}
-
-        "@alice:kazarma" ->
-          {:error, :not_found}
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+      |> expect_get_profile_not_found("@alice:kazarma")
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn

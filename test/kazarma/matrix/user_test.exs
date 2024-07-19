@@ -4,6 +4,7 @@ defmodule Kazarma.Matrix.UserTest do
   use Kazarma.DataCase
 
   import Kazarma.Matrix.User
+  import Kazarma.MatrixMocks
 
   # This is an account created on a public ActivityPub instance
   @ap_user_server "pleroma.interhacker.space"
@@ -20,19 +21,11 @@ defmodule Kazarma.Matrix.UserTest do
 
     test "if the given matrix ID corresponds to a puppet ID for an existing AP user it creates the puppet user" do
       Kazarma.Matrix.TestClient
-      |> expect(:register, 1, fn
-        [
-          username: @ap_puppet_username,
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => @ap_puppet_matrix_id}}
-      end)
-      |> expect(:put_displayname, fn
-        @ap_puppet_matrix_id, @ap_user_displayname, user_id: @ap_puppet_matrix_id ->
-          :ok
-      end)
+      |> expect_register(%{
+        username: @ap_puppet_username,
+        matrix_id: @ap_puppet_matrix_id,
+        displayname: @ap_user_displayname
+      })
 
       assert :ok = query_user(@ap_puppet_matrix_id)
     end

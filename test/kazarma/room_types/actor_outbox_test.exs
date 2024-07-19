@@ -10,6 +10,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
   import Kazarma.ActivityPub.Adapter
   import Kazarma.Matrix.Transaction
+  import Kazarma.MatrixMocks
   alias Kazarma.Bridge
   alias MatrixAppService.Event
 
@@ -50,22 +51,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "it sends a public Note mentioning the AP user" do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@bob:kazarma" ->
-        {:ok, %{"displayname" => "Bob"}}
-      end)
-      |> expect(:register, fn
-        [
-          username: @pleroma_puppet_username,
-          device_id: "KAZARMA_APP_SERVICE",
-          initial_device_display_name: "Kazarma",
-          registration_type: "m.login.application_service"
-        ] ->
-          {:ok, %{"user_id" => @pleroma_puppet_address}}
-      end)
-      |> expect(:put_displayname, fn
-        @pleroma_puppet_address, @pleroma_user_displayname, user_id: @pleroma_puppet_address ->
-          :ok
-      end)
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+      |> expect_register(%{
+        username: @pleroma_puppet_username,
+        matrix_id: @pleroma_puppet_address,
+        displayname: @pleroma_user_displayname
+      })
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
@@ -224,14 +215,13 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public note forwards it to the puppet's timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
-        :ok
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  {"hello \uFEFF", "hello"},
-                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+      |> expect_join("@_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
+        "!room:kazarma",
+        {"hello \uFEFF", "hello"},
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -256,19 +246,18 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public note forwards it to the puppet's timeline room even without a source part" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
-        :ok
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  %{
-                                    "body" => "hello \uFEFF",
-                                    "format" => "org.matrix.custom.html",
-                                    "formatted_body" => "hello",
-                                    "msgtype" => "m.text"
-                                  },
-                                  [user_id: "@_ap_alice___pleroma:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+      |> expect_join("@_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
+        "!room:kazarma",
+        %{
+          "body" => "hello \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" => "hello",
+          "msgtype" => "m.text"
+        },
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -293,34 +282,30 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public note with a mention of Matrix user invites them to the timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___pleroma:kazarma" ->
-        :ok
-      end)
-      |> expect(:send_state_event, fn
+      |> expect_join("@_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_send_state_event(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         "m.room.member",
         "@bob:kazarma",
         %{"membership" => "invite"},
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "!invite_event"}
-      end)
-      |> expect(
-        :send_message,
-        # @TODO
-        # should be
-        # "body" => "Bob hello \uFEFF",
-        # "formatted_body" => "<a href=\"http://matrix.to/#/@bob:kazarma\">Bob</a> hello",
-        fn "!room:kazarma",
-           %{
-             "body" => "@bob hello \uFEFF",
-             "format" => "org.matrix.custom.html",
-             "formatted_body" =>
-               "<p><span><a href=\"http://kazarma/-/bob\">@<span>bob</span></a></span> hello</p>",
-             "msgtype" => "m.text"
-           },
-           [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, "event_id"}
-        end
+        "!invite_event"
+      )
+      # @TODO
+      # should be
+      # "body" => "Bob hello \uFEFF",
+      # "formatted_body" => "<a href=\"http://matrix.to/#/@bob:kazarma\">Bob</a> hello",
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
+        "!room:kazarma",
+        %{
+          "body" => "@bob hello \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" =>
+            "<p><span><a href=\"http://kazarma/-/bob\">@<span>bob</span></a></span> hello</p>",
+          "msgtype" => "m.text"
+        },
+        "event_id"
       )
 
       %{
@@ -415,22 +400,21 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "when receiving a Note activity with a reply for an existing conversation gets the corresponding room and forwards the message with a reply" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_bob___pleroma:kazarma" ->
-        :ok
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  %{
-                                    "msgtype" => "m.text",
-                                    "body" => "hello \uFEFF",
-                                    "m.relates_to" => %{
-                                      "m.in_reply_to" => %{
-                                        "event_id" => "local_id"
-                                      }
-                                    }
-                                  },
-                                  [user_id: "@_ap_bob___pleroma:kazarma"] ->
-        {:ok, "reply_id"}
-      end)
+      |> expect_join("@_ap_bob___pleroma:kazarma", "!room:kazarma")
+      |> expect_send_message(
+        "@_ap_bob___pleroma:kazarma",
+        "!room:kazarma",
+        %{
+          "msgtype" => "m.text",
+          "body" => "hello \uFEFF",
+          "m.relates_to" => %{
+            "m.in_reply_to" => %{
+              "event_id" => "local_id"
+            }
+          }
+        },
+        "reply_id"
+      )
 
       %{
         local_id: "local_id",
@@ -567,26 +551,23 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public note forwards it to the puppet's timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_channel___pleroma:kazarma" ->
-        :ok
-      end)
-      |> expect(:upload, fn _blob,
-                            [filename: "150", mimetype: "application/octet-stream"],
-                            [user_id: "@_ap_channel___pleroma:kazarma"] ->
-        {:ok, "mxc://server/media_id"}
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  %{
-                                    "body" =>
-                                      "### Video name\n\nnote_id\n\n> Video description\n \uFEFF",
-                                    "format" => "org.matrix.custom.html",
-                                    "formatted_body" =>
-                                      "<h3>Video name</h3>\n<a href=\"note_id\">\n  <img src=\"mxc://server/media_id\">\n</a>\n<p>\n  Video description\n</p>\n",
-                                    "msgtype" => "m.text"
-                                  },
-                                  [user_id: "@_ap_channel___pleroma:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+      |> expect_join("@_ap_channel___pleroma:kazarma", "!room:kazarma")
+      |> expect_upload_something(
+        "@_ap_channel___pleroma:kazarma",
+        "mxc://server/media_id"
+      )
+      |> expect_send_message(
+        "@_ap_channel___pleroma:kazarma",
+        "!room:kazarma",
+        %{
+          "body" => "### Video name\n\nnote_id\n\n> Video description\n \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" =>
+            "<h3>Video name</h3>\n<a href=\"note_id\">\n  <img src=\"mxc://server/media_id\">\n</a>\n<p>\n  Video description\n</p>\n",
+          "msgtype" => "m.text"
+        },
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -739,20 +720,18 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public page forwards it to the puppet's timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___lemmy:kazarma" ->
-        :ok
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  %{
-                                    "body" => "Page title\n\nPage description \uFEFF",
-                                    "format" => "org.matrix.custom.html",
-                                    "formatted_body" =>
-                                      "<h3>Page title</h3><p>Page description</p>\n",
-                                    "msgtype" => "m.text"
-                                  },
-                                  [user_id: "@_ap_alice___lemmy:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+      |> expect_join("@_ap_alice___lemmy:kazarma", "!room:kazarma")
+      |> expect_send_message(
+        "@_ap_alice___lemmy:kazarma",
+        "!room:kazarma",
+        %{
+          "body" => "Page title\n\nPage description \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" => "<h3>Page title</h3><p>Page description</p>\n",
+          "msgtype" => "m.text"
+        },
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -777,20 +756,18 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public page with link forwards it to the puppet's timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___lemmy:kazarma" ->
-        :ok
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  %{
-                                    "body" => "Page title\nhttps://kazar.ma/ \uFEFF",
-                                    "format" => "org.matrix.custom.html",
-                                    "formatted_body" =>
-                                      "<a href=\"https://kazar.ma/\"><h3>Page title</h3></a>",
-                                    "msgtype" => "m.text"
-                                  },
-                                  [user_id: "@_ap_alice___lemmy:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+      |> expect_join("@_ap_alice___lemmy:kazarma", "!room:kazarma")
+      |> expect_send_message(
+        "@_ap_alice___lemmy:kazarma",
+        "!room:kazarma",
+        %{
+          "body" => "Page title\nhttps://kazar.ma/ \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" => "<a href=\"https://kazar.ma/\"><h3>Page title</h3></a>",
+          "msgtype" => "m.text"
+        },
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -815,21 +792,19 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public page with link and description forwards it to the puppet's timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect(:join, fn "!room:kazarma", user_id: "@_ap_alice___lemmy:kazarma" ->
-        :ok
-      end)
-      |> expect(:send_message, fn "!room:kazarma",
-                                  %{
-                                    "body" =>
-                                      "Page title\nhttps://kazar.ma/\n\nPage description \uFEFF",
-                                    "format" => "org.matrix.custom.html",
-                                    "formatted_body" =>
-                                      "<a href=\"https://kazar.ma/\"><h3>Page title</h3></a><p>Page description</p>\n",
-                                    "msgtype" => "m.text"
-                                  },
-                                  [user_id: "@_ap_alice___lemmy:kazarma"] ->
-        {:ok, "event_id"}
-      end)
+      |> expect_join("@_ap_alice___lemmy:kazarma", "!room:kazarma")
+      |> expect_send_message(
+        "@_ap_alice___lemmy:kazarma",
+        "!room:kazarma",
+        %{
+          "body" => "Page title\nhttps://kazar.ma/\n\nPage description \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" =>
+            "<a href=\"https://kazar.ma/\"><h3>Page title</h3></a><p>Page description</p>\n",
+          "msgtype" => "m.text"
+        },
+        "event_id"
+      )
 
       %{
         local_id: "!room:kazarma",
@@ -918,7 +893,8 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "following the relay actor makes it accept, follow back and creates the actor room" do
       Kazarma.Matrix.TestClient
-      |> expect(:create_room, fn
+      |> expect_create_room(
+        "@_ap_alice___pleroma:kazarma",
         [
           visibility: :public,
           name: "Alice",
@@ -932,15 +908,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
             %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
           ]
         ],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:ok, %{"room_id" => "!room:kazarma"}}
-      end)
-      |> expect(:send_message, fn
+        "!room:kazarma"
+      )
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         %{"body" => "has started bridging their public activity \uFEFF", "msgtype" => "m.emote"},
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          :ok
-      end)
+        nil
+      )
 
       Kazarma.ActivityPub.TestServer
       |> expect(:accept, fn
@@ -1005,33 +980,26 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "following the relay actor makes it accept, follow back and gets the actor room by alias if it already exists" do
       Kazarma.Matrix.TestClient
-      |> expect(:create_room, fn
-        [
-          visibility: :public,
-          name: "Alice",
-          topic: nil,
-          is_direct: false,
-          invite: [],
-          room_version: "5",
-          room_alias_name: "_ap_alice___pleroma",
-          initial_state: [
-            %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
-            %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
-          ]
-        ],
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}}
-      end)
-      |> expect(:get_alias, fn
-        "#_ap_alice___pleroma:kazarma" ->
-          {:ok, {"!room:kazarma", nil}}
-      end)
-      |> expect(:send_message, fn
+      |> expect_create_room_existing("@_ap_alice___pleroma:kazarma",
+        visibility: :public,
+        name: "Alice",
+        topic: nil,
+        is_direct: false,
+        invite: [],
+        room_version: "5",
+        room_alias_name: "_ap_alice___pleroma",
+        initial_state: [
+          %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
+          %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
+        ]
+      )
+      |> expect_get_alias("#_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         %{"body" => "has started bridging their public activity \uFEFF", "msgtype" => "m.emote"},
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          :ok
-      end)
+        "event_id"
+      )
 
       Kazarma.ActivityPub.TestServer
       |> expect(:accept, fn
@@ -1096,12 +1064,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "following the relay actor makes it accept, follow back and starts bridging again is relay had previously been unfollowed" do
       Kazarma.Matrix.TestClient
-      |> expect(:send_message, fn
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         %{"body" => "has started bridging their public activity \uFEFF", "msgtype" => "m.emote"},
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          :ok
-      end)
+        "event_id"
+      )
 
       Kazarma.ActivityPub.TestServer
       |> expect(:accept, fn
@@ -1237,12 +1205,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "unfollowing the relay actor makes it unfollow back and deactivates the actor room" do
       Kazarma.Matrix.TestClient
-      |> expect(:send_message, fn
+      |> expect_send_message(
+        "@_ap_alice___pleroma:kazarma",
         "!room:kazarma",
         %{"body" => "has stopped bridging their public activity \uFEFF", "msgtype" => "m.emote"},
-        [user_id: "@_ap_alice___pleroma:kazarma"] ->
-          :ok
-      end)
+        "event_id"
+      )
 
       Kazarma.ActivityPub.TestServer
       |> expect(:unfollow, fn

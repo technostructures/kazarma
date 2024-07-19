@@ -8,7 +8,6 @@ defmodule Kazarmaweb.Components.ActivityListTests do
 
   import Phoenix.LiveViewTest
   alias KazarmaWeb.Components.ActivityList
-  alias ActivityPub.Object
 
   describe "activity_list component" do
     setup :set_mox_from_context
@@ -177,7 +176,6 @@ defmodule Kazarmaweb.Components.ActivityListTests do
       non_note_object: non_note_object
     } do
       render_component(&ActivityList.show/1, %{
-        actor: actor_data,
         previous_objects: [non_note_object],
         next_objects: [non_note_object],
         object: non_note_object,
