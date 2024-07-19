@@ -177,13 +177,6 @@ defmodule Kazarma.ActivityPub.Adapter do
           Kazarma.Logger.log_received_activity(activity, label: "Chat")
           Kazarma.RoomType.Chat.create_from_ap(activity)
 
-        # Direct messages are when all AP IDs in `to` are actors
-        Enum.all?(to, fn ap_id ->
-          match?({:ok, _}, ActivityPub.Actor.get_cached_or_fetch(ap_id: ap_id))
-        end) ->
-          Kazarma.Logger.log_received_activity(activity, label: "Direct message")
-          Kazarma.RoomType.DirectMessage.create_from_ap(activity)
-
         # Mobilizon internal discussions have a `attributedTo` property set to
         # the group actor
         match?(
@@ -192,6 +185,13 @@ defmodule Kazarma.ActivityPub.Adapter do
         ) ->
           Kazarma.Logger.log_received_activity(activity, label: "To collection")
           Kazarma.RoomType.Collection.create_from_ap(activity)
+
+        # Direct messages are when all AP IDs in `to` are actors
+        Enum.all?(to, fn ap_id ->
+          match?({:ok, _}, ActivityPub.Actor.get_cached_or_fetch(ap_id: ap_id))
+        end) ->
+          Kazarma.Logger.log_received_activity(activity, label: "Direct message")
+          Kazarma.RoomType.DirectMessage.create_from_ap(activity)
       end
 
     case result do
