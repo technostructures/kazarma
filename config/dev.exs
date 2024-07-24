@@ -1,5 +1,5 @@
 import Mix.Config
-# SPDX-FileCopyrightText: 2020-2024 The Kazarma Team
+# SPDX-FileCopyrightText: 2020-2024 Technostructures
 # SPDX-License-Identifier: AGPL-3.0-only
 # Configure your database
 config :kazarma, Kazarma.Repo,

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2020-2024 The Kazarma Team
+# SPDX-FileCopyrightText: 2020-2024 Technostructures
 # SPDX-License-Identifier: AGPL-3.0-only
 defmodule Kazarma.RoomType.Chat do
   @moduledoc """
