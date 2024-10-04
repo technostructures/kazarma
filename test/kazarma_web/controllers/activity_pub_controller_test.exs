@@ -43,8 +43,48 @@ defmodule ActivityPub.Web.ActivityPubControllerTest do
     |> ActivityPub.Actor.format_remote_actor()
     |> ActivityPub.Actor.set_cache()
 
-    ActivityPub.follow(%{actor: alice, object: bob})
-    ActivityPub.follow(%{actor: bob, object: alice})
+    {:ok, carol} =
+      ActivityPub.Object.do_insert(%{
+        "data" => %{
+          "type" => "Person",
+          "name" => "Carol",
+          "preferredUsername" => "carol",
+          "url" => "http://pleroma/pub/actors/carol",
+          "id" => "http://pleroma/pub/actors/carol",
+          "username" => "carol@pleroma"
+        },
+        "local" => false,
+        "public" => true,
+        "actor" => "http://pleroma/pub/actors/carol"
+      })
+
+    carol
+    |> ActivityPub.Actor.format_remote_actor()
+    |> ActivityPub.Actor.set_cache()
+
+    {:ok, following_activity} = ActivityPub.follow(%{actor: alice, object: bob})
+    ActivityPub.Object.set_cache(following_activity)
+
+    ActivityPub.accept(%{
+      to: [bob],
+      actor: alice,
+      object: following_activity.data["id"]
+    })
+
+    {:ok, follower_activity} = ActivityPub.follow(%{actor: bob, object: alice})
+    ActivityPub.Object.set_cache(follower_activity)
+
+    ActivityPub.accept(%{
+      to: [alice],
+      actor: bob,
+      object: follower_activity.data["id"]
+    })
+
+    {:ok, following_activity} = ActivityPub.follow(%{actor: alice, object: carol})
+    ActivityPub.Object.set_cache(following_activity)
+
+    {:ok, follower_activity} = ActivityPub.follow(%{actor: carol, object: alice})
+    ActivityPub.Object.set_cache(follower_activity)
 
     :ok
   end
@@ -54,6 +94,7 @@ defmodule ActivityPub.Web.ActivityPubControllerTest do
 
     body = json_response(conn, 200)
     assert "http://pleroma/pub/actors/bob" in body["first"]["orderedItems"]
+    assert "http://pleroma/pub/actors/carol" not in body["first"]["orderedItems"]
   end
 
   test "/following for a local actor returns list of followings", %{conn: conn} do
@@ -61,5 +102,6 @@ defmodule ActivityPub.Web.ActivityPubControllerTest do
 
     body = json_response(conn, 200)
     assert "http://pleroma/pub/actors/bob" in body["first"]["orderedItems"]
+    assert "http://pleroma/pub/actors/carol" not in body["first"]["orderedItems"]
   end
 end
