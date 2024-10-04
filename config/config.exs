@@ -18,7 +18,10 @@ config :kazarma,
 config :kazarma, KazarmaWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "KJCP3+zhA0kKrbedcdq1b46HFj715v5cHqFhsSPIL4UaiuU3duxvXFfkQJQk1/mz",
-  render_errors: [view: KazarmaWeb.ErrorView, accepts: ~w(json), layout: false],
+  render_errors: [
+    formats: [html: KazarmaWeb.ErrorHTML, json: KazarmaWeb.ErrorJSON],
+    layout: false
+  ],
   pubsub_server: Kazarma.PubSub,
   live_view: [signing_salt: "yxA/keyK"]
 

@@ -270,4 +270,44 @@ defmodule Kazarma.ActivityPub.Actor do
     )
     |> Kazarma.Repo.all()
   end
+
+  def followers(actor) do
+    from(object in ActivityPub.Object,
+      where: fragment("(?)->>'type' = ?", object.data, ^"Follow"),
+      where: fragment("(?)->>'state' = ?", object.data, ^"accept"),
+      where: fragment("(?)->'to' \\? ?", object.data, ^actor.ap_id)
+    )
+    |> Kazarma.Repo.all()
+    |> Enum.filter(fn follow_activity ->
+      from(object in ActivityPub.Object,
+        where: fragment("(?)->>'type' = ?", object.data, ^"Undo"),
+        where: fragment("(?)->'object'->>'id' = ?", object.data, ^follow_activity.data["id"])
+      )
+      |> Kazarma.Repo.all()
+      |> Enum.empty?()
+    end)
+    |> Enum.map(fn follow_activity ->
+      follow_activity.data["actor"]
+    end)
+  end
+
+  def followings(actor) do
+    from(object in ActivityPub.Object,
+      where: fragment("(?)->>'type' = ?", object.data, ^"Follow"),
+      where: fragment("(?)->>'state' = ?", object.data, ^"accept"),
+      where: fragment("(?)->'actor' = ?", object.data, ^actor.ap_id)
+    )
+    |> Kazarma.Repo.all()
+    |> Enum.filter(fn follow_activity ->
+      from(object in ActivityPub.Object,
+        where: fragment("(?)->>'type' = ?", object.data, ^"Undo"),
+        where: fragment("(?)->'object'->>'id' = ?", object.data, ^follow_activity.data["id"])
+      )
+      |> Kazarma.Repo.all()
+      |> Enum.empty?()
+    end)
+    |> Enum.map(fn follow_activity ->
+      follow_activity.data["to"] |> Enum.at(0)
+    end)
+  end
 end

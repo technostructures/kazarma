@@ -26,8 +26,8 @@ defmodule Kazarma.ActivityPub.Adapter do
     Routes.activity_pub_path(Endpoint, :actor, server_for_url(actor), Address.localpart(actor))
   end
 
-  defp server_for_url(%Actor{local: true}), do: "-"
-  defp server_for_url(%Actor{local: false} = actor), do: Address.server(actor)
+  defp server_for_url(%{local: true}), do: "-"
+  defp server_for_url(%{local: false} = actor), do: Address.server(actor)
 
   def federate_actor?(_, _, _), do: true
 
@@ -458,15 +458,13 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl true
-  def get_follower_local_ids(_actor) do
-    []
-    # raise "get_follower_local_ids/1: not implemented"
+  def get_follower_ap_ids(actor) do
+    Kazarma.ActivityPub.Actor.followers(actor)
   end
 
   @impl true
-  def get_following_local_ids(_actor) do
-    []
-    # raise "get_following_local_ids/1: not implemented"
+  def get_following_ap_ids(actor) do
+    Kazarma.ActivityPub.Actor.followings(actor)
   end
 
   @impl true

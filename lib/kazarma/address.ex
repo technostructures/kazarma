@@ -78,14 +78,22 @@ defmodule Kazarma.Address do
     |> String.replace_leading("@", "")
   end
 
-  def localpart(%Actor{username: username}) do
+  def localpart(%{username: username}) do
     [localpart, _server] = String.split(username, "@")
     localpart
   end
 
-  def server(%Actor{username: username}) do
+  def localpart(%{data: %{"username" => username}}) do
+    localpart(%{username: username})
+  end
+
+  def server(%{username: username}) do
     [_localpart, server] = String.split(username, "@")
     server
+  end
+
+  def server(%{data: %{"username" => username}}) do
+    server(%{username: username})
   end
 
   @doc """
