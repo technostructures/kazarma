@@ -458,15 +458,13 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl true
-  def get_follower_local_ids(_actor) do
-    []
-    # raise "get_follower_local_ids/1: not implemented"
+  def get_follower_ap_ids(actor) do
+    Kazarma.ActivityPub.Actor.followers(actor)
   end
 
   @impl true
-  def get_following_local_ids(_actor) do
-    []
-    # raise "get_following_local_ids/1: not implemented"
+  def get_following_ap_ids(actor) do
+    Kazarma.ActivityPub.Actor.followings(actor)
   end
 
   @impl true
