@@ -10,7 +10,7 @@ defmodule Kazarma.Matrix.Client do
   def register(username) do
     localpart =
       username
-      |> String.replace_suffix(":#{Kazarma.Address.domain()}", "")
+      |> String.replace_suffix(":#{Kazarma.Address.matrix_domain()}", "")
       |> String.replace_leading("@", "")
 
     @matrix_client.register(

@@ -128,6 +128,18 @@ defmodule Kazarmaweb.Components.ActivityListTests do
           }
         })
 
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice:kazarma",
+          remote_id: "http://kazarma/-/alice"
+        })
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@bob:kazarma",
+          remote_id: "http://kazarma/-/bob"
+        })
+
       {:ok,
        %{
          actor_data: data,
@@ -148,7 +160,12 @@ defmodule Kazarmaweb.Components.ActivityListTests do
         previous_objects: [grandparent_object],
         next_objects: [note_object],
         object: parent_object,
-        actor: %ActivityPub.Actor{data: actor_data, local: true, username: "alice@kazarma"},
+        actor: %ActivityPub.Actor{
+          ap_id: "http://kazarma/-/alice",
+          data: actor_data,
+          local: true,
+          username: "alice@kazarma"
+        },
         socket: %{}
       })
       |> assert_html_include("div#note_id")

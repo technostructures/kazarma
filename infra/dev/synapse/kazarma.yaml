@@ -4,9 +4,6 @@ as_token: "MDAyMGxvY2F0aW9uIG1hdHJpeC5pbWFnby5sb2NhbAowMDEzaWRlbnRpZmllciBrZXkKM
 hs_token: "MDAyMGxvY2F0aW9uIG1hdHJpeC5pbWFnby5sb2NhbAowMDEzaWRlbnRpZmllciBrZXkKMDAxMGNpZCBnZW4gPSAxCjAwMmNjaWQgdXNlcl9pZCA9IEBhbGljZTptYXRyaXguaW1hZ28ubG9jYWwKMDAxNmNpZCB0eXBlID0gYWNjZXNzCjAwMjFjaWQgbm9uY2UgPSBjcX4jazVTUDNeUlk2WnRECjAwMmZzaWduYXR1cmUg_K2biF-xm5ue7985RkAomVadF7yfy3UiEpH-e15m0esK"
 sender_localpart: "_kazarma" # Will result in @_irc_bot:example.org
 namespaces:
-  aliases:
-    - exclusive: true
-      regex: "#_ap_.+___.+:kazarma.com"
   users:
-    - exclusive: true
-      regex: "@_ap_.+___.+:kazarma.com"
+    - exclusive: false
+      regex: "@.+\\..+\\..+:kazarma.com"

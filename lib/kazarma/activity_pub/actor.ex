@@ -28,40 +28,39 @@ defmodule Kazarma.ActivityPub.Actor do
     }
   end
 
-  def build_actor_from_profile(username, profile) do
-    localpart = Kazarma.Address.get_username_localpart(username)
-    ap_id = Kazarma.Address.ap_localpart_to_local_ap_id(localpart)
+  def build_actor(%{
+        localpart: localpart,
+        domain: domain,
+        ap_id: ap_id,
+        displayname: displayname,
+        avatar_url: avatar_url,
+        keys: keys
+      }) do
+    username_localpart = if domain == "-", do: localpart, else: "#{localpart}.#{domain}"
 
-    avatar_url =
-      profile["avatar_url"] && Kazarma.Matrix.Client.get_media_url(profile["avatar_url"])
-
-    {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
-    build_actor(localpart, ap_id, profile["displayname"], avatar_url, keys)
-  end
-
-  def build_actor(local_username, ap_id, displayname, avatar_url, keys) do
     %Actor{
       local: true,
       deactivated: false,
-      username: "#{local_username}@#{Kazarma.Address.domain()}",
+      username: "#{username_localpart}@#{Kazarma.Address.ap_domain()}",
       ap_id: ap_id,
-      data: build_actor_data(local_username, ap_id, displayname, avatar_url),
+      data:
+        build_actor_data(localpart, username_localpart, domain, ap_id, displayname, avatar_url),
       keys: keys
     }
   end
 
-  def build_actor_data(local_username, ap_id, displayname, avatar_url) do
+  def build_actor_data(local_username, username, domain, ap_id, displayname, avatar_url) do
     %{
-      "preferredUsername" => local_username,
+      "preferredUsername" => username,
       "capabilities" => %{"acceptsChatMessages" => true},
       "id" => ap_id,
       "type" => "Person",
       "name" => displayname,
       "icon" => avatar_url && %{"type" => "Image", "url" => avatar_url},
-      "followers" => Routes.activity_pub_url(Endpoint, :followers, "-", local_username),
-      "following" => Routes.activity_pub_url(Endpoint, :following, "-", local_username),
-      "inbox" => Routes.activity_pub_url(Endpoint, :inbox, "-", local_username),
-      "outbox" => Routes.activity_pub_url(Endpoint, :outbox, "-", local_username),
+      "followers" => Routes.activity_pub_url(Endpoint, :followers, domain, local_username),
+      "following" => Routes.activity_pub_url(Endpoint, :following, domain, local_username),
+      "inbox" => Routes.activity_pub_url(Endpoint, :inbox, domain, local_username),
+      "outbox" => Routes.activity_pub_url(Endpoint, :outbox, domain, local_username),
       "manuallyApprovesFollowers" => false,
       endpoints: %{
         "sharedInbox" => Routes.activity_pub_url(Endpoint, :inbox)
@@ -148,7 +147,7 @@ defmodule Kazarma.ActivityPub.Actor do
 
   def get_local_actor(username) do
     username =
-      if String.contains?(username, "@"), do: username, else: "#{username}@#{Address.domain()}"
+      if String.contains?(username, "@"), do: username, else: "#{username}@#{Address.ap_domain()}"
 
     cond do
       username == Address.relay_username() ->
@@ -217,44 +216,12 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   def get_puppet_actor(username) do
-    user_scope =
-      if Application.get_env(:kazarma, :bridge_remote_matrix_users) do
-        [:remote_matrix, :local_matrix]
-      else
-        [:local_matrix]
-      end
-
-    case Kazarma.Address.ap_username_to_matrix_id(username, user_scope) do
-      {:ok, matrix_id} ->
-        case Bridge.get_user_by_local_id(matrix_id) do
-          %{data: %{"ap_data" => ap_data, "keys" => keys}} ->
-            Logger.debug("user found in database")
-            {:ok, build_actor_from_data(ap_data, keys)}
-
-          _ ->
-            Logger.debug("user not found in database")
-
-            with {:ok, profile} <- Kazarma.Matrix.Client.get_profile(matrix_id),
-                 Logger.debug("user found in Matrix"),
-                 actor <- build_actor_from_profile(username, profile),
-                 {:ok, user} <-
-                   Bridge.create_user(%{
-                     local_id: matrix_id,
-                     remote_id: actor.ap_id,
-                     data: %{"ap_data" => actor.data, "keys" => actor.keys}
-                   }) do
-              Kazarma.Logger.log_created_puppet(user,
-                type: :ap
-              )
-
-              {:ok, actor}
-            else
-              _ -> {:error, :not_found}
-            end
-        end
+    case Kazarma.Address.get_user_for_matrix_user(username: username) do
+      %{data: %{"ap_data" => ap_data, "keys" => keys}} ->
+        {:ok, build_actor_from_data(ap_data, keys)}
 
       _ ->
-        {:error, :not_found}
+        nil
     end
   end
 

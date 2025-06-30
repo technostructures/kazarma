@@ -26,6 +26,7 @@ defmodule Kazarma.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import Kazarma.DataCase
+      import Kazarma.UserFixtures
       require KazarmaWeb.HtmlChecker
       import KazarmaWeb.HtmlChecker
       require Kazarma.Mocks
@@ -56,6 +57,14 @@ defmodule Kazarma.DataCase do
       Regex.replace(~r"%{(\w+)}", message, fn _, key ->
         opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
       end)
+    end)
+  end
+
+  def config_public_bridge(_context) do
+    Application.put_env(:kazarma, :public_bridge, true)
+
+    on_exit(fn ->
+      Application.put_env(:kazarma, :public_bridge, false)
     end)
   end
 end

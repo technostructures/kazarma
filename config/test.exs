@@ -35,12 +35,13 @@ config :activity_pub, :domain, "kazarma"
 
 config :activity_pub, :mrf_simple, reject: ["pleroma", "kazarma"]
 
-config :kazarma, bridge_remote_matrix_users: true
+config :kazarma, public_bridge: false
 config :kazarma, html_search: true
 config :kazarma, html_actor_view_include_remote: true
 config :kazarma, frontpage_help: true
 config :kazarma, frontpage_before_text: nil
 config :kazarma, frontpage_after_text: nil
+config :kazarma, :matrix_domain, "kazarma"
 
 log_level =
   case System.get_env("LOG_LEVEL") do

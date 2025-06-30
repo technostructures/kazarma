@@ -15,7 +15,7 @@ defmodule Kazarma.RoomType.MatrixUser do
   alias MatrixAppService.Bridge.Room
 
   def create_from_event(event, room) do
-    {:ok, sender} = Address.matrix_id_to_actor(event.sender)
+    %{} = sender = Address.get_actor(matrix_id: event.sender)
 
     {:ok, activity} =
       if event.sender == room.data["matrix_id"] do
@@ -25,7 +25,7 @@ defmodule Kazarma.RoomType.MatrixUser do
           to: ["https://www.w3.org/ns/activitystreams#Public"]
         )
       else
-        {:ok, receiver} = Address.matrix_id_to_actor(room.data["matrix_id"])
+        %{} = receiver = Address.get_actor(matrix_id: room.data["matrix_id"])
 
         Activity.create_from_event(
           event,
@@ -45,7 +45,9 @@ defmodule Kazarma.RoomType.MatrixUser do
   def join(actor, follower_ap_id) do
     case Bridge.get_room_by_remote_id(actor.ap_id) do
       %Room{local_id: room_id, data: %{"type" => "matrix_user"}} ->
-        {:ok, follower_matrix_id} = Address.ap_id_to_matrix(follower_ap_id, [:activity_pub])
+        %{local_id: follower_matrix_id} =
+          Kazarma.Address.get_user(ap_id: follower_ap_id)
+
         Client.join(follower_matrix_id, room_id)
 
       _ ->
@@ -55,8 +57,8 @@ defmodule Kazarma.RoomType.MatrixUser do
 
   def maybe_set_outbox_type(room_id, user_id) do
     if Client.user_is_administrator(room_id, user_id) do
-      case Address.matrix_id_to_actor(user_id) do
-        {:ok, %Actor{ap_id: ap_id}} ->
+      case Address.get_actor(matrix_id: user_id) do
+        %Actor{ap_id: ap_id} ->
           {:ok, room} = insert_bridge_room(room_id, user_id, ap_id)
 
           Kazarma.Logger.log_created_room(room,

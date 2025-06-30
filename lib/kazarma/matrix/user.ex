@@ -8,15 +8,16 @@ defmodule Kazarma.Matrix.User do
   require Logger
 
   @impl MatrixAppService.Adapter.User
-  def query_user(user_id) do
-    Logger.debug("Received ask for user #{user_id}")
+  def query_user(matrix_id) do
+    Logger.debug("Received ask for user #{matrix_id}")
 
-    case Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]) do
-      {:ok, _actor} ->
+    case Kazarma.Address.get_user_for_actor(matrix_id: matrix_id) do
+      %{} ->
         :ok
 
-      error ->
-        Logger.error("Error getting user #{user_id} asked by homeserver: #{inspect(error)}")
+      nil ->
+        # Logger.error("Error getting user #{matrix_id} asked by homeserver: #{inspect(error)}")
+        Logger.error("Error getting user #{matrix_id} asked by homeserver")
         :error
     end
   end

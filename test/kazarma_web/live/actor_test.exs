@@ -32,6 +32,12 @@ defmodule KazarmaWeb.ActorTest do
           }
         })
 
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
+
       ActivityPub.Object.do_insert(%{
         data: %{
           "id" => "http://kazarma/-/alice/note/note1",
@@ -129,6 +135,12 @@ defmodule KazarmaWeb.ActorTest do
       |> ActivityPub.Actor.format_remote_actor()
       |> ActivityPub.Actor.set_cache()
 
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
+
       for x <- 1..25 do
         {:ok, inserted_at} = NaiveDateTime.new(2023, 10, 17, 12, 0, x)
 
@@ -153,7 +165,7 @@ defmodule KazarmaWeb.ActorTest do
       {:ok, _view, html} = live(conn, "/pleroma/alice")
 
       assert html =~ "Alice"
-      assert html =~ "@_ap_alice___pleroma:kazarma"
+      assert html =~ "@alice.pleroma:kazarma"
       assert html =~ "@alice@pleroma"
       assert html =~ "This user is not bridged."
     end
@@ -284,6 +296,12 @@ defmodule KazarmaWeb.ActorTest do
       actor
       |> ActivityPub.Actor.format_remote_actor()
       |> ActivityPub.Actor.set_cache()
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
 
       :ok
     end

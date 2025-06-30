@@ -23,7 +23,7 @@ defmodule Kazarma.RoomType.Chat do
           }
         } = _activity
       ) do
-    with {:ok, matrix_id} <- Address.ap_id_to_matrix(from_id),
+    with %{local_id: matrix_id} <- Kazarma.Address.get_user(ap_id: from_id),
          {:ok, room_id} <-
            get_or_create_direct_room(from_id, to_id) do
       attachment = Map.get(object_data, "attachment")
@@ -33,7 +33,7 @@ defmodule Kazarma.RoomType.Chat do
   end
 
   def create_from_event(event, room) do
-    {:ok, sender} = Address.matrix_id_to_actor(event.sender)
+    %{} = sender = Address.get_actor(matrix_id: event.sender)
 
     {:ok, activity} =
       Activity.create_from_event(
@@ -51,8 +51,8 @@ defmodule Kazarma.RoomType.Chat do
   end
 
   def handle_puppet_invite(user_id, sender_id, room_id) do
-    case Kazarma.Address.matrix_id_to_actor(user_id) do
-      {:ok, %ActivityPub.Actor{local: false}} ->
+    case Kazarma.Address.get_actor(matrix_id: user_id) do
+      %ActivityPub.Actor{local: false} ->
         Kazarma.Matrix.Client.join(user_id, room_id)
         create_bridge_room(user_id, room_id)
         Kazarma.Matrix.Client.put_new_direct_room_data(user_id, sender_id, room_id)
@@ -63,7 +63,7 @@ defmodule Kazarma.RoomType.Chat do
   end
 
   defp create_bridge_room(user_id, room_id) do
-    with {:ok, actor} <- Kazarma.Address.matrix_id_to_actor(user_id, [:activity_pub]),
+    with %{} = actor <- Kazarma.Address.get_actor(matrix_id: user_id),
          {:ok, room} <- insert_bridge_room(room_id, actor.ap_id) do
       Kazarma.Logger.log_created_room(room,
         room_type: :chat,
@@ -77,8 +77,9 @@ defmodule Kazarma.RoomType.Chat do
   end
 
   defp get_or_create_direct_room(from_ap_id, to_ap_id) do
-    with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_ap_id),
-         {:ok, to_matrix_id} <- Address.ap_id_to_matrix(to_ap_id),
+    with %{local_id: from_matrix_id} <-
+           Kazarma.Address.get_user(ap_id: from_ap_id),
+         %{local_id: to_matrix_id} <- Kazarma.Address.get_user(ap_id: to_ap_id),
          {:error, :not_found} <-
            Kazarma.Matrix.Client.get_direct_room(from_matrix_id, to_matrix_id),
          {:ok, %{"room_id" => room_id}} <-

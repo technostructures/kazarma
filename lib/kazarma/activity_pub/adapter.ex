@@ -22,8 +22,20 @@ defmodule Kazarma.ActivityPub.Adapter do
     Routes.activity_pub_url(Endpoint, :actor, server_for_url(actor), Address.localpart(actor))
   end
 
+  def actor_path(%{local: true, ap_id: ap_id}) do
+    case URI.parse(ap_id) do
+      %URI{path: path} ->
+        path
+    end
+  end
+
   def actor_path(actor) do
-    Routes.activity_pub_path(Endpoint, :actor, server_for_url(actor), Address.localpart(actor))
+    Routes.activity_pub_path(
+      Endpoint,
+      :actor,
+      Address.server(actor),
+      Address.localpart(actor)
+    )
   end
 
   defp server_for_url(%{local: true}), do: "-"
@@ -70,7 +82,9 @@ defmodule Kazarma.ActivityPub.Adapter do
   def get_actor_by_username(username) do
     Logger.debug("asked for local Matrix user #{username}")
 
-    Kazarma.ActivityPub.Actor.get_local_actor(username)
+    if String.ends_with?(username, "@#{Address.ap_domain()}") || !String.contains?(username, "@") do
+      Kazarma.ActivityPub.Actor.get_local_actor(username)
+    end
   end
 
   @impl true
@@ -84,58 +98,13 @@ defmodule Kazarma.ActivityPub.Adapter do
   end
 
   @impl true
-  def maybe_create_remote_actor(
-        %Actor{
-          username: username,
-          ap_id: ap_id,
-          data: data
-        } = actor
-      ) do
+  def maybe_create_remote_actor(actor) do
     Logger.debug("Kazarma.ActivityPub.Adapter.maybe_create_remote_actor/1")
     # Logger.debug(inspect(actor))
 
-    with {:ok, matrix_id} <-
-           Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub]),
-         {:ok, %{"user_id" => ^matrix_id}} <-
-           Kazarma.Matrix.Client.register(matrix_id) do
-      name = Map.get(data, "name") || Map.get(data, "preferredUsername")
-      Kazarma.Matrix.Client.put_displayname(matrix_id, name)
-      avatar_url = get_in(data, ["icon", "url"])
-      if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
+    Kazarma.Address.maybe_create_matrix_puppet(actor)
 
-      {:ok, user} =
-        Bridge.create_user(%{
-          local_id: matrix_id,
-          remote_id: ap_id,
-          data: %{}
-        })
-
-      Kazarma.Logger.log_created_puppet(user,
-        type: :matrix
-      )
-
-      Kazarma.RoomType.ApUser.create_outbox_if_public_group(actor)
-
-      {:ok, actor}
-    else
-      {:error, _code, %{"error" => error}} ->
-        Logger.error(error)
-        {:ok, actor}
-
-      {:error, error} ->
-        Logger.error(error)
-        {:ok, actor}
-
-      {:ok, _} ->
-        {:ok, actor}
-
-      :ok ->
-        {:ok, actor}
-
-      other ->
-        Logger.debug(inspect(other))
-        {:ok, actor}
-    end
+    {:ok, actor}
   end
 
   @impl true
@@ -163,38 +132,10 @@ defmodule Kazarma.ActivityPub.Adapter do
   @impl true
   def handle_activity(
         %{
-          data: %{"type" => "Create", "to" => to}
+          data: %{"type" => "Create"}
         } = activity
       ) do
-    result =
-      cond do
-        # Public activities are for AP rooms
-        "https://www.w3.org/ns/activitystreams#Public" in to ->
-          Kazarma.RoomType.ApUser.create_from_ap(activity)
-
-        # ChatMessage objects are Pleroma-like chats
-        activity.object.data["type"] == "ChatMessage" ->
-          Kazarma.Logger.log_received_activity(activity, label: "Chat")
-          Kazarma.RoomType.Chat.create_from_ap(activity)
-
-        # Mobilizon internal discussions have a `attributedTo` property set to
-        # the group actor
-        match?(
-          {:ok, %ActivityPub.Actor{data: %{"type" => "Group"}}},
-          ActivityPub.Actor.get_cached_or_fetch(ap_id: activity.object.data["attributedTo"])
-        ) ->
-          Kazarma.Logger.log_received_activity(activity, label: "To collection")
-          Kazarma.RoomType.Collection.create_from_ap(activity)
-
-        # Direct messages are when all AP IDs in `to` are actors
-        Enum.all?(to, fn ap_id ->
-          match?({:ok, _}, ActivityPub.Actor.get_cached_or_fetch(ap_id: ap_id))
-        end) ->
-          Kazarma.Logger.log_received_activity(activity, label: "Direct message")
-          Kazarma.RoomType.DirectMessage.create_from_ap(activity)
-      end
-
-    case result do
+    case Kazarma.ActivityPub.Activity.create_from_ap(activity) do
       {:error, error} ->
         Logger.error(error)
 
@@ -224,7 +165,8 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity)
 
-    {:ok, sender_matrix_id} = Address.ap_id_to_matrix(sender_ap_id)
+    %{local_id: sender_matrix_id} =
+      Kazarma.Address.get_user(ap_id: sender_ap_id)
 
     for %BridgeEvent{local_id: event_id, room_id: room_id} <-
           Bridge.get_events_by_remote_id(object_ap_id) do
@@ -259,14 +201,14 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity)
 
-    with {:ok, invitee_matrix_id} <- Address.ap_id_to_matrix(invitee),
-         {:ok,
-          %{
-            username: group_username,
-            data: %{"name" => group_name, "endpoints" => %{"members" => _group_members}}
-          }} <- ActivityPub.Actor.get_cached(ap_id: group_ap_id),
-         {:ok, group_matrix_id} <-
-           Address.ap_username_to_matrix_id(group_username),
+    with %{local_id: invitee_matrix_id} <-
+           Kazarma.Address.get_user(ap_id: invitee),
+         %{
+           username: group_username,
+           data: %{"name" => group_name, "endpoints" => %{"members" => _group_members}}
+         } <- Address.get_actor(ap_id: group_ap_id),
+         %{local_id: group_matrix_id} <-
+           Kazarma.Address.get_user(username: group_username),
          {:ok, room_id} <-
            Kazarma.RoomType.Collection.get_or_create_collection_room(
              group_ap_id,
@@ -303,8 +245,9 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity)
 
-    with {:ok, removed_matrix_id} <- Address.ap_id_to_matrix(removed),
-         {:ok, group_matrix_id} <- Address.ap_id_to_matrix(group),
+    with %{local_id: removed_matrix_id} <-
+           Kazarma.Address.get_user(ap_id: removed),
+         %{local_id: group_matrix_id} <- Kazarma.Address.get_user(ap_id: group),
          %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "collection"}} <-
            Kazarma.Bridge.get_room_by_remote_id(group),
          {:ok, _event_id} <-
@@ -325,8 +268,8 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity, label: "Follow")
 
-    case ActivityPub.Actor.get_cached(ap_id: followed) do
-      {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
+    case Address.get_actor(ap_id: followed) do
+      %ActivityPub.Actor{local: true} = followed_actor ->
         Kazarma.ActivityPub.accept(%{
           to: [follower],
           actor: followed_actor,
@@ -335,7 +278,7 @@ defmodule Kazarma.ActivityPub.Adapter do
 
         if followed == Address.relay_ap_id() do
           Logger.debug("follow back remote actor")
-          {:ok, follower_actor} = ActivityPub.Actor.get_cached(ap_id: follower)
+          %{} = follower_actor = Address.get_actor(ap_id: follower)
           Kazarma.ActivityPub.follow(%{actor: followed_actor, object: follower_actor})
           {:ok, _} = Kazarma.RoomType.ApUser.create_outbox(follower_actor)
         end
@@ -362,11 +305,11 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity, label: "Unfollow")
 
-    case ActivityPub.Actor.get_cached(ap_id: followed) do
-      {:ok, %ActivityPub.Actor{local: true} = followed_actor} ->
+    case Address.get_actor(ap_id: followed) do
+      %ActivityPub.Actor{local: true} = followed_actor ->
         if followed == Address.relay_ap_id() do
           Logger.debug("unfollow back remote actor")
-          {:ok, follower_actor} = ActivityPub.Actor.get_cached(ap_id: follower)
+          %{} = follower_actor = Address.get_actor(ap_id: follower)
           Kazarma.ActivityPub.unfollow(%{actor: followed_actor, object: follower_actor})
           Kazarma.RoomType.ApUser.deactivate_outbox(follower_actor)
         end
@@ -390,10 +333,13 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity, label: "Block")
 
-    case ActivityPub.Actor.get_cached(ap_id: blocked) do
-      {:ok, %ActivityPub.Actor{local: true} = _blocked_actor} ->
-        {:ok, blocker_matrix_id} = Address.ap_id_to_matrix(blocker)
-        {:ok, blocked_matrix_id} = Address.ap_id_to_matrix(blocked)
+    case Address.get_actor(ap_id: blocked) do
+      %ActivityPub.Actor{local: true} = _blocked_actor ->
+        %{local_id: blocker_matrix_id} =
+          Kazarma.Address.get_user(ap_id: blocker)
+
+        %{local_id: blocked_matrix_id} =
+          Kazarma.Address.get_user(ap_id: blocked)
 
         Kazarma.Matrix.Client.ignore(blocker_matrix_id, blocked_matrix_id)
 
@@ -424,10 +370,13 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity, label: "Block")
 
-    case ActivityPub.Actor.get_cached(ap_id: blocked) do
-      {:ok, %ActivityPub.Actor{local: true} = _blocked_actor} ->
-        {:ok, blocker_matrix_id} = Address.ap_id_to_matrix(blocker)
-        {:ok, blocked_matrix_id} = Address.ap_id_to_matrix(blocked)
+    case Address.get_actor(ap_id: blocked) do
+      %ActivityPub.Actor{local: true} = _blocked_actor ->
+        %{local_id: blocker_matrix_id} =
+          Kazarma.Address.get_user(ap_id: blocker)
+
+        %{local_id: blocked_matrix_id} =
+          Kazarma.Address.get_user(ap_id: blocked)
 
         Kazarma.Matrix.Client.unignore(blocker_matrix_id, blocked_matrix_id)
 

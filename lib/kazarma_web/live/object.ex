@@ -13,7 +13,7 @@ defmodule KazarmaWeb.Object do
          {:ok,
           %ActivityPub.Object{data: %{"actor" => actor_id}} =
             object} <- ActivityPub.Object.get_cached(id: uuid),
-         {:ok, actor} <- ActivityPub.Actor.get_cached_or_fetch(ap_id: actor_id),
+         %{} = actor <- Kazarma.Address.get_actor(ap_id: actor_id),
          true <-
            valid_path?(params, actor, object) do
       actor_room = Kazarma.Bridge.get_room_by_remote_id(actor_id)
@@ -31,7 +31,7 @@ defmodule KazarmaWeb.Object do
   @impl true
   def handle_event("search", %{"search" => %{"address" => address}}, socket) do
     case Kazarma.search_user(address) do
-      {:ok, actor} ->
+      %{} = actor ->
         actor_path = Kazarma.ActivityPub.Adapter.actor_path(actor)
         # dirty fix because LiveView does not re-enable the form when redirecting
         send(self(), {:redirect, actor_path})

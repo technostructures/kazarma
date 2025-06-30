@@ -12,44 +12,17 @@ defmodule Kazarma.RoomTypes.ChatTest do
     setup :verify_on_exit!
 
     setup do
-      {:ok, _actor} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Person",
-            "name" => "Bob",
-            "preferredUsername" => "bob",
-            "url" => "http://kazarma/-/bob",
-            "id" => "http://kazarma/-/bob",
-            "username" => "bob@kazarma"
-          },
-          "local" => true,
-          "public" => true,
-          "actor" => "http://kazarma/-/bob"
-        })
+      alice = create_ap_user_alice()
+      create_local_matrix_user_bob()
 
-      {:ok, actor} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Person",
-            "name" => "Alice",
-            "preferredUsername" => "alice",
-            "url" => "http://pleroma/pub/actors/alice",
-            "id" => "http://pleroma/pub/actors/alice",
-            "username" => "alice@pleroma"
-          },
-          "local" => false,
-          "public" => true,
-          "actor" => "http://pleroma/pub/actors/alice"
-        })
-
-      {:ok, actor: actor}
+      {:ok, actor: alice}
     end
 
     def chat_message_fixture do
       %{
         data: %{
           "type" => "Create",
-          "actor" => "http://pleroma/pub/actors/alice",
+          "actor" => "http://pleroma.com/pub/actors/alice",
           "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
@@ -66,7 +39,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
       %{
         data: %{
           "type" => "Create",
-          "actor" => "http://pleroma/pub/actors/alice",
+          "actor" => "http://pleroma.com/pub/actors/alice",
           "to" => ["http://kazarma/-/bob"]
         },
         object: %ActivityPub.Object{
@@ -94,13 +67,13 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity for a first conversation creates a new room and sends forward the message" do
       Kazarma.Matrix.TestClient
-      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.direct", %{})
-      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.direct", %{})
-      |> expect_put_data("@_ap_alice___pleroma:kazarma", "m.direct", %{
+      |> expect_get_data("@alice.pleroma.com:kazarma", "m.direct", %{})
+      |> expect_get_data("@alice.pleroma.com:kazarma", "m.direct", %{})
+      |> expect_put_data("@alice.pleroma.com:kazarma", "m.direct", %{
         "@bob:kazarma" => ["!room:kazarma"]
       })
       |> expect_create_room(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         [
           visibility: :private,
           name: nil,
@@ -112,7 +85,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
         "!room:kazarma"
       )
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "!room:kazarma",
         %{
           "body" => "hello \uFEFF",
@@ -130,7 +103,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
                  local_id: "!room:kazarma",
                  data: %{
                    "type" => "chat",
-                   "to_ap_id" => "http://pleroma/pub/actors/alice"
+                   "to_ap_id" => "http://pleroma.com/pub/actors/alice"
                  }
                }
              ] = Bridge.list_rooms()
@@ -146,11 +119,11 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity for an existing conversation gets the corresponding room and forwards the message" do
       Kazarma.Matrix.TestClient
-      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.direct", %{
+      |> expect_get_data("@alice.pleroma.com:kazarma", "m.direct", %{
         "@bob:kazarma" => ["!room:kazarma"]
       })
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "!room:kazarma",
         %{
           "body" => "hello \uFEFF",
@@ -174,15 +147,15 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity with an attachement and some text forwards both the attachment and the text" do
       Kazarma.Matrix.TestClient
-      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.direct", %{
+      |> expect_get_data("@alice.pleroma.com:kazarma", "m.direct", %{
         "@bob:kazarma" => ["!room:kazarma"]
       })
       |> expect_upload_something(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "mxc://serveur/example"
       )
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "!room:kazarma",
         %{
           "body" => "hello\nmxc://serveur/example \uFEFF",
@@ -206,15 +179,15 @@ defmodule Kazarma.RoomTypes.ChatTest do
 
     test "when receiving a ChatMessage activity with an attachement and no text forwards only the attachment" do
       Kazarma.Matrix.TestClient
-      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.direct", %{
+      |> expect_get_data("@alice.pleroma.com:kazarma", "m.direct", %{
         "@bob:kazarma" => ["!room:kazarma"]
       })
       |> expect_upload_something(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "mxc://serveur/example"
       )
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "!room:kazarma",
         %{
           "body" => "mxc://serveur/example \uFEFF",

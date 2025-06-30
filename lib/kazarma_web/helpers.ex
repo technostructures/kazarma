@@ -21,12 +21,12 @@ defmodule KazarmaWeb.Helpers do
   def puppet_address(%ActivityPub.Actor{} = actor), do: matrix_id(actor)
 
   def matrix_id(%ActivityPub.Actor{username: username}) do
-    {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username)
+    %{local_id: matrix_id} = Kazarma.Address.get_user(username: username)
     matrix_id
   end
 
   def matrix_outbox_room(%ActivityPub.Actor{username: username}) do
-    {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username)
+    %{local_id: matrix_id} = Kazarma.Address.get_user(username: username)
     String.replace_prefix(matrix_id, "@", "#")
   end
 
@@ -96,7 +96,7 @@ defmodule KazarmaWeb.Helpers do
   def outbox_room(%ActivityPub.Actor{ap_id: ap_id, username: username}) do
     case Kazarma.Bridge.get_room_by_remote_id(ap_id) do
       %MatrixAppService.Bridge.Room{} ->
-        {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username)
+        %{local_id: matrix_id} = Kazarma.Address.get_user(username: username)
         String.replace_leading(matrix_id, "@", "#")
 
       nil ->

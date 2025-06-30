@@ -8,16 +8,16 @@ defmodule KazarmaWeb.Actor do
   def get_actor(username) do
     include_remote = Application.get_env(:kazarma, :html_actor_view_include_remote, false)
 
-    case ActivityPub.Actor.get_cached_or_fetch(username: username) do
-      {:ok, %{local: true} = actor} -> {:ok, actor}
-      {:ok, %{local: false} = actor} when include_remote == true -> {:ok, actor}
+    case Kazarma.Address.get_actor(username: username) do
+      %{local: true} = actor -> {:ok, actor}
+      %{local: false} = actor when include_remote == true -> {:ok, actor}
       _ -> nil
     end
   end
 
   @impl true
   def mount(%{"localpart" => localpart, "server" => "-"}, session, socket) do
-    mount(%{"username" => "#{localpart}@#{Kazarma.Address.domain()}"}, session, socket)
+    mount(%{"username" => "#{localpart}@#{Kazarma.Address.ap_domain()}"}, session, socket)
   end
 
   def mount(%{"localpart" => localpart, "server" => server}, session, socket) do
@@ -66,7 +66,7 @@ defmodule KazarmaWeb.Actor do
   @impl true
   def handle_event("search", %{"search" => %{"address" => address}}, socket) do
     case Kazarma.search_user(address) do
-      {:ok, actor} ->
+      %{} = actor ->
         actor_path = Kazarma.ActivityPub.Adapter.actor_path(actor)
         # dirty fix because LiveView does not re-enable the form when redirecting
         send(self(), {:redirect, actor_path})

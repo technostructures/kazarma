@@ -124,21 +124,15 @@ defmodule Kazarma.Matrix.Transaction do
       ) do
     Kazarma.Logger.log_received_event(event, label: "Membership")
 
-    case Kazarma.Address.parse_matrix_id(user_id) do
-      {:activity_pub, _sub_localpart, _sub_domain} ->
-        accept_puppet_invitation(user_id, sender_id, room_id, content)
-
-      {:appservice_bot, _localpart} ->
+    cond do
+      user_id == Kazarma.Address.bot_matrix_id() ->
         accept_appservice_bot_invitation(user_id, room_id, content)
 
-      {:local_matrix, _localpart} ->
-        handle_matrix_member_event(user_id, room_id, content, event)
+      Kazarma.Address.get_user_for_actor(matrix_id: user_id) != nil ->
+        accept_puppet_invitation(user_id, sender_id, room_id, content)
 
-      {:remote_matrix, _localpart, _remote_domain} ->
+      true ->
         handle_matrix_member_event(user_id, room_id, content, event)
-
-      _ ->
-        :ok
     end
 
     :ok
@@ -159,9 +153,14 @@ defmodule Kazarma.Matrix.Transaction do
   end
 
   defp handle_matrix_member_event(user_id, room_id, content, event) do
-    {:ok, actor} = Kazarma.Address.matrix_id_to_actor(user_id)
-    bridge_profile_change(user_id, actor, content)
-    handle_join(room_id, actor, event)
+    case Kazarma.Address.get_actor(matrix_id: user_id) do
+      %{} = actor ->
+        bridge_profile_change(user_id, actor, content)
+        handle_join(room_id, actor, event)
+
+      _ ->
+        nil
+    end
   end
 
   defp accept_puppet_invitation(user_id, sender_id, room_id, %{
@@ -278,8 +277,8 @@ defmodule Kazarma.Matrix.Transaction do
       }) do
     Regex.scan(@matrix_mention_regex, formatted_body, capture: :all_names)
     |> Enum.map(fn [_display_name, matrix_id] ->
-      case Address.matrix_id_to_actor(matrix_id) do
-        {:ok, actor} -> actor
+      case Address.get_actor(matrix_id: matrix_id) do
+        %{} = actor -> actor
         _ -> nil
       end
     end)
@@ -312,19 +311,14 @@ defmodule Kazarma.Matrix.Transaction do
   def build_text_content(_, _), do: ""
 
   defp ap_mention_from_matrix_id(matrix_id) do
-    case Address.matrix_id_to_actor(matrix_id) do
-      {:ok, actor} ->
+    case Address.get_actor(matrix_id: matrix_id) do
+      %{} = actor ->
         ~s(<span class="h-card"><a href="#{actor.data["url"] || actor.ap_id}" class="u-url mention">@<span>#{Kazarma.ActivityPub.Activity.mention_name(actor)}</span></a></span>)
 
       _ ->
-        case Address.matrix_id_to_ap_username(matrix_id) do
-          {:ok, username} ->
-            ~s(<span class="h-card">@<span>#{username}</span></span>)
-
-          _ ->
-            "@" <> matrix_id_without_at = matrix_id
-            ~s(<span class="h-card">@<span>#{matrix_id_without_at}</span></span>)
-        end
+        "@" <> matrix_id_without_at = matrix_id
+        converted_id = String.replace(matrix_id_without_at, ":", "@")
+        ~s(<span class="h-card">@<span>#{converted_id}</span></span>)
     end
   end
 

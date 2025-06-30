@@ -28,6 +28,12 @@ defmodule KazarmaWeb.SearchControllerTest do
     |> ActivityPub.Actor.format_remote_actor()
     |> ActivityPub.Actor.set_cache()
 
+    {:ok, _user} =
+      Kazarma.Bridge.create_user(%{
+        local_id: "@alice.pleroma:kazarma",
+        remote_id: "http://pleroma/pub/actors/alice"
+      })
+
     :ok
   end
 

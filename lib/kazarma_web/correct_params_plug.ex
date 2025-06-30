@@ -13,7 +13,7 @@ defmodule KazarmaWeb.CorrectParamsPlug do
 
   @impl Plug
   def call(%{params: %{"localpart" => localpart, "server" => "-"} = params} = conn, _action) do
-    new_params = Map.put(params, "username", "#{localpart}@#{Kazarma.Address.domain()}")
+    new_params = Map.put(params, "username", "#{localpart}@#{Kazarma.Address.ap_domain()}")
 
     %{conn | params: new_params}
   end

@@ -2,16 +2,16 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 defmodule Kazarma.ActivityPub.ActorTest do
-  use Kazarma.DataCase
+  use Kazarma.DataCase, async: false
 
   alias Kazarma.Bridge
   import Kazarma.ActivityPub.Adapter
   import Kazarma.MatrixMocks
 
-  describe "ActivityPub request for a local user (get_actor_by_username/1)" do
+  describe "ActivityPub request for a local Matrix user (get_actor_by_username/1) when private bridge" do
     setup :verify_on_exit!
 
-    test "when asked for an existing matrix users returns the corresponding actor and persists it in database" do
+    test "when asked for an existing local matrix user returns the corresponding actor and persists it in database" do
       Kazarma.Matrix.TestClient
       |> expect_client()
       |> expect_get_profile("@alice:kazarma", %{
@@ -78,34 +78,46 @@ defmodule Kazarma.ActivityPub.ActorTest do
               }} = get_actor_by_username("alice")
     end
 
-    test "when asked for an existing remote matrix users returns the corresponding actor and persists it in database" do
+    test "when asked for a nonexisting local matrix user returns an error tuple" do
+      Kazarma.Matrix.TestClient
+      |> expect_get_profile_not_found("@nonexisting:kazarma")
+
+      assert nil == get_actor_by_username("nonexisting")
+    end
+  end
+
+  describe "ActivityPub request for a remote Matrix user (get_actor_by_username/1) when public bridge" do
+    setup :verify_on_exit!
+    setup :config_public_bridge
+
+    test "when asked for an existing remote matrix users it returns the corresponding actor and persists it in database" do
       Kazarma.Matrix.TestClient
       |> expect_client()
-      |> expect_get_profile("@alice:remote", %{
+      |> expect_get_profile("@alice:remote.com", %{
         "displayname" => "Alice",
         "avatar_url" => "mxc://server/image_id"
       })
 
-      assert {:ok, %{keys: keys} = actor} = get_actor_by_username("alice___remote")
+      assert {:ok, %{keys: keys} = actor} = get_actor_by_username("alice.remote.com")
 
       assert %ActivityPub.Actor{
                local: true,
                deactivated: false,
-               username: "alice___remote@kazarma",
-               ap_id: "http://kazarma/-/alice___remote",
+               username: "alice.remote.com@kazarma",
+               ap_id: "http://kazarma/remote.com/alice",
                data: %{
-                 "preferredUsername" => "alice___remote",
-                 "id" => "http://kazarma/-/alice___remote",
+                 "preferredUsername" => "alice.remote.com",
+                 "id" => "http://kazarma/remote.com/alice",
                  "type" => "Person",
                  "name" => "Alice",
                  "icon" => %{
                    "type" => "Image",
                    "url" => "http://matrix/_matrix/media/r0/download/server/image_id"
                  },
-                 "followers" => "http://kazarma/-/alice___remote/followers",
-                 "following" => "http://kazarma/-/alice___remote/following",
-                 "inbox" => "http://kazarma/-/alice___remote/inbox",
-                 "outbox" => "http://kazarma/-/alice___remote/outbox",
+                 "followers" => "http://kazarma/remote.com/alice/followers",
+                 "following" => "http://kazarma/remote.com/alice/following",
+                 "inbox" => "http://kazarma/remote.com/alice/inbox",
+                 "outbox" => "http://kazarma/remote.com/alice/outbox",
                  "manuallyApprovesFollowers" => false,
                  endpoints: %{
                    "sharedInbox" => "http://kazarma/shared_inbox"
@@ -116,8 +128,8 @@ defmodule Kazarma.ActivityPub.ActorTest do
       assert %{
                data: %{
                  "ap_data" => %{
-                   "preferredUsername" => "alice___remote",
-                   "id" => "http://kazarma/-/alice___remote",
+                   "preferredUsername" => "alice.remote.com",
+                   "id" => "http://kazarma/remote.com/alice",
                    "type" => "Person",
                    "name" => "Alice",
                    "icon" => %{
@@ -127,13 +139,13 @@ defmodule Kazarma.ActivityPub.ActorTest do
                  },
                  "keys" => ^keys
                }
-             } = Bridge.get_user_by_local_id("@alice:remote")
+             } = Bridge.get_user_by_local_id("@alice:remote.com")
 
       assert {:ok,
               %{
                 data: %{
-                  "preferredUsername" => "alice___remote",
-                  "id" => "http://kazarma/-/alice___remote",
+                  "preferredUsername" => "alice.remote.com",
+                  "id" => "http://kazarma/remote.com/alice",
                   "type" => "Person",
                   "name" => "Alice",
                   "icon" => %{
@@ -142,14 +154,14 @@ defmodule Kazarma.ActivityPub.ActorTest do
                   }
                 },
                 keys: ^keys
-              }} = get_actor_by_username("alice___remote")
+              }} = get_actor_by_username("alice.remote.com")
     end
 
-    test "when asked for a nonexisting matrix users returns an error tuple" do
+    test "when asked for a nonexisting remote matrix user returns an error tuple" do
       Kazarma.Matrix.TestClient
-      |> expect_get_profile_not_found("@nonexisting:kazarma")
+      |> expect_get_profile_not_found("@nonexisting:remote.com")
 
-      assert {:error, :not_found} = get_actor_by_username("nonexisting")
+      assert nil == get_actor_by_username("nonexisting.remote.com")
     end
   end
 
@@ -159,19 +171,19 @@ defmodule Kazarma.ActivityPub.ActorTest do
     test "it registers a puppet user" do
       Kazarma.Matrix.TestClient
       |> expect_register(%{
-        username: "_ap_bob___pleroma",
-        matrix_id: "@_ap_bob___pleroma:kazarma",
+        username: "bob.pleroma.com",
+        matrix_id: "@bob.pleroma.com:kazarma",
         displayname: "Bob"
       })
-      |> expect_upload_something("@_ap_bob___pleroma:kazarma", "mxc://server/media_id")
-      |> expect_put_avatar_url("@_ap_bob___pleroma:kazarma", "mxc://server/media_id")
+      |> expect_upload_something("@bob.pleroma.com:kazarma", "mxc://server/media_id")
+      |> expect_put_avatar_url("@bob.pleroma.com:kazarma", "mxc://server/media_id")
 
       assert {:ok, _} =
                maybe_create_remote_actor(%ActivityPub.Actor{
-                 username: "bob@pleroma",
-                 ap_id: "http://pleroma/users/bob",
+                 username: "bob@pleroma.com",
+                 ap_id: "http://pleroma.com/users/bob",
                  data: %{
-                   "id" => "http://pleroma/users/bob",
+                   "id" => "http://pleroma.com/users/bob",
                    "name" => "Bob",
                    "icon" => %{
                      "type" => "Image",
@@ -184,10 +196,9 @@ defmodule Kazarma.ActivityPub.ActorTest do
   end
 
   describe "Update Matrix puppet user (update_remote_actor/1)" do
-    setup :set_mox_from_context
-    setup :verify_on_exit!
+    setup [:set_mox_from_context, :verify_on_exit!]
 
-    test "it update the puppet profile" do
+    test "it updates the puppet profile" do
       Kazarma.Matrix.TestClient
       |> expect_put_displayname("@alice:kazarma", "new_name")
       |> expect_upload_something("@alice:kazarma", "mxc://server/media_id")
