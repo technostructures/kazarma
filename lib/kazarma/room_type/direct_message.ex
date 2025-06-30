@@ -26,11 +26,11 @@ defmodule Kazarma.RoomType.DirectMessage do
           }
         } = _activity
       ) do
-    with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
+    with %{local_id: matrix_id} <- Kazarma.Address.get_user(ap_id: from),
          to =
            Enum.map(to, fn ap_id ->
-             case Address.ap_id_to_matrix(ap_id) do
-               {:ok, matrix_id} -> matrix_id
+             case Kazarma.Address.get_user(ap_id: ap_id) do
+               %{local_id: matrix_id} -> matrix_id
                _ -> nil
              end
            end),
@@ -87,12 +87,12 @@ defmodule Kazarma.RoomType.DirectMessage do
   # =======================
 
   def create_from_event(event, room) do
-    {:ok, sender} = Address.matrix_id_to_actor(event.sender)
+    %{} = sender = Address.get_actor(matrix_id: event.sender)
     fallback_reply = Bridge.get_last_event_in_room(room.local_id)
 
     recipients =
       List.delete(room.data["to"], event.sender)
-      |> Enum.map(&Address.unchecked_matrix_id_to_actor/1)
+      |> Enum.map(&Address.get_actor(matrix_id: &1))
       |> Enum.filter(&(!is_nil(&1)))
 
     {:ok, activity} =
@@ -113,7 +113,7 @@ defmodule Kazarma.RoomType.DirectMessage do
   end
 
   def handle_puppet_invite(matrix_id, inviter_id, room_id) do
-    with {:ok, _actor} <- Address.matrix_id_to_actor(matrix_id, [:activity_pub]),
+    with %{} <- Address.get_actor(matrix_id: matrix_id),
          # @TODO maybe update if bridge room exist (new context/conversation)
          {:ok, _room} <-
            join_or_create_bridge_room(matrix_id, inviter_id, room_id),
@@ -133,7 +133,7 @@ defmodule Kazarma.RoomType.DirectMessage do
   defp join_or_create_bridge_room(matrix_id, inviter_id, room_id) do
     case Bridge.get_room_by_local_id(room_id) do
       nil ->
-        {:ok, inviter_actor} = Address.matrix_id_to_actor(inviter_id)
+        %{} = inviter_actor = Address.get_actor(matrix_id: inviter_id)
 
         {:ok, room} =
           insert_bridge_room(room_id, ActivityPub.Utils.generate_context_id(inviter_actor), [

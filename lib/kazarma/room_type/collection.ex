@@ -27,10 +27,11 @@ defmodule Kazarma.RoomType.Collection do
           }
         } = _activity
       ) do
-    with {:ok, matrix_id} <- Address.ap_id_to_matrix(from),
-         {:ok, %{username: group_username, data: %{"name" => group_name}}} <-
-           ActivityPub.Actor.get_cached(ap_id: group_ap_id),
-         {:ok, group_matrix_id} <- Address.ap_username_to_matrix_id(group_username),
+    with %{local_id: matrix_id} <- Kazarma.Address.get_user(ap_id: from),
+         %{username: group_username, data: %{"name" => group_name}} <-
+           Address.get_actor(ap_id: group_ap_id),
+         %{local_id: group_matrix_id} <-
+           Kazarma.Address.get_user(username: group_username),
          {:ok, room_id} <-
            get_or_create_collection_room(group_ap_id, group_matrix_id, group_name),
          :ok <- Client.invite_and_accept(room_id, group_matrix_id, matrix_id) do
@@ -65,10 +66,10 @@ defmodule Kazarma.RoomType.Collection do
         local_id: room_id,
         remote_id: group_id
       }) do
-    {:ok, sender} = Address.matrix_id_to_actor(event.sender)
+    %{} = sender = Address.get_actor(matrix_id: event.sender)
 
-    {:ok, %ActivityPub.Actor{data: %{"members" => members_id}}} =
-      ActivityPub.Actor.get_cached(ap_id: group_id)
+    %ActivityPub.Actor{data: %{"members" => members_id}} =
+      Address.get_actor(ap_id: group_id)
 
     {:ok, activity} =
       Activity.create_from_event(
@@ -94,8 +95,8 @@ defmodule Kazarma.RoomType.Collection do
              "replaces_state" => invite_event_id
            }
          } <- event,
-         {:ok, %ActivityPub.Actor{data: %{"members" => members_id}}} =
-           ActivityPub.Actor.get_cached(ap_id: group_ap_id),
+         %ActivityPub.Actor{data: %{"members" => members_id}} =
+           Address.get_actor(ap_id: group_ap_id),
          %BridgeEvent{remote_id: invite_ap_id} <-
            Bridge.get_event_by_local_id(invite_event_id) do
       Kazarma.ActivityPub.accept(%{

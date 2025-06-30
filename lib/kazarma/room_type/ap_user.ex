@@ -35,7 +35,8 @@ defmodule Kazarma.RoomType.ApUser do
       label: "Public Note activity"
     )
 
-    with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
+    with %{local_id: from_matrix_id} <-
+           Kazarma.Address.get_user(ap_id: from_id),
          %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}} <-
            get_room_for_public_create(object_data) do
       Client.join(from_matrix_id, room_id)
@@ -43,8 +44,8 @@ defmodule Kazarma.RoomType.ApUser do
       Map.get(object_data, "tag", [])
       |> Enum.filter(fn tag -> Map.get(tag, "type") == "Mention" end)
       |> Enum.each(fn %{"name" => mentioned_username} ->
-        case Address.ap_username_to_matrix_id(mentioned_username) do
-          {:ok, mentioned_matrix_id} ->
+        case Address.get_user(username: mentioned_username) do
+          %{local_id: mentioned_matrix_id} ->
             Client.invite(room_id, from_matrix_id, mentioned_matrix_id)
 
           _ ->
@@ -86,7 +87,8 @@ defmodule Kazarma.RoomType.ApUser do
              _ -> false
            end),
          attributed_list = [channel_sender, person_sender],
-         {:ok, from_matrix_id} <- Address.ap_id_to_matrix(channel_sender) do
+         %{local_id: from_matrix_id} <-
+           Kazarma.Address.get_user(ap_id: channel_sender) do
       for attributed <- attributed_list do
         with {:ok, %Room{local_id: room_id, data: %{"type" => "ap_user"}}} <-
                get_outbox(attributed) do
@@ -111,7 +113,8 @@ defmodule Kazarma.RoomType.ApUser do
       label: "Public Event activity"
     )
 
-    with {:ok, attributed_to_matrix_id} <- Kazarma.Address.ap_id_to_matrix(attributed_to_id),
+    with %{local_id: attributed_to_matrix_id} <-
+           Kazarma.Address.get_user(ap_id: attributed_to_id),
          {:ok, %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}}} <-
            get_outbox(attributed_to_id) do
       Kazarma.Matrix.Client.join(attributed_to_matrix_id, room_id)
@@ -136,7 +139,8 @@ defmodule Kazarma.RoomType.ApUser do
       label: "Public Page activity"
     )
 
-    with {:ok, from_matrix_id} <- Address.ap_id_to_matrix(from_id),
+    with %{local_id: from_matrix_id} <-
+           Kazarma.Address.get_user(ap_id: from_id),
          %MatrixAppService.Bridge.Room{local_id: room_id, data: %{"type" => "ap_user"}} <-
            get_room_for_public_create(object_data) do
       Client.join(from_matrix_id, room_id)
@@ -144,8 +148,8 @@ defmodule Kazarma.RoomType.ApUser do
       Map.get(object_data, "tag", [])
       |> Enum.filter(fn tag -> Map.get(tag, "type") == "Mention" end)
       |> Enum.each(fn %{"name" => mentioned_username} ->
-        case Address.ap_username_to_matrix_id(mentioned_username) do
-          {:ok, mentioned_matrix_id} ->
+        case Address.get_user(username: mentioned_username) do
+          %{local_id: mentioned_matrix_id} ->
             Client.invite(room_id, from_matrix_id, mentioned_matrix_id)
 
           _ ->
@@ -220,8 +224,8 @@ defmodule Kazarma.RoomType.ApUser do
   end
 
   def create_from_event(event, room) do
-    {:ok, sender} = Address.matrix_id_to_actor(event.sender)
-    {:ok, receiver} = Address.matrix_id_to_actor(room.data["matrix_id"])
+    %{} = sender = Address.get_actor(matrix_id: event.sender)
+    %{} = receiver = Address.get_actor(matrix_id: room.data["matrix_id"])
 
     {:ok, activity} =
       Activity.create_from_event(
@@ -260,8 +264,8 @@ defmodule Kazarma.RoomType.ApUser do
   def create_outbox_if_public_group(_), do: nil
 
   def create_outbox(ap_id) when is_binary(ap_id) do
-    case ActivityPub.Actor.get_cached(ap_id: ap_id) do
-      {:ok, actor} -> create_outbox(actor)
+    case Address.get_actor(ap_id: ap_id) do
+      %{} = actor -> create_outbox(actor)
       error -> error
     end
   end
@@ -271,8 +275,8 @@ defmodule Kazarma.RoomType.ApUser do
       ) do
     case Bridge.get_room_by_remote_id(ap_id) do
       nil ->
-        {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub])
-        alias = Kazarma.Address.get_matrix_id_localpart(matrix_id)
+        %{local_id: matrix_id} = Kazarma.Address.get_user(username: username)
+        alias = Kazarma.Address.matrix_id_localpart(matrix_id)
 
         case Kazarma.Matrix.Client.create_outbox_room(
                matrix_id,
@@ -295,7 +299,7 @@ defmodule Kazarma.RoomType.ApUser do
           # @TODO use the Bridge.Room to know if the room already exists
           {:error, 400, %{"errcode" => "M_ROOM_IN_USE"}} ->
             {:ok, {room_id, _}} =
-              Kazarma.Matrix.Client.get_alias("##{alias}:#{Kazarma.Address.domain()}")
+              Kazarma.Matrix.Client.get_alias("##{alias}:#{Kazarma.Address.matrix_domain()}")
 
             {:ok, room} =
               insert_bridge_room(
@@ -323,7 +327,7 @@ defmodule Kazarma.RoomType.ApUser do
       } = room ->
         Bridge.update_room(room, %{data: %{data | "type" => :ap_user}})
 
-        {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub])
+        %{local_id: matrix_id} = Kazarma.Address.get_user(username: username)
 
         send_emote_bridging_starts(matrix_id, room_id)
         {:ok, room}
@@ -335,7 +339,7 @@ defmodule Kazarma.RoomType.ApUser do
       %MatrixAppService.Bridge.Room{data: data, local_id: room_id} = room ->
         Bridge.update_room(room, %{data: %{data | "type" => :deactivated_ap_user}})
 
-        {:ok, matrix_id} = Kazarma.Address.ap_username_to_matrix_id(username, [:activity_pub])
+        %{local_id: matrix_id} = Kazarma.Address.get_user(username: username)
 
         send_emote_bridging_stops(matrix_id, room_id)
 

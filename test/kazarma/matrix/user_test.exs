@@ -10,7 +10,7 @@ defmodule Kazarma.Matrix.UserTest do
   @ap_user_server "pleroma.interhacker.space"
   @ap_user_name "pierre"
   @ap_user_displayname "Pierre"
-  @ap_puppet_username "_ap_#{@ap_user_name}___#{@ap_user_server}"
+  @ap_puppet_username "#{@ap_user_name}.#{@ap_user_server}"
   @ap_puppet_matrix_id "@#{@ap_puppet_username}:kazarma"
 
   describe "User search (Synapse asks the application service for a user in its namespace)" do
@@ -31,7 +31,7 @@ defmodule Kazarma.Matrix.UserTest do
     end
 
     test "if the AP user doesn't exist it returns an error" do
-      assert :error = query_user("@_ap_nonexisting___pleroma:kazarma")
+      assert :error = query_user("@nonexisting.interhacker.space:kazarma")
     end
 
     test "if the address is not in puppet format it returns an error" do

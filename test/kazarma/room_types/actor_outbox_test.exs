@@ -6,7 +6,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
   We use existing Pleroma and Matrix accounts so we can create corresponding
   puppets.
   """
-  use Kazarma.DataCase
+  use Kazarma.DataCase, async: false
 
   import Kazarma.ActivityPub.Adapter
   import Kazarma.Matrix.Transaction
@@ -20,8 +20,10 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
   @pleroma_user_displayname "Pierre"
   @pleroma_user_full_username "pierre@pleroma.interhacker.space"
   @pleroma_user_ap_id "https://pleroma.interhacker.space/users/pierre"
-  @pleroma_puppet_username "_ap_#{@pleroma_user_name}___#{@pleroma_user_server}"
+  @pleroma_puppet_username "#{@pleroma_user_name}.#{@pleroma_user_server}"
   @pleroma_puppet_address "@#{@pleroma_puppet_username}:kazarma"
+
+  setup :config_public_bridge
 
   describe "When sending a message to a timeline room" do
     @describetag :external
@@ -30,6 +32,56 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     setup :verify_on_exit!
 
     setup do
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@bob:kazarma",
+          remote_id: "http://kazarma/-/bob",
+          data: %{
+            "ap_data" => %{
+              "id" => "http://kazarma/-/bob",
+              "preferredUsername" => "bob",
+              "name" => "Bob",
+              "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/avatar"},
+              "endpoints" => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/bob/followers",
+              "following" => "http://kazarma/-/bob/following",
+              "inbox" => "http://kazarma/-/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "outbox" => "http://kazarma/-/bob/outbox",
+              "type" => "Person"
+            },
+            "keys" => keys
+          }
+        })
+
+      {:ok, pierre} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => @pleroma_user_displayname,
+            "preferredUsername" => @pleroma_user_name,
+            "url" => @pleroma_user_ap_id,
+            "id" => @pleroma_user_ap_id,
+            "username" => @pleroma_user_full_username
+          },
+          "local" => false,
+          "public" => true,
+          "actor" => @pleroma_user_ap_id
+        })
+
+      pierre
+      |> ActivityPub.Actor.format_remote_actor()
+      |> ActivityPub.Actor.set_cache()
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: @pleroma_puppet_username,
+          remote_id: @pleroma_user_ap_id
+        })
+
       {:ok, _room} =
         Bridge.create_room(%{
           local_id: "!foo:kazarma",
@@ -50,33 +102,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     end
 
     test "it sends a public Note mentioning the AP user" do
-      Kazarma.Matrix.TestClient
-      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
-      |> expect_register(%{
-        username: @pleroma_puppet_username,
-        matrix_id: @pleroma_puppet_address,
-        displayname: @pleroma_user_displayname
-      })
-
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
             ap_id: "http://kazarma/-/bob",
-            data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
-              "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/-/bob/followers",
-              "following" => "http://kazarma/-/bob/following",
-              "icon" => nil,
-              "id" => "http://kazarma/-/bob",
-              "inbox" => "http://kazarma/-/bob/inbox",
-              "manuallyApprovesFollowers" => false,
-              "name" => "Bob",
-              "outbox" => "http://kazarma/-/bob/outbox",
-              "preferredUsername" => "bob",
-              "type" => "Person"
-            },
+            data: _,
             deactivated: false,
             id: nil,
             keys: _,
@@ -121,6 +152,31 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     setup :verify_on_exit!
 
     setup do
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@bob.matrix:kazarma",
+          remote_id: "http://kazarma/matrix/bob",
+          data: %{
+            "ap_data" => %{
+              "id" => "http://kazarma/matrix/bob",
+              "preferredUsername" => "bob.matrix",
+              "name" => "Bob",
+              "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/avatar"},
+              "endpoints" => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/matrix/bob/followers",
+              "following" => "http://kazarma/matrix/bob/following",
+              "inbox" => "http://kazarma/matrix/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "outbox" => "http://kazarma/matrix/bob/outbox",
+              "type" => "Person"
+            },
+            "keys" => keys
+          }
+        })
+
       {:ok, actor} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
@@ -134,6 +190,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "local" => false,
           "public" => true,
           "actor" => "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
         })
 
       {:ok, actor: actor}
@@ -166,7 +228,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         data: %{
           "type" => "Create",
           "to" => [
-            "http://kazarma/-/bob",
+            "http://kazarma/kazarma/bob",
             "https://www.w3.org/ns/activitystreams#Public"
           ]
         },
@@ -174,15 +236,15 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           data: %{
             "type" => "Note",
             "content" =>
-              "<p><span class=\"h-card\"><a href=\"http://kazarma/-/bob\" class=\"u-url mention\">@<span>bob</span></a></span> hello</p>",
+              "<p><span class=\"h-card\"><a href=\"http://kazarma/matrix/bob\" class=\"u-url mention\">@<span>bob.matrix</span></a></span> hello</p>",
             "id" => "note_id",
             "actor" => "http://pleroma/pub/actors/alice",
             "conversation" => "http://pleroma/pub/contexts/context",
             "attachment" => nil,
             "tag" => [
               %{
-                "href" => "http://kazarma/-/bob",
-                "name" => "@bob@kazarma",
+                "href" => "http://kazarma/matrix/bob",
+                "name" => "@bob.matrix@kazarma",
                 "type" => "Mention"
               }
             ]
@@ -215,9 +277,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public note forwards it to the puppet's timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect_join("@_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_join("@alice.pleroma:kazarma", "!room:kazarma")
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma:kazarma",
         "!room:kazarma",
         {"hello \uFEFF", "hello"},
         "event_id"
@@ -228,7 +290,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         remote_id: "http://pleroma/pub/actors/alice",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+          "matrix_id" => "@alice.pleroma:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -246,9 +308,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public note forwards it to the puppet's timeline room even without a source part" do
       Kazarma.Matrix.TestClient
-      |> expect_join("@_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_join("@alice.pleroma:kazarma", "!room:kazarma")
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma:kazarma",
         "!room:kazarma",
         %{
           "body" => "hello \uFEFF",
@@ -264,7 +326,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         remote_id: "http://pleroma/pub/actors/alice",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+          "matrix_id" => "@alice.pleroma:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -280,29 +342,17 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
              ] = Bridge.list_events()
     end
 
-    test "receiving a public note with a mention of Matrix user invites them to the timeline room" do
+    test "receiving a public note with a mention of Matrix user mentions them" do
       Kazarma.Matrix.TestClient
-      |> expect_join("@_ap_alice___pleroma:kazarma", "!room:kazarma")
-      |> expect_send_state_event(
-        "@_ap_alice___pleroma:kazarma",
-        "!room:kazarma",
-        "m.room.member",
-        "@bob:kazarma",
-        %{"membership" => "invite"},
-        "!invite_event"
-      )
-      # @TODO
-      # should be
-      # "body" => "Bob hello \uFEFF",
-      # "formatted_body" => "<a href=\"http://matrix.to/#/@bob:kazarma\">Bob</a> hello",
+      |> expect_join("@alice.pleroma:kazarma", "!room:kazarma")
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma:kazarma",
         "!room:kazarma",
         %{
-          "body" => "@bob hello \uFEFF",
+          "body" => "@bob.matrix hello \uFEFF",
           "format" => "org.matrix.custom.html",
           "formatted_body" =>
-            "<p><span><a href=\"http://kazarma/-/bob\">@<span>bob</span></a></span> hello</p>",
+            "<p><a href=\"https://matrix.to/#/@bob.matrix:kazarma\">Bob</a> hello</p>",
           "msgtype" => "m.text"
         },
         "event_id"
@@ -313,7 +363,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         remote_id: "http://pleroma/pub/actors/alice",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+          "matrix_id" => "@alice.pleroma:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -365,6 +415,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "actor" => "http://pleroma/pub/actors/bob"
         })
 
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@bob.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/bob"
+        })
+
       {:ok, _event} =
         Bridge.create_event(%{
           local_id: "local_id",
@@ -400,9 +456,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "when receiving a Note activity with a reply for an existing conversation gets the corresponding room and forwards the message with a reply" do
       Kazarma.Matrix.TestClient
-      |> expect_join("@_ap_bob___pleroma:kazarma", "!room:kazarma")
+      |> expect_join("@bob.pleroma:kazarma", "!room:kazarma")
       |> expect_send_message(
-        "@_ap_bob___pleroma:kazarma",
+        "@bob.pleroma:kazarma",
         "!room:kazarma",
         %{
           "msgtype" => "m.text",
@@ -421,7 +477,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         remote_id: "http://pleroma/pub/actors/alice",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+          "matrix_id" => "@alice.pleroma:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -431,7 +487,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         remote_id: "http://pleroma/pub/actors/bob",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_bob___pleroma:kazarma"
+          "matrix_id" => "@bob.pleroma:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -458,7 +514,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         remote_id: "http://pleroma/pub/actors/alice",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+          "matrix_id" => "@alice.pleroma:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -495,6 +551,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "actor" => "http://pleroma/pub/actors/alice"
         })
 
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
+
       {:ok, channel} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
@@ -508,6 +570,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "local" => false,
           "public" => true,
           "actor" => "http://pleroma/pub/actors/channel"
+        })
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@channel.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/channel"
         })
 
       {:ok, actor: actor, channel: channel}
@@ -539,7 +607,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
             "icon" => [
               %{
                 "width" => 150,
-                "url" => "https://via.placeholder.com/150"
+                "url" => "https://example.com"
               }
             ],
             "conversation" => "http://pleroma/pub/contexts/context",
@@ -551,13 +619,13 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public note forwards it to the puppet's timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect_join("@_ap_channel___pleroma:kazarma", "!room:kazarma")
+      |> expect_join("@channel.pleroma:kazarma", "!room:kazarma")
       |> expect_upload_something(
-        "@_ap_channel___pleroma:kazarma",
+        "@channel.pleroma:kazarma",
         "mxc://server/media_id"
       )
       |> expect_send_message(
-        "@_ap_channel___pleroma:kazarma",
+        "@channel.pleroma:kazarma",
         "!room:kazarma",
         %{
           "body" => "### Video name\n\nnote_id\n\n> Video description\n \uFEFF",
@@ -574,7 +642,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         remote_id: "http://pleroma/pub/actors/alice",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+          "matrix_id" => "@alice.pleroma:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -609,6 +677,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "local" => false,
           "public" => true,
           "actor" => "http://lemmy/u/alice"
+        })
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice.lemmy:kazarma",
+          remote_id: "http://lemmy/u/alice"
         })
 
       {:ok, community} =
@@ -720,9 +794,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public page forwards it to the puppet's timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect_join("@_ap_alice___lemmy:kazarma", "!room:kazarma")
+      |> expect_join("@alice.lemmy:kazarma", "!room:kazarma")
       |> expect_send_message(
-        "@_ap_alice___lemmy:kazarma",
+        "@alice.lemmy:kazarma",
         "!room:kazarma",
         %{
           "body" => "Page title\n\nPage description \uFEFF",
@@ -738,7 +812,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         remote_id: "http://lemmy/c/community",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_community___lemmy:kazarma"
+          "matrix_id" => "@community.lemmy:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -756,9 +830,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public page with link forwards it to the puppet's timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect_join("@_ap_alice___lemmy:kazarma", "!room:kazarma")
+      |> expect_join("@alice.lemmy:kazarma", "!room:kazarma")
       |> expect_send_message(
-        "@_ap_alice___lemmy:kazarma",
+        "@alice.lemmy:kazarma",
         "!room:kazarma",
         %{
           "body" => "Page title\nhttps://kazar.ma/ \uFEFF",
@@ -774,7 +848,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         remote_id: "http://lemmy/c/community",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_community___lemmy:kazarma"
+          "matrix_id" => "@community.lemmy:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -792,9 +866,9 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "receiving a public page with link and description forwards it to the puppet's timeline room" do
       Kazarma.Matrix.TestClient
-      |> expect_join("@_ap_alice___lemmy:kazarma", "!room:kazarma")
+      |> expect_join("@alice.lemmy:kazarma", "!room:kazarma")
       |> expect_send_message(
-        "@_ap_alice___lemmy:kazarma",
+        "@alice.lemmy:kazarma",
         "!room:kazarma",
         %{
           "body" => "Page title\nhttps://kazar.ma/\n\nPage description \uFEFF",
@@ -811,7 +885,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         remote_id: "http://lemmy/c/community",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_community___lemmy:kazarma"
+          "matrix_id" => "@community.lemmy:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -848,19 +922,28 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "actor" => "http://pleroma/pub/actors/alice"
         })
 
-      {:ok, _relay} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Application",
-            "name" => "Kazarma",
-            "preferredUsername" => "relay",
-            "url" => "http://kazarma/-/relay",
-            "id" => "http://kazarma/-/relay",
-            "username" => "relay@kazarma"
-          },
-          "local" => true,
-          "public" => true,
-          "actor" => "http://kazarma/-/relay"
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
+
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@relay:kazarma",
+          remote_id: "http://kazarma/-/relay",
+          data: %{
+            "ap_data" => %{
+              "id" => "http://kazarma/-/relay",
+              "preferredUsername" => "relay",
+              "name" => "Kazarma",
+              "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/avatar"},
+              "type" => "Application"
+            },
+            "keys" => keys
+          }
         })
 
       {:ok, actor: actor}
@@ -894,7 +977,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     test "following the relay actor makes it accept, follow back and creates the actor room" do
       Kazarma.Matrix.TestClient
       |> expect_create_room(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma:kazarma",
         [
           visibility: :public,
           name: "Alice",
@@ -902,7 +985,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           is_direct: false,
           invite: [],
           room_version: "5",
-          room_alias_name: "_ap_alice___pleroma",
+          room_alias_name: "alice.pleroma",
           initial_state: [
             %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
             %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
@@ -911,7 +994,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         "!room:kazarma"
       )
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma:kazarma",
         "!room:kazarma",
         %{"body" => "has started bridging their public activity \uFEFF", "msgtype" => "m.emote"},
         nil
@@ -971,7 +1054,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
       assert [
                %MatrixAppService.Bridge.Room{
-                 data: %{"matrix_id" => "@_ap_alice___pleroma:kazarma", "type" => "ap_user"},
+                 data: %{"matrix_id" => "@alice.pleroma:kazarma", "type" => "ap_user"},
                  local_id: "!room:kazarma",
                  remote_id: "http://pleroma/pub/actors/alice"
                }
@@ -980,22 +1063,22 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "following the relay actor makes it accept, follow back and gets the actor room by alias if it already exists" do
       Kazarma.Matrix.TestClient
-      |> expect_create_room_existing("@_ap_alice___pleroma:kazarma",
+      |> expect_create_room_existing("@alice.pleroma:kazarma",
         visibility: :public,
         name: "Alice",
         topic: nil,
         is_direct: false,
         invite: [],
         room_version: "5",
-        room_alias_name: "_ap_alice___pleroma",
+        room_alias_name: "alice.pleroma",
         initial_state: [
           %{content: %{guest_access: :can_join}, type: "m.room.guest_access"},
           %{content: %{history_visibility: :world_readable}, type: "m.room.history_visibility"}
         ]
       )
-      |> expect_get_alias("#_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_get_alias("#alice.pleroma:kazarma", "!room:kazarma")
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma:kazarma",
         "!room:kazarma",
         %{"body" => "has started bridging their public activity \uFEFF", "msgtype" => "m.emote"},
         "event_id"
@@ -1055,7 +1138,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
       assert [
                %MatrixAppService.Bridge.Room{
-                 data: %{"matrix_id" => "@_ap_alice___pleroma:kazarma", "type" => "ap_user"},
+                 data: %{"matrix_id" => "@alice.pleroma:kazarma", "type" => "ap_user"},
                  local_id: "!room:kazarma",
                  remote_id: "http://pleroma/pub/actors/alice"
                }
@@ -1065,7 +1148,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     test "following the relay actor makes it accept, follow back and starts bridging again is relay had previously been unfollowed" do
       Kazarma.Matrix.TestClient
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma:kazarma",
         "!room:kazarma",
         %{"body" => "has started bridging their public activity \uFEFF", "msgtype" => "m.emote"},
         "event_id"
@@ -1125,14 +1208,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: "http://pleroma/pub/actors/alice",
-          data: %{"type" => "deactivated_ap_user", "matrix_id" => "@_ap_alice___pleroma:kazarma"}
+          data: %{"type" => "deactivated_ap_user", "matrix_id" => "@alice.pleroma:kazarma"}
         })
 
       assert :ok = handle_activity(follow_fixture())
 
       assert [
                %MatrixAppService.Bridge.Room{
-                 data: %{"matrix_id" => "@_ap_alice___pleroma:kazarma", "type" => "ap_user"},
+                 data: %{"matrix_id" => "@alice.pleroma:kazarma", "type" => "ap_user"},
                  local_id: "!room:kazarma",
                  remote_id: "http://pleroma/pub/actors/alice"
                }
@@ -1160,22 +1243,31 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "actor" => "http://pleroma/pub/actors/alice"
         })
 
-      {:ok, relay} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Application",
-            "name" => "Kazarma",
-            "preferredUsername" => "relay",
-            "url" => "http://kazarma/-/relay",
-            "id" => "http://kazarma/-/relay",
-            "username" => "relay@kazarma"
-          },
-          "local" => true,
-          "public" => true,
-          "actor" => "http://kazarma/-/relay"
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
         })
 
-      {:ok, actor: actor, relay: relay}
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@relay:kazarma",
+          remote_id: "http://kazarma/-/relay",
+          data: %{
+            "ap_data" => %{
+              "id" => "http://kazarma/-/relay",
+              "preferredUsername" => "relay",
+              "name" => "Kazarma",
+              "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/avatar"},
+              "type" => "Application"
+            },
+            "keys" => keys
+          }
+        })
+
+      {:ok, actor: actor}
     end
 
     def follow_fixture do
@@ -1206,7 +1298,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     test "unfollowing the relay actor makes it unfollow back and deactivates the actor room" do
       Kazarma.Matrix.TestClient
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma:kazarma",
         "!room:kazarma",
         %{"body" => "has stopped bridging their public activity \uFEFF", "msgtype" => "m.emote"},
         "event_id"
@@ -1247,7 +1339,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         Bridge.create_room(%{
           local_id: "!room:kazarma",
           remote_id: "http://pleroma/pub/actors/alice",
-          data: %{"type" => "ap_user", "matrix_id" => "@_ap_alice___pleroma:kazarma"}
+          data: %{"type" => "ap_user", "matrix_id" => "@alice.pleroma:kazarma"}
         })
 
       assert :ok = handle_activity(unfollow_fixture())
@@ -1255,7 +1347,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       assert [
                %MatrixAppService.Bridge.Room{
                  data: %{
-                   "matrix_id" => "@_ap_alice___pleroma:kazarma",
+                   "matrix_id" => "@alice.pleroma:kazarma",
                    "type" => "deactivated_ap_user"
                  },
                  local_id: "!room:kazarma",

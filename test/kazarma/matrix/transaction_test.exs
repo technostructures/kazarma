@@ -19,13 +19,13 @@ defmodule Kazarma.Matrix.TransactionTest do
   @pleroma_user_displayname "Pierre"
   @pleroma_user_full_username "pierre@pleroma.interhacker.space"
   @pleroma_user_ap_id "https://pleroma.interhacker.space/users/pierre"
-  @pleroma_puppet_username "_ap_#{@pleroma_user_name}___#{@pleroma_user_server}"
+  @pleroma_puppet_username "#{@pleroma_user_name}.#{@pleroma_user_server}"
   @pleroma_puppet_address "@#{@pleroma_puppet_username}:kazarma"
 
   @mastodon_user_server "mastodon.social"
   @mastodon_user_name "test_user_alice1"
   @mastodon_user_displayname "Alice"
-  @mastodon_puppet_username "_ap_#{@mastodon_user_name}___#{@mastodon_user_server}"
+  @mastodon_puppet_username "#{@mastodon_user_name}.#{@mastodon_user_server}"
   @mastodon_puppet_address "@#{@mastodon_puppet_username}:kazarma"
 
   describe "User invitation" do
@@ -52,7 +52,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         content: %{"membership" => "invite", "is_direct" => true},
         sender: "@alice:kazarma",
         room_id: "!direct_room:kazarma",
-        state_key: "@_ap_nonexisting1___pleroma:kazarma"
+        state_key: "@nonexisting1.interhacker.space:kazarma"
       }
     end
 
@@ -85,7 +85,7 @@ defmodule Kazarma.Matrix.TransactionTest do
         content: %{"membership" => "invite"},
         sender: "@alice:kazarma",
         room_id: "!room:kazarma",
-        state_key: "@_ap_nonexisting2___pleroma:kazarma"
+        state_key: "@nonexisting2.interhacker.space:kazarma"
       }
     end
 
@@ -148,6 +148,15 @@ defmodule Kazarma.Matrix.TransactionTest do
     end
 
     test "when a nonexisting puppet user is invited nothing happens" do
+      Kazarma.Matrix.TestClient
+      |> expect(:get_profile, 2, fn
+        "@nonexisting1.interhacker.space:kazarma" ->
+          {:error, :not_found}
+
+        "@nonexisting2.interhacker.space:kazarma" ->
+          {:error, :not_found}
+      end)
+
       assert :ok == new_event(invitation_event_direct_nonexisting())
       assert nil == Bridge.get_room_by_local_id("!direct_room:kazarma")
       assert :ok == new_event(invitation_event_multiuser_fixture_nonexisting())
@@ -176,10 +185,10 @@ defmodule Kazarma.Matrix.TransactionTest do
       {:ok, _user} =
         Bridge.create_user(%{
           local_id: "@alice:kazarma",
-          remote_id: "http://kazarma/users/alice",
+          remote_id: "http://kazarma/-/alice",
           data: %{
             "ap_data" => %{
-              "id" => "http://kazarma/users/alice",
+              "id" => "http://kazarma/-/alice",
               "preferredUsername" => "alice",
               "name" => "old_name",
               "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/old_avatar"}
@@ -222,10 +231,10 @@ defmodule Kazarma.Matrix.TransactionTest do
       |> expect(:update, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/users/alice",
+            ap_id: "http://kazarma/-/alice",
             data: %{
               "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/new_avatar"},
-              "id" => "http://kazarma/users/alice",
+              "id" => "http://kazarma/-/alice",
               "name" => "old_name",
               "preferredUsername" => "alice"
             },
@@ -235,10 +244,10 @@ defmodule Kazarma.Matrix.TransactionTest do
           cc: [],
           object: %{
             "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/new_avatar"},
-            "id" => "http://kazarma/users/alice",
+            "id" => "http://kazarma/-/alice",
             "name" => "old_name",
             "preferredUsername" => "alice",
-            "url" => "http://kazarma/users/alice"
+            "url" => "http://kazarma/-/alice"
           },
           to: [nil, "https://www.w3.org/ns/activitystreams#Public"]
         } ->
@@ -260,12 +269,12 @@ defmodule Kazarma.Matrix.TransactionTest do
       |> expect(:update, fn
         %{
           actor: %ActivityPub.Actor{
-            ap_id: "http://kazarma/users/alice",
+            ap_id: "http://kazarma/-/alice",
             data: %{
               "icon" => %{
                 "url" => "http://matrix/_matrix/media/r0/download/server/old_avatar"
               },
-              "id" => "http://kazarma/users/alice",
+              "id" => "http://kazarma/-/alice",
               "name" => "new_name",
               "preferredUsername" => "alice"
             },
@@ -275,10 +284,10 @@ defmodule Kazarma.Matrix.TransactionTest do
           cc: [],
           object: %{
             "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/old_avatar"},
-            "id" => "http://kazarma/users/alice",
+            "id" => "http://kazarma/-/alice",
             "name" => "new_name",
             "preferredUsername" => "alice",
-            "url" => "http://kazarma/users/alice"
+            "url" => "http://kazarma/-/alice"
           },
           to: [nil, "https://www.w3.org/ns/activitystreams#Public"]
         } ->
@@ -1171,21 +1180,51 @@ defmodule Kazarma.Matrix.TransactionTest do
           data: %{"to_ap_id" => "alice@pleroma", "type" => "chat"}
         })
 
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@bob:kazarma",
+          remote_id: "http://kazarma/-/bob",
+          data: %{
+            "ap_data" => %{
+              "id" => "http://kazarma/-/bob",
+              "preferredUsername" => "bob",
+              "name" => "Bob",
+              "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/avatar"},
+              "endpoints" => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/bob/followers",
+              "following" => "http://kazarma/-/bob/following",
+              "inbox" => "http://kazarma/-/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "outbox" => "http://kazarma/-/bob/outbox",
+              "type" => "Person"
+            },
+            "keys" => keys
+          }
+        })
+
       :ok
     end
 
     test "it removes mx-reply tags and convert mentions" do
       Kazarma.Matrix.TestClient
-      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
-      |> expect_get_profile_not_found("@alice:kazarma")
+      |> expect(:get_profile, 2, fn
+        "@alice:kazarma" ->
+          {:error, :not_found}
+
+        "@bob:kazarma" ->
+          %{"displayname" => "Bob"}
+      end)
 
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
         %{
-          actor: %ActivityPub.Actor{
+          actor: %{
             ap_id: "http://kazarma/-/bob",
             data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "endpoints" => %{"sharedInbox" => "http://kazarma/shared_inbox"},
               "capabilities" => %{"acceptsChatMessages" => true},
               "followers" => "http://kazarma/-/bob/followers",
               "following" => "http://kazarma/-/bob/following",

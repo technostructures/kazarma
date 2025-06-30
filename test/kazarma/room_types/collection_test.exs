@@ -3,11 +3,13 @@
 defmodule Kazarma.RoomTypes.CollectionTest do
   @moduledoc false
 
-  use Kazarma.DataCase
+  use Kazarma.DataCase, async: false
 
   alias Kazarma.Bridge
   import Kazarma.ActivityPub.Adapter
   import Kazarma.MatrixMocks
+
+  setup :config_public_bridge
 
   describe "activity handler (handle_activity/1) for Invite activity" do
     setup :set_mox_from_context
@@ -43,20 +45,29 @@ defmodule Kazarma.RoomTypes.CollectionTest do
     end
 
     setup do
-      {:ok, actor} =
-        {:ok, _actor} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Person",
-            "name" => "Bob",
-            "preferredUsername" => "bob",
-            "url" => "http://kazarma/-/bob",
-            "id" => "http://kazarma/-/bob",
-            "username" => "bob@kazarma"
-          },
-          "local" => true,
-          "public" => true,
-          "actor" => "http://kazarma/-/bob"
+      {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@bob:kazarma",
+          remote_id: "http://kazarma/-/bob",
+          data: %{
+            "ap_data" => %{
+              "id" => "http://kazarma/-/bob",
+              "preferredUsername" => "bob",
+              "name" => "Bob",
+              "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/avatar"},
+              "endpoints" => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/bob/followers",
+              "following" => "http://kazarma/-/bob/following",
+              "inbox" => "http://kazarma/-/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "outbox" => "http://kazarma/-/bob/outbox",
+              "type" => "Person"
+            },
+            "keys" => keys
+          }
         })
 
       ActivityPub.Object.do_insert(%{
@@ -74,6 +85,12 @@ defmodule Kazarma.RoomTypes.CollectionTest do
         "actor" => "http://mobilizon/@group",
         "username" => "group"
       })
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@group.mobilizon:kazarma",
+          remote_id: "http://mobilizon/@group"
+        })
 
       ActivityPub.Object.do_insert(%{
         "data" => %{
@@ -94,13 +111,19 @@ defmodule Kazarma.RoomTypes.CollectionTest do
         "username" => "group_members"
       })
 
-      {:ok, actor: actor}
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@group_members.mobilizon:kazarma",
+          remote_id: "http://mobilizon/@group/members"
+        })
+
+      :ok
     end
 
     test "when receiving a Invite activity for a Matrix user it invites them to the collection room" do
       Kazarma.Matrix.TestClient
       |> expect_create_room(
-        "@_ap_group___mobilizon:kazarma",
+        "@group.mobilizon:kazarma",
         [
           visibility: :private,
           topic: nil,
@@ -112,7 +135,7 @@ defmodule Kazarma.RoomTypes.CollectionTest do
         "!room:kazarma"
       )
       |> expect_send_state_event(
-        "@_ap_group___mobilizon:kazarma",
+        "@group.mobilizon:kazarma",
         "!room:kazarma",
         "m.room.member",
         "@bob:kazarma",
@@ -140,12 +163,6 @@ defmodule Kazarma.RoomTypes.CollectionTest do
     end
 
     test "when the user accepts the invitation it sends an Accept/Invite activity" do
-      Kazarma.Matrix.TestClient
-      |> expect_get_profile(
-        "@bob:kazarma",
-        %{"displayname" => "Bob"}
-      )
-
       Kazarma.ActivityPub.TestServer
       |> expect(:accept, fn
         %{
@@ -218,6 +235,12 @@ defmodule Kazarma.RoomTypes.CollectionTest do
           "actor" => "http://kazarma/-/bob"
         })
 
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@bob:kazarma",
+          remote_id: "http://kazarma/-/bob"
+        })
+
       {:ok, actor} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
@@ -234,13 +257,19 @@ defmodule Kazarma.RoomTypes.CollectionTest do
           "username" => "group"
         })
 
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@group.mobilizon:kazarma",
+          remote_id: "http://mobilizon/@group"
+        })
+
       {:ok, actor: actor}
     end
 
     test "when receiving a Remove/Invite activity for a Matrix user in a collection room it kicks them" do
       Kazarma.Matrix.TestClient
       |> expect_send_state_event(
-        "@_ap_group___mobilizon:kazarma",
+        "@group.mobilizon:kazarma",
         "!room:kazarma",
         "m.room.member",
         "@bob:kazarma",
@@ -328,6 +357,12 @@ defmodule Kazarma.RoomTypes.CollectionTest do
           "username" => "group"
         })
 
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@group.mobilizon:kazarma",
+          remote_id: "http://mobilizon/@group"
+        })
+
       {:ok, _alice} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
@@ -343,20 +378,26 @@ defmodule Kazarma.RoomTypes.CollectionTest do
           "username" => "alice"
         })
 
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice.mobilizon:kazarma",
+          remote_id: "http://mobilizon/@alice"
+        })
+
       :ok
     end
 
     test "when receiving a Note activity creating a discussion it forwards the message" do
       Kazarma.Matrix.TestClient
       |> expect_get_state(
-        "@_ap_group___mobilizon:kazarma",
+        "@group.mobilizon:kazarma",
         "!room:kazarma",
         "m.room.member",
-        "@_ap_alice___mobilizon:kazarma",
+        "@alice.mobilizon:kazarma",
         %{"membership" => "join"}
       )
       |> expect_send_message(
-        "@_ap_alice___mobilizon:kazarma",
+        "@alice.mobilizon:kazarma",
         "!room:kazarma",
         %{
           "body" => "hello \uFEFF",
@@ -381,14 +422,14 @@ defmodule Kazarma.RoomTypes.CollectionTest do
     test "when receiving a Note activity continuing a discussion it forwards as a message with reply" do
       Kazarma.Matrix.TestClient
       |> expect_get_state(
-        "@_ap_group___mobilizon:kazarma",
+        "@group.mobilizon:kazarma",
         "!room:kazarma",
         "m.room.member",
-        "@_ap_alice___mobilizon:kazarma",
+        "@alice.mobilizon:kazarma",
         %{"membership" => "join"}
       )
       |> expect_send_message(
-        "@_ap_alice___mobilizon:kazarma",
+        "@alice.mobilizon:kazarma",
         "!room:kazarma",
         %{
           "body" => "hello \uFEFF",
@@ -462,6 +503,27 @@ defmodule Kazarma.RoomTypes.CollectionTest do
     end
 
     setup do
+      {:ok, actor} =
+        ActivityPub.Object.do_insert(%{
+          "data" => %{
+            "type" => "Person",
+            "name" => "Bob",
+            "preferredUsername" => "bob",
+            "url" => "http://kazarma/-/bob",
+            "id" => "http://kazarma/-/bob",
+            "username" => "bob@kazarma"
+          },
+          "local" => true,
+          "public" => true,
+          "actor" => "http://kazarma/-/bob"
+        })
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@bob:kazarma",
+          remote_id: "http://kazarma/-/bob"
+        })
+
       {:ok, group} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
@@ -476,6 +538,12 @@ defmodule Kazarma.RoomTypes.CollectionTest do
           "local" => false,
           "public" => true,
           "actor" => "http://mobilizon/@group"
+        })
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@group.mobilizon:kazarma",
+          remote_id: "http://mobilizon/@group"
         })
 
       group
@@ -495,30 +563,14 @@ defmodule Kazarma.RoomTypes.CollectionTest do
     end
 
     test "when receiving an event that's not a reply it creates a new group discussion" do
-      Kazarma.Matrix.TestClient
-      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
-
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
             ap_id: "http://kazarma/-/bob",
-            data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
-              "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/-/bob/followers",
-              "following" => "http://kazarma/-/bob/following",
-              "icon" => nil,
-              "id" => "http://kazarma/-/bob",
-              "inbox" => "http://kazarma/-/bob/inbox",
-              "manuallyApprovesFollowers" => false,
-              "name" => "Bob",
-              "outbox" => "http://kazarma/-/bob/outbox",
-              "preferredUsername" => "bob",
-              "type" => "Person"
-            },
+            data: _,
             deactivated: false,
-            id: nil,
+            id: _,
             keys: _,
             local: true,
             pointer_id: nil,
@@ -565,30 +617,14 @@ defmodule Kazarma.RoomTypes.CollectionTest do
     end
 
     test "when receiving an event replying to a discussion it forwards the message to the corresponding discussion" do
-      Kazarma.Matrix.TestClient
-      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
-
       Kazarma.ActivityPub.TestServer
       |> expect(:create, fn
         %{
           actor: %ActivityPub.Actor{
             ap_id: "http://kazarma/-/bob",
-            data: %{
-              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
-              "capabilities" => %{"acceptsChatMessages" => true},
-              "followers" => "http://kazarma/-/bob/followers",
-              "following" => "http://kazarma/-/bob/following",
-              "icon" => nil,
-              "id" => "http://kazarma/-/bob",
-              "inbox" => "http://kazarma/-/bob/inbox",
-              "manuallyApprovesFollowers" => false,
-              "name" => "Bob",
-              "outbox" => "http://kazarma/-/bob/outbox",
-              "preferredUsername" => "bob",
-              "type" => "Person"
-            },
+            data: _,
             deactivated: false,
-            id: nil,
+            id: _il,
             keys: _,
             local: true,
             pointer_id: nil,

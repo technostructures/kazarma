@@ -5,33 +5,36 @@ defmodule Kazarma.Address do
   Functions about Matrix and ActivityPub addresses conversion.
   """
 
+  require Logger
+
   alias ActivityPub.Actor
 
-  @alphanum "A-z0-9"
-  @alphanum_lowercased "a-z0-9"
-  @ap_chars @alphanum <> "_"
-  @matrix_chars @alphanum_lowercased <> "_\\.\\-\\/"
-  @valid_domain "[#{@alphanum}][#{@alphanum}\\.\\-]*[#{@alphanum}]"
+  # @alphanum "A-z0-9"
+  # @alphanum_lowercased "a-z0-9"
+  # @ap_chars @alphanum <> "_"
+  # @matrix_chars @alphanum_lowercased <> "_\\.\\-\\/"
+  # @valid_domain "[#{@alphanum}][#{@alphanum}\\.\\-]*[#{@alphanum}]"
+  #
+  # @matrix_puppet_separation "___"
+  # @ap_puppet_separation "___"
 
-  @matrix_puppet_separation "___"
-  @ap_puppet_separation "___"
+  def ap_domain, do: Application.fetch_env!(:activity_pub, :domain)
 
-  # @TODO: use different configurable domain for Matrix
-  def domain, do: Application.fetch_env!(:activity_pub, :domain)
+  def matrix_domain, do: Application.fetch_env!(:kazarma, :matrix_domain)
 
   def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "_ap_")
 
   # @TODO: make configurable
   def bot_localpart, do: "_kazarma"
 
-  def bot_matrix_id, do: "@#{bot_localpart()}:#{domain()}"
+  def bot_matrix_id, do: "@#{bot_localpart()}:#{matrix_domain()}"
 
   # @TODO: make configurable
   def relay_localpart, do: "relay"
 
-  def relay_username, do: "#{relay_localpart()}@#{domain()}"
+  def relay_username, do: "#{relay_localpart()}@#{ap_domain()}"
 
-  def relay_matrix_id, do: "@#{relay_localpart()}:#{domain()}"
+  def relay_matrix_id, do: "@#{relay_localpart()}:#{ap_domain()}"
 
   def relay_ap_id,
     do:
@@ -50,9 +53,9 @@ defmodule Kazarma.Address do
   # @TODO: make configurable
   def application_localpart, do: "kazarma"
 
-  def application_username, do: "#{application_localpart()}@#{domain()}"
+  def application_username, do: "#{application_localpart()}@#{ap_domain()}"
 
-  def application_matrix_id, do: "@#{application_localpart()}:#{domain()}"
+  def application_matrix_id, do: "@#{application_localpart()}:#{matrix_domain()}"
 
   def application_ap_id,
     do:
@@ -66,17 +69,17 @@ defmodule Kazarma.Address do
     actor
   end
 
-  def get_username_localpart(username) do
-    username
-    |> String.replace_suffix("@#{Kazarma.Address.domain()}", "")
-    |> String.replace_leading("@", "")
-  end
+  # def get_username_localpart(username) do
+  #   username
+  #   |> String.replace_suffix("@#{Kazarma.Address.ap_domain()}", "")
+  #   |> String.replace_leading("@", "")
+  # end
 
-  def get_matrix_id_localpart(username) do
-    username
-    |> String.replace_suffix(":#{Kazarma.Address.domain()}", "")
-    |> String.replace_leading("@", "")
-  end
+  # def get_matrix_id_localpart(username) do
+  #   username
+  #   |> String.replace_suffix(":#{Kazarma.Address.matrix_domain()}", "")
+  #   |> String.replace_leading("@", "")
+  # end
 
   def localpart(%{username: username}) do
     [localpart, _server] = String.split(username, "@")
@@ -96,168 +99,360 @@ defmodule Kazarma.Address do
     server(%{username: username})
   end
 
+  def matrix_id_localpart(matrix_id) do
+    matrix_id =
+      String.replace_leading(matrix_id, "@", "")
+
+    [localpart, _domain] = String.split(matrix_id, ":")
+
+    localpart
+  end
+
+  def should_bridge_local_matrix_user() do
+    Kazarma.Config.private_bridge?()
+  end
+
+  def should_bridge_remote_matrix_user() do
+    Kazarma.Config.public_bridge?()
+  end
+
+  def should_bridge_actor(%ActivityPub.Actor{local: true}) do
+    true
+  end
+
+  def should_bridge_actor(actor) do
+    if Kazarma.Config.private_bridge?() do
+      true
+    else
+      match?(%{}, Kazarma.Bridge.get_user_by_remote_id(actor.ap_id))
+    end
+  end
+
+  def get_actor(query) do
+    case get_user(query) do
+      %{data: %{"ap_data" => ap_data, "keys" => keys}} ->
+        Kazarma.ActivityPub.Actor.build_actor_from_data(ap_data, keys)
+
+      %{remote_id: ap_id} ->
+        case ActivityPub.Actor.get_cached(ap_id: ap_id) do
+          {:ok, actor} -> actor
+          _ -> nil
+        end
+
+      nil ->
+        nil
+    end
+  end
+
+  def get_user(matrix_id: matrix_id) do
+    case Kazarma.Bridge.get_user_by_local_id(matrix_id) do
+      %{} = bridged_user ->
+        bridged_user
+
+      _ ->
+        do_get_user(matrix_id: matrix_id)
+    end
+  end
+
+  def get_user(ap_id: ap_id) do
+    case Kazarma.Bridge.get_user_by_remote_id(ap_id) do
+      %{} = bridged_user ->
+        bridged_user
+
+      _ ->
+        do_get_user(ap_id: ap_id)
+    end
+  end
+
+  def get_user(username: username) do
+    do_get_user(username: username)
+  end
+
   @doc """
-  Parses an ActivityPub username.
-
-  It can be:
-    - `:activity_pub`: a user from an ActivityPub instance
-      eg: `user@remote_activity_pub`
-    - `:local_matrix`: a Matrix user from the bridged instance
-      eg: `user@instance`
-    - `:remote_matrix`: a Matrix user from another Matrix instance (if activated)
-      eg: `user___remote_matrix_instance@instance`
+  this function doesn't check if users should be bridged
+  it only dispatches to corresponding functions based on
+  real network of the user
   """
-  def parse_ap_username(username) do
-    regex = ~r/^@?(?<localpart>[#{@ap_chars}\-\.=]+)@(?<domain>#{@valid_domain})/
+  def do_get_user(matrix_id: matrix_id) do
+    # we can't know if it's a puppet or real Matrix user
+    # based on whether it's on local homeserver
+    # because puppets and local users coexist.
+    # we can still avoir a check if we don't bridge local users
 
-    username = if String.contains?(username, "@"), do: username, else: "#{username}@#{domain()}"
+    if String.ends_with?(matrix_id, ":#{matrix_domain()}") && !should_bridge_local_matrix_user() do
+      # @alice.mastodon.org:kazarma
 
+      get_user_for_actor(matrix_id: matrix_id)
+    else
+      # @alice.mastodon.org:kazarma
+
+      # @alice:matrix.org
+      # @alice:kazarma
+
+      get_user_for_actor(matrix_id: matrix_id) ||
+        get_user_for_matrix_user(matrix_id: matrix_id)
+    end
+  end
+
+  def do_get_user(ap_id: ap_id) do
+    %URI{host: host} = URI.parse(ap_id)
+
+    if host == ap_domain() do
+      get_user_for_matrix_user(ap_id: ap_id)
+    else
+      get_user_for_actor(ap_id: ap_id)
+    end
+  end
+
+  def do_get_user(username: username) do
+    if String.ends_with?(username, "@#{ap_domain()}") do
+      # @alice.matrix.org@kazarma
+      # @alice@kazarma
+
+      get_user_for_matrix_user(username: username)
+    else
+      # @alice@mastodon.org
+
+      get_user_for_actor(username: username)
+    end
+  end
+
+  def get_user_for_actor(matrix_id: matrix_id) do
+    # @alice.mastodon.org:kazarma
+
+    username =
+      matrix_id
+      |> String.replace_leading("@", "")
+
+    if String.ends_with?(username, ":#{Kazarma.Address.matrix_domain()}") do
+      try_remote_actor(String.replace_suffix(username, ":#{Kazarma.Address.matrix_domain()}", ""))
+    end
+  end
+
+  def get_user_for_actor(username: username) do
+    # @alice@mastodon.org
+
+    get_or_fetch_ap_user(username: username)
+  end
+
+  def get_user_for_actor(ap_id: ap_id) do
+    get_or_fetch_ap_user(ap_id: ap_id)
+  end
+
+  def get_user_for_matrix_user(matrix_id: matrix_id) do
+    # @alice:matrix.org
+    # @alice:kazarma
+
+    [localpart, domain] = String.split(matrix_id, ":")
+
+    localpart =
+      localpart
+      |> String.replace_leading("@", "")
+
+    if (domain == matrix_domain() && should_bridge_local_matrix_user()) ||
+         (domain != matrix_domain() && should_bridge_remote_matrix_user()) do
+      get_or_fetch_matrix_user(localpart, domain)
+    end
+  end
+
+  def get_user_for_matrix_user(username: username) do
+    username_localpart =
+      case String.split(username, "@") do
+        [_, localpart, _] -> localpart
+        [localpart, _] -> localpart
+        [localpart] -> localpart
+      end
+
+    (should_bridge_local_matrix_user() &&
+       get_or_fetch_matrix_user(username_localpart, matrix_domain())) ||
+      (should_bridge_remote_matrix_user() && try_remote_matrix_user(username_localpart)) ||
+      nil
+  end
+
+  def get_user_for_matrix_user(ap_id: ap_id) do
+    with %URI{host: host, path: path} <- URI.parse(ap_id),
+         %{path_params: %{"server" => server, "localpart" => localpart}} <-
+           Phoenix.Router.route_info(KazarmaWeb.Router, "GET", path, host) do
+      cond do
+        # server == "-" && localpart == relay_localpart() && Kazarma.Config.is_public_bridge() ->
+        server == "-" && should_bridge_local_matrix_user() ->
+          get_or_fetch_matrix_user(localpart, matrix_domain())
+
+        server != "-" && should_bridge_remote_matrix_user() ->
+          get_or_fetch_matrix_user(localpart, server)
+
+        true ->
+          nil
+      end
+    end
+  end
+
+  def try_remote_actor(username) do
+    match_domain(username)
+    |> Enum.find_value(fn {localpart, domain} ->
+      get_or_fetch_ap_user(username: "#{localpart}@#{domain}")
+    end)
+  end
+
+  def get_or_fetch_ap_user(query) do
+    # IO.puts("#{localpart}@#{domain}")
+
+    case Actor.get_cached_or_fetch(query) do
+      {:ok, actor} ->
+        maybe_create_matrix_puppet(actor)
+
+      _ ->
+        nil
+    end
+  end
+
+  def maybe_create_matrix_puppet(actor) do
+    case Kazarma.Bridge.get_user_by_remote_id(actor.ap_id) do
+      %{} = bridged_user ->
+        bridged_user
+
+      _ ->
+        if should_bridge_actor(actor) do
+          create_matrix_puppet(actor)
+        end
+    end
+  end
+
+  def create_matrix_puppet(%Actor{
+        username: username,
+        ap_id: ap_id,
+        data: data
+      }) do
+    with [localpart, domain] <- String.split(username, "@"),
+         matrix_id = "@#{localpart}.#{domain}:#{Kazarma.Address.matrix_domain()}",
+         {:ok, %{"user_id" => ^matrix_id}} <-
+           Kazarma.Matrix.Client.register(matrix_id) do
+      name = Map.get(data, "name") || Map.get(data, "preferredUsername")
+      Kazarma.Matrix.Client.put_displayname(matrix_id, name)
+      avatar_url = get_in(data, ["icon", "url"])
+      if avatar_url, do: Kazarma.Matrix.Client.upload_and_set_avatar(matrix_id, avatar_url)
+
+      {:ok, user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: matrix_id,
+          remote_id: ap_id,
+          data: %{}
+        })
+
+      Kazarma.Logger.log_created_puppet(user,
+        type: :matrix
+      )
+
+      # gate if PUBLIC_BRIDGE and uncomment
+      # Kazarma.RoomType.ApUser.create_outbox_if_public_group(actor)
+
+      user
+    else
+      {:error, _code, %{"error" => error}} ->
+        Logger.error(error)
+        nil
+
+      {:error, error} ->
+        Logger.error(error)
+        nil
+
+      other ->
+        Logger.debug(inspect(other))
+        nil
+    end
+  end
+
+  def try_remote_matrix_user(username_localpart) do
+    match_domain(username_localpart)
+    |> Enum.find_value(fn {localpart, domain} ->
+      get_or_fetch_matrix_user(localpart, domain)
+    end)
+  end
+
+  # matches alice.domain.com and below
+  @regex_domain ~r/(?<localpart>.+)\.(?<domain>.+\..{2,})/
+  # matches alice.sub.domain.com and below
+  @regex_subdomain ~r/(?<localpart>.+)\.(?<domain>.+\..+\..{2,})/
+  # matches alice.sub.sub.domain.com and below
+  @regex_subsubdomain ~r/(?<localpart>.+)\.(?<domain>.+\..+\..+\..{2,})/
+
+  def match_domain(username),
+    do: match_domain(username, [@regex_domain, @regex_subdomain, @regex_subsubdomain])
+
+  def match_domain(_, []), do: []
+
+  def match_domain(username, [regex | other_regexes]) do
     case Regex.named_captures(regex, username) do
+      nil ->
+        []
+
       %{"localpart" => localpart, "domain" => domain} ->
-        if domain in [domain(), KazarmaWeb.Endpoint.host()] do
-          # local ActivityPub user (puppet)
-          parse_ap_username_localpart(localpart)
-        else
-          # remote ActivityPub user
-          {:activity_pub, localpart, domain}
-        end
-
-      nil ->
-        {:error, :invalid_address}
+        [{localpart, domain} | match_domain(username, other_regexes)]
     end
   end
 
-  defp parse_ap_username_localpart(localpart) do
-    regex =
-      ~r/(?<localpart>[#{@ap_chars}]+)#{@ap_puppet_separation}(?<domain>#{@valid_domain})/
+  def get_or_fetch_matrix_user(localpart, domain) do
+    case Kazarma.Bridge.get_user_by_local_id("@#{localpart}:#{domain}") do
+      %{} = bridged_user ->
+        Logger.debug("local user found in database")
 
-    case Regex.named_captures(regex, localpart) do
-      %{"localpart" => sub_localpart, "domain" => sub_domain} ->
-        # remote Matrix user
-        {:remote_matrix, sub_localpart, sub_domain}
-
-      nil ->
-        # local Matrix user
-        {:local_matrix, localpart}
-    end
-  end
-
-  @doc """
-  Transform a ActivityPub username to his associated Matrix id
-  """
-  def ap_username_to_matrix_id(username, types \\ [:remote_matrix, :local_matrix, :activity_pub]) do
-    parse_ap_username(username)
-    |> filter_types(types)
-    |> case do
-      {:remote_matrix, sub_localpart, sub_domain} ->
-        {:ok, "@#{sub_localpart}:#{sub_domain}"}
-
-      {:local_matrix, localpart} ->
-        {:ok, "@#{localpart}:#{domain()}"}
-
-      {:activity_pub, localpart, remote_domain} ->
-        {:ok,
-         "@" <>
-           puppet_prefix() <>
-           String.downcase(localpart) <>
-           @matrix_puppet_separation <> remote_domain <> ":" <> domain()}
+        bridged_user
 
       _ ->
-        {:error, :not_found}
+        Logger.debug("local user not found in database")
+
+        fetch_matrix_user(localpart, domain)
     end
   end
 
-  def ap_localpart_to_local_ap_id(localpart) do
-    KazarmaWeb.Router.Helpers.activity_pub_url(KazarmaWeb.Endpoint, :actor, "-", localpart)
-  end
+  def fetch_matrix_user(localpart, domain) do
+    matrix_id = "@#{localpart}:#{domain}"
 
-  def ap_id_to_matrix(ap_id, types \\ [:remote_matrix, :local_matrix, :activity_pub]) do
-    case Actor.get_cached(ap_id: ap_id) do
-      {:ok, %Actor{username: username}} ->
-        ap_username_to_matrix_id(username, types)
+    Logger.debug("trying to fetch #{matrix_id}")
+
+    case Kazarma.Matrix.Client.get_profile(matrix_id) do
+      {:ok, profile} ->
+        Logger.debug("user found in Matrix")
+
+        actor = build_actor_from_profile(localpart, domain, profile)
+
+        {:ok, user} =
+          Kazarma.Bridge.create_user(%{
+            local_id: matrix_id,
+            remote_id: actor.ap_id,
+            data: %{"ap_data" => actor.data, "keys" => actor.keys}
+          })
+
+        Kazarma.Logger.log_created_puppet(user,
+          type: :ap
+        )
+
+        user
 
       _ ->
-        {:error, :not_found}
+        nil
     end
   end
 
-  @doc """
-  Parses a Matrix username
+  def build_actor_from_profile(localpart, domain, profile) do
+    host = if domain == matrix_domain(), do: "-", else: domain
 
-  It can be:
-    - `:activity_pub`: a puppet user corresponding to a remote ActivityPub instance
-      eg: `user___remote_activity_pub@instance`
-    - `:local_matrix`: a Matrix user from the bridged instance
-      eg: `user@instance`
-    - `:remote_matrix`: a Matrix user from another Matrix instance (if activated)
-      eg: `user@remote_matrix_instance`
-  """
-  def parse_matrix_id(user_id) do
-    domain = domain()
-    regex = ~r/^@?(?<localpart>[#{@matrix_chars}=]+):(?<domain>#{@valid_domain})$/
+    ap_id =
+      KazarmaWeb.Router.Helpers.activity_pub_url(KazarmaWeb.Endpoint, :actor, host, localpart)
 
-    sub_regex =
-      ~r/#{puppet_prefix()}(?<localpart>[#{@matrix_chars}]+)#{@matrix_puppet_separation}(?<domain>#{@valid_domain})/
+    avatar_url =
+      profile["avatar_url"] && Kazarma.Matrix.Client.get_media_url(profile["avatar_url"])
 
-    case Regex.named_captures(regex, user_id) do
-      # @TODO: make configurable
-      %{"localpart" => "_kazarma", "domain" => ^domain} ->
-        {:appservice_bot, "_kazarma"}
+    {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
-      %{"localpart" => localpart, "domain" => ^domain} ->
-        # local Matrix user
-        case String.starts_with?(localpart, puppet_prefix()) &&
-               Regex.named_captures(sub_regex, localpart) do
-          %{"localpart" => sub_localpart, "domain" => sub_domain} ->
-            # bridged ActivityPub user
-            {:activity_pub, String.replace_prefix(sub_localpart, puppet_prefix(), ""), sub_domain}
-
-          _ ->
-            # real local user
-            {:local_matrix, localpart}
-        end
-
-      %{"localpart" => localpart, "domain" => remote_domain} ->
-        # remote Matrix user
-        {:remote_matrix, localpart, remote_domain}
-
-      nil ->
-        {:error, :invalid_address}
-    end
-  end
-
-  @doc """
-  Transform a Matrix id to his associated ActivityPub username
-  """
-  def matrix_id_to_ap_username(matrix_id, types \\ [:activity_pub, :local_matrix, :remote_matrix]) do
-    parse_matrix_id(matrix_id)
-    |> filter_types(types)
-    |> case do
-      {:activity_pub, sub_localpart, sub_domain} ->
-        {:ok, "#{sub_localpart}@#{sub_domain}"}
-
-      {:appservice_bot, localpart} ->
-        {:ok, "#{localpart}@#{domain()}"}
-
-      {:local_matrix, localpart} ->
-        {:ok, "#{localpart}@#{domain()}"}
-
-      {:remote_matrix, localpart, remote_domain} ->
-        {:ok, localpart <> @matrix_puppet_separation <> remote_domain <> "@" <> domain()}
-
-      _ ->
-        {:error, :not_found}
-    end
-  end
-
-  def matrix_id_to_actor(matrix_id, types \\ [:activity_pub, :local_matrix, :remote_matrix]) do
-    case matrix_id_to_ap_username(matrix_id, types) do
-      {:ok, username} ->
-        Actor.get_cached_or_fetch(username: username)
-
-      error ->
-        error
-    end
+    Kazarma.ActivityPub.Actor.build_actor(%{
+      localpart: localpart,
+      domain: host,
+      ap_id: ap_id,
+      displayname: profile["displayname"],
+      avatar_url: avatar_url,
+      keys: keys
+    })
   end
 
   def matrix_mention_tag(matrix_id, display_name) do
@@ -268,20 +463,5 @@ defmodule Kazarma.Address do
       matrix_id: matrix_id,
       display_name: display_name
     )
-  end
-
-  def unchecked_matrix_id_to_actor(matrix_id) do
-    case matrix_id_to_actor(matrix_id) do
-      {:ok, actor} -> actor
-      _ -> nil
-    end
-  end
-
-  defp filter_types({type, _} = t, types) do
-    if type in types, do: t, else: {:error, :not_found}
-  end
-
-  defp filter_types({type, _, _} = t, types) do
-    if type in types, do: t, else: {:error, :not_found}
   end
 end

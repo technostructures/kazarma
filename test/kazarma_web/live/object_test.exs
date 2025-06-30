@@ -127,6 +127,12 @@ defmodule KazarmaWeb.ObjectTest do
           "actor" => "http://pleroma/pub/actors/alice"
         })
 
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@alice.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/alice"
+        })
+
       {:ok, _actor} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
@@ -145,6 +151,12 @@ defmodule KazarmaWeb.ObjectTest do
       actor
       |> ActivityPub.Actor.format_remote_actor()
       |> ActivityPub.Actor.set_cache()
+
+      {:ok, _user} =
+        Kazarma.Bridge.create_user(%{
+          local_id: "@bob.pleroma:kazarma",
+          remote_id: "http://pleroma/pub/actors/bob"
+        })
 
       {:ok, remote_note} =
         ActivityPub.Object.do_insert(%{

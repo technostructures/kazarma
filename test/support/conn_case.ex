@@ -29,6 +29,7 @@ defmodule KazarmaWeb.ConnCase do
       import KazarmaWeb.ConnCase
       require KazarmaWeb.HtmlChecker
       import KazarmaWeb.HtmlChecker
+      require Kazarma.Mocks
       import Kazarma.Mocks
       import Mox, except: [expect: 3, expect: 4]
 
@@ -43,12 +44,17 @@ defmodule KazarmaWeb.ConnCase do
     {:ok, _} = Cachex.clear(:ap_actor_cache)
     {:ok, _} = Cachex.clear(:ap_object_cache)
 
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Kazarma.Repo)
-
-    unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Kazarma.Repo, {:shared, self()})
-    end
+    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Kazarma.Repo, shared: not tags[:async])
+    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}
+  end
+
+  def config_public_bridge(_context) do
+    Application.put_env(:kazarma, :public_bridge, true)
+
+    on_exit(fn ->
+      Application.put_env(:kazarma, :public_bridge, false)
+    end)
   end
 end

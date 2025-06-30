@@ -98,9 +98,6 @@ config :kazarma, :activity_pub, server: ActivityPub
 
 config :kazarma, KazarmaWeb.Gettext, default_locale: "en", locales: ~w(en fr es nb)
 
-# @TODO not implemented
-config :kazarma, bridge_remote_matrix_users: false
-
 config :kazarma, prefix_puppet_username: "_ap_"
 
 config :hammer,

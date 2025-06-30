@@ -17,32 +17,19 @@ defmodule Kazarma.ActivityPub.ActivityTest do
           "id" => "delete_object_id",
           "actor" => "http://kazarma/-/bob",
           "type" => "Delete",
-          "to" => ["http://pleroma/pub/actors/alice"],
-          "object" => "http://pleroma/pub/transactions/object_id"
+          "to" => ["http://pleroma.com/pub/actors/alice"],
+          "object" => "http://pleroma.com/pub/transactions/object_id"
         }
       }
     end
 
     setup do
-      {:ok, _actor} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Person",
-            "name" => "Bob",
-            "preferredUsername" => "bob",
-            "url" => "http://kazarma/-/bob",
-            "id" => "http://kazarma/-/bob",
-            "username" => "bob@kazarma"
-          },
-          "local" => true,
-          "public" => true,
-          "actor" => "http://kazarma/-/bob"
-        })
+      create_local_matrix_user_bob()
 
       {:ok, _event} =
         Bridge.create_event(%{
           local_id: "local_id",
-          remote_id: "http://pleroma/pub/transactions/object_id",
+          remote_id: "http://pleroma.com/pub/transactions/object_id",
           room_id: "!room:kazarma"
         })
 
@@ -58,7 +45,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       assert [
                %MatrixAppService.Bridge.Event{
                  local_id: "local_id",
-                 remote_id: "http://pleroma/pub/transactions/object_id",
+                 remote_id: "http://pleroma.com/pub/transactions/object_id",
                  room_id: "!room:kazarma"
                },
                %MatrixAppService.Bridge.Event{
@@ -75,22 +62,9 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     setup :verify_on_exit!
 
     setup do
-      {:ok, actor} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Person",
-            "name" => "Alice",
-            "preferredUsername" => "alice",
-            "url" => "http://pleroma/pub/actors/alice",
-            "id" => "http://pleroma/pub/actors/alice",
-            "username" => "alice@pleroma"
-          },
-          "local" => false,
-          "public" => true,
-          "actor" => "http://pleroma/pub/actors/alice"
-        })
+      alice = create_ap_user_alice()
 
-      {:ok, actor: actor}
+      {:ok, actor: alice}
     end
 
     def public_note_fixture_with_attachment do
@@ -105,10 +79,10 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         object: %ActivityPub.Object{
           data: %{
             "type" => "Note",
-            "source" => "@bob@kazarma.kazarma.local hello",
+            "source" => "@bob@kazarma hello",
             "id" => "note_id",
-            "actor" => "http://pleroma/pub/actors/alice",
-            "conversation" => "http://pleroma/pub/contexts/context",
+            "actor" => "http://pleroma.com/pub/actors/alice",
+            "conversation" => "http://pleroma.com/pub/contexts/context",
             "attachment" => [
               %{
                 "mediaType" => "image/jpeg",
@@ -132,13 +106,13 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "it converts attachment" do
       Kazarma.Matrix.TestClient
-      |> expect_join("@_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_join("@alice.pleroma.com:kazarma", "!room:kazarma")
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "!room:kazarma",
         %{
           "body" =>
-            "@bob@kazarma.kazarma.local hello\nhttp://matrix/_matrix/media/r0/download/server/image_id \uFEFF",
+            "@bob@kazarma hello\nhttp://matrix/_matrix/media/r0/download/server/image_id \uFEFF",
           "format" => "org.matrix.custom.html",
           "formatted_body" =>
             "<img src=\"http://matrix/_matrix/media/r0/download/server/image_id\" title=\"aabbccddeeffgg\">",
@@ -147,7 +121,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         "event_id"
       )
       |> expect_upload(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "<!doctype html>\n<html>\n<head>\n    <title>Example Domain</title>\n\n    <meta charset=\"utf-8\" />\n    <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <style type=\"text/css\">\n    body {\n        background-color: #f0f0f2;\n        margin: 0;\n        padding: 0;\n        font-family: -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", \"Open Sans\", \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n        \n    }\n    div {\n        width: 600px;\n        margin: 5em auto;\n        padding: 2em;\n        background-color: #fdfdff;\n        border-radius: 0.5em;\n        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);\n    }\n    a:link, a:visited {\n        color: #38488f;\n        text-decoration: none;\n    }\n    @media (max-width: 700px) {\n        div {\n            margin: 0 auto;\n            width: auto;\n        }\n    }\n    </style>    \n</head>\n\n<body>\n<div>\n    <h1>Example Domain</h1>\n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>\n</div>\n</body>\n</html>\n",
         [filename: "example.com", mimetype: "application/octet-stream"],
         "http://matrix/_matrix/media/r0/download/server/image_id"
@@ -155,10 +129,10 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
       %{
         local_id: "!room:kazarma",
-        remote_id: "http://pleroma/pub/actors/alice",
+        remote_id: "http://pleroma.com/pub/actors/alice",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+          "matrix_id" => "@alice.pleroma.com:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -172,37 +146,10 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     setup :verify_on_exit!
 
     setup do
-      {:ok, _actor} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Person",
-            "name" => "Bob",
-            "preferredUsername" => "bob",
-            "url" => "http://kazarma/-/bob",
-            "id" => "http://kazarma/-/bob",
-            "username" => "bob@kazarma"
-          },
-          "local" => true,
-          "public" => true,
-          "actor" => "http://kazarma/-/bob"
-        })
+      alice = create_ap_user_alice()
+      create_local_matrix_user_bob()
 
-      {:ok, actor} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Person",
-            "name" => "Alice",
-            "preferredUsername" => "alice",
-            "url" => "http://pleroma/pub/actors/alice",
-            "id" => "http://pleroma/pub/actors/alice",
-            "username" => "alice@pleroma"
-          },
-          "local" => false,
-          "public" => true,
-          "actor" => "http://pleroma/pub/actors/alice"
-        })
-
-      {:ok, actor: actor}
+      {:ok, actor: alice}
     end
 
     def public_note_fixture_with_mention do
@@ -218,17 +165,17 @@ defmodule Kazarma.ActivityPub.ActivityTest do
           data: %{
             "type" => "Note",
             "content" =>
-              ~S(<p><span class="h-card"><a href="http://kazarma/-/bob" class="u-url mention">@<span>bob@kazarma.kazarma.local</span></a></span> hello</p>),
-            "source" => "@bob@kazarma.kazarma.local hello",
+              ~S(<p><span class="h-card"><a href="http://kazarma/-/bob" class="u-url mention">@<span>bob@kazarma</span></a></span> hello</p>),
+            "source" => "@bob@kazarma hello",
             "id" => "note_id",
-            "actor" => "http://pleroma/pub/actors/alice",
-            "conversation" => "http://pleroma/pub/contexts/context",
+            "actor" => "http://pleroma.com/pub/actors/alice",
+            "conversation" => "http://pleroma.com/pub/contexts/context",
             "attachment" => nil,
             "tag" => [
               %{
                 "type" => "Mention",
                 "href" => "http://kazarma/-/bob",
-                "name" => "@bob@kazarma.kazarma.local"
+                "name" => "@bob@kazarma"
               }
             ]
           }
@@ -238,17 +185,17 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "it converts mentions" do
       Kazarma.Matrix.TestClient
-      |> expect_join("@_ap_alice___pleroma:kazarma", "!room:kazarma")
+      |> expect_join("@alice.pleroma.com:kazarma", "!room:kazarma")
       |> expect_send_state_event(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "!room:kazarma",
         "m.room.member",
-        "@_ap_bob___kazarma.kazarma.local:kazarma",
+        "@bob:kazarma",
         %{"membership" => "invite"},
         "!invite_event"
       )
       |> expect_send_message(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "!room:kazarma",
         %{
           "body" => "@bob:kazarma hello \uFEFF",
@@ -261,10 +208,10 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
       %{
         local_id: "!room:kazarma",
-        remote_id: "http://pleroma/pub/actors/alice",
+        remote_id: "http://pleroma.com/pub/actors/alice",
         data: %{
           "type" => "ap_user",
-          "matrix_id" => "@_ap_alice___pleroma:kazarma"
+          "matrix_id" => "@alice.pleroma.com:kazarma"
         }
       }
       |> Bridge.create_room()
@@ -282,7 +229,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         data: %{
           "id" => "block_object_id",
           "type" => "Block",
-          "actor" => "http://pleroma/pub/actors/alice",
+          "actor" => "http://pleroma.com/pub/actors/alice",
           "object" => "http://kazarma/-/bob"
         }
       }
@@ -293,7 +240,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         data: %{
           "id" => "unblock_object_id",
           "type" => "Undo",
-          "actor" => "http://pleroma/pub/actors/alice",
+          "actor" => "http://pleroma.com/pub/actors/alice",
           "object" => %{
             "type" => "Block",
             "object" => "http://kazarma/-/bob"
@@ -306,10 +253,10 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       {:ok, _room} =
         Bridge.create_room(%{
           local_id: "local_id",
-          remote_id: "http://pleroma/pub/actors/alice",
+          remote_id: "http://pleroma.com/pub/actors/alice",
           data: %{
             "type" => "ap_user",
-            "matrix_id" => "@_ap_alice___pleroma:kazarma"
+            "matrix_id" => "@alice.pleroma.com:kazarma"
           }
         })
 
@@ -328,32 +275,20 @@ defmodule Kazarma.ActivityPub.ActivityTest do
           "actor" => "http://kazarma/-/bob"
         })
 
-      {:ok, actor} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Person",
-            "name" => "Alice",
-            "preferredUsername" => "alice",
-            "url" => "http://pleroma/pub/actors/alice",
-            "id" => "http://pleroma/pub/actors/alice",
-            "username" => "alice@pleroma"
-          },
-          "local" => false,
-          "public" => true,
-          "actor" => "http://pleroma/pub/actors/alice"
-        })
+      alice = create_ap_user_alice()
 
-      {:ok, actor: actor}
+      {:ok, actor: alice}
     end
 
     test "when receiving a Block activity for a Matrix user it ignores the user and bans them from the actor room" do
       Kazarma.Matrix.TestClient
-      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.ignored_user_list", %{})
-      |> expect_put_data("@_ap_alice___pleroma:kazarma", "m.ignored_user_list", %{
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+      |> expect_get_data("@alice.pleroma.com:kazarma", "m.ignored_user_list", %{})
+      |> expect_put_data("@alice.pleroma.com:kazarma", "m.ignored_user_list", %{
         "@bob:kazarma" => %{}
       })
       |> expect_send_state_event(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "local_id",
         "m.room.member",
         "@bob:kazarma",
@@ -366,12 +301,13 @@ defmodule Kazarma.ActivityPub.ActivityTest do
 
     test "when receiving a Undo/Block activity for a Matrix user it unignores the user and unbans them from the actor room" do
       Kazarma.Matrix.TestClient
-      |> expect_get_data("@_ap_alice___pleroma:kazarma", "m.ignored_user_list", %{
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+      |> expect_get_data("@alice.pleroma.com:kazarma", "m.ignored_user_list", %{
         "@bob:kazarma" => %{}
       })
-      |> expect_put_data("@_ap_alice___pleroma:kazarma", "m.ignored_user_list", %{})
+      |> expect_put_data("@alice.pleroma.com:kazarma", "m.ignored_user_list", %{})
       |> expect_send_state_event(
-        "@_ap_alice___pleroma:kazarma",
+        "@alice.pleroma.com:kazarma",
         "local_id",
         "m.room.member",
         "@bob:kazarma",
@@ -388,20 +324,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     setup :verify_on_exit!
 
     setup do
-      {:ok, _actor} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Person",
-            "name" => "Bob",
-            "preferredUsername" => "bob",
-            "url" => "http://kazarma/-/bob",
-            "id" => "http://kazarma/-/bob",
-            "username" => "bob@kazarma"
-          },
-          "local" => true,
-          "public" => true,
-          "actor" => "http://kazarma/-/bob"
-        })
+      create_local_matrix_user_bob()
 
       :ok
     end
@@ -411,7 +334,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         data: %{
           "id" => "follow_object_id",
           "type" => "Follow",
-          "actor" => "http://pleroma/pub/actors/alice",
+          "actor" => "http://pleroma.com/pub/actors/alice",
           "object" => "http://kazarma/-/bob"
         }
       }
@@ -422,7 +345,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
         data: %{
           "id" => "unfollow_object_id",
           "type" => "Undo",
-          "actor" => "http://pleroma/pub/actors/alice",
+          "actor" => "http://pleroma.com/pub/actors/alice",
           "object" => %{
             "type" => "Follow",
             "object" => "http://kazarma/-/bob"
@@ -448,7 +371,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
             deactivated: false
           },
           object: "follow_object_id",
-          to: ["http://pleroma/pub/actors/alice"]
+          to: ["http://pleroma.com/pub/actors/alice"]
         } ->
           :ok
       end)

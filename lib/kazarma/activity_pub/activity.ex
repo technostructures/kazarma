@@ -14,6 +14,56 @@ defmodule Kazarma.ActivityPub.Activity do
 
   import Ecto.Query
 
+  # ChatMessage objects are Pleroma-like chats
+  defp room_type(%{object: %{data: %{"type" => "ChatMessage"}}}), do: :chat
+
+  defp room_type(%{data: data, object: %{data: object_data}}) do
+    cond do
+      # Public activities are for AP rooms
+      "https://www.w3.org/ns/activitystreams#Public" in data["to"] ->
+        :ap_user
+
+      # Mobilizon internal discussions have a `attributedTo` property set to
+      # the group actor
+      match?(
+        %ActivityPub.Actor{data: %{"type" => "Group"}},
+        Address.get_actor(ap_id: object_data["attributedTo"])
+      ) ->
+        :collection
+
+      # Direct messages are when all AP IDs in `to` are actors
+      Enum.all?(data["to"], fn ap_id ->
+        match?(%{}, Address.get_actor(ap_id: ap_id))
+      end) ->
+        :direct_message
+
+      true ->
+        nil
+    end
+  end
+
+  def create_from_ap(activity) do
+    case room_type(activity) do
+      :ap_user ->
+        Kazarma.RoomType.ApUser.create_from_ap(activity)
+
+      :chat ->
+        Kazarma.Logger.log_received_activity(activity, label: "Chat")
+        Kazarma.RoomType.Chat.create_from_ap(activity)
+
+      :collection ->
+        Kazarma.Logger.log_received_activity(activity, label: "To collection")
+        Kazarma.RoomType.Collection.create_from_ap(activity)
+
+      :direct_message ->
+        Kazarma.Logger.log_received_activity(activity, label: "Direct message")
+        Kazarma.RoomType.DirectMessage.create_from_ap(activity)
+
+      _ ->
+        nil
+    end
+  end
+
   def create_from_event(
         event,
         params
@@ -23,7 +73,8 @@ defmodule Kazarma.ActivityPub.Activity do
     replied_activity =
       get_replied_activity_if_exists(event) || Keyword.get(params, :fallback_reply)
 
-    manual_mentions = Kazarma.Matrix.Transaction.get_mentions_from_event_content(event.content)
+    manual_mentions =
+      Kazarma.Matrix.Transaction.get_mentions_from_event_content(event.content)
 
     additional_mentions = Keyword.get(params, :additional_mentions, [])
 
@@ -96,7 +147,7 @@ defmodule Kazarma.ActivityPub.Activity do
           redacts: event_id
         } = event
       ) do
-    {:ok, actor} = Kazarma.Address.matrix_id_to_actor(sender_id)
+    %{} = actor = Kazarma.Address.get_actor(matrix_id: sender_id)
 
     for %BridgeEvent{remote_id: remote_id} <- Bridge.get_events_by_local_id(event_id) do
       {:ok, %Object{} = object} = ActivityPub.Object.get_cached(ap_id: remote_id)
@@ -436,8 +487,8 @@ defmodule Kazarma.ActivityPub.Activity do
   def convert_mentions(content, tags, convert_fun) do
     Enum.reduce(tags, content, fn
       %{"type" => "Mention", "href" => ap_id, "name" => username}, content ->
-        with {:ok, actor} <- ActivityPub.Actor.get_cached(ap_id: ap_id),
-             {:ok, matrix_id} <- Address.ap_username_to_matrix_id(actor.username) do
+        with %{} = actor <- Address.get_actor(ap_id: ap_id),
+             %{local_id: matrix_id} <- Kazarma.Address.get_user(ap_id: ap_id) do
           convert_fun.(content, actor, ap_id, username, matrix_id)
         else
           _ -> content

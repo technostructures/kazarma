@@ -7,7 +7,7 @@ defmodule Kazarma.Matrix.RoomTest do
 
   @ap_user_server "pleroma.interhacker.space"
   @ap_user_name "test_user_bob2"
-  @ap_puppet_username "_ap_#{@ap_user_name}___#{@ap_user_server}"
+  @ap_puppet_username "#{@ap_user_name}.#{@ap_user_server}"
   @ap_puppet_matrix_id "@#{@ap_puppet_username}:kazarma"
   @ap_puppet_matrix_timeline "##{@ap_puppet_username}:kazarma"
 
@@ -26,7 +26,7 @@ defmodule Kazarma.Matrix.RoomTest do
     end
 
     test "if the AP user doesn't exist it doesn't create the room" do
-      assert :error = query_alias("#_ap_nonexisting___pleroma:kazarma")
+      assert :error = query_alias("#nonexisting.pleroma.com:kazarma")
     end
   end
 end

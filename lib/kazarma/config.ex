@@ -11,6 +11,14 @@ defmodule Kazarma.Config do
     end
   end
 
+  def public_bridge?() do
+    Application.get_env(:kazarma, :public_bridge)
+  end
+
+  def private_bridge?() do
+    not Application.get_env(:kazarma, :public_bridge)
+  end
+
   def frontpage_help() do
     Application.get_env(:kazarma, :frontpage_help)
   end
