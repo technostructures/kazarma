@@ -150,7 +150,7 @@ defmodule Kazarma.ActivityPub.Actor do
       if String.contains?(username, "@"), do: username, else: "#{username}@#{Address.ap_domain()}"
 
     cond do
-      username == Address.relay_username() ->
+      username == Address.relay_username() && Kazarma.Config.public_bridge?() ->
         get_relay_actor()
 
       username == Address.application_username() ->
