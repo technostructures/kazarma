@@ -68,22 +68,22 @@ defmodule Kazarma.ActivityPub.Actor do
     }
   end
 
-  def build_relay_actor do
-    ap_id = Address.relay_ap_id()
+  def build_activity_bot_actor do
+    ap_id = Address.activity_bot_ap_id()
     {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
     %Actor{
       local: true,
       deactivated: false,
-      username: Address.relay_username(),
+      username: Address.activity_bot_username(),
       ap_id: ap_id,
-      data: build_relay_actor_data(ap_id),
+      data: build_activity_bot_actor_data(ap_id),
       keys: keys
     }
   end
 
-  def build_relay_actor_data(ap_id) do
-    localpart = Address.relay_localpart()
+  def build_activity_bot_actor_data(ap_id) do
+    localpart = Address.activity_bot_localpart()
 
     %{
       "preferredUsername" => localpart,
@@ -150,8 +150,8 @@ defmodule Kazarma.ActivityPub.Actor do
       if String.contains?(username, "@"), do: username, else: "#{username}@#{Address.ap_domain()}"
 
     cond do
-      username == Address.relay_username() && Kazarma.Config.public_bridge?() ->
-        get_relay_actor()
+      username == Address.activity_bot_username() && Kazarma.Config.public_bridge?() ->
+        get_activity_bot_actor()
 
       username == Address.application_username() ->
         get_application_actor()
@@ -162,12 +162,12 @@ defmodule Kazarma.ActivityPub.Actor do
   end
 
   # @TODO rename this function as it's unclear what it does
-  # `get_or_create_relay_actor`?
-  def get_relay_actor() do
-    matrix_id = Address.relay_matrix_id()
+  # `get_or_create_activity_bot_actor`?
+  def get_activity_bot_actor() do
+    matrix_id = Address.activity_bot_matrix_id()
 
     with nil <- Bridge.get_user_by_local_id(matrix_id),
-         actor <- build_relay_actor(),
+         actor <- build_activity_bot_actor(),
          {:ok, user} <-
            Bridge.create_user(%{
              local_id: matrix_id,

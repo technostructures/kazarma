@@ -255,9 +255,9 @@ defmodule Kazarma.RoomType.ApUser do
   def create_outbox_if_public_group(
         %ActivityPub.Actor{data: %{"type" => "Group", "postingRestrictedToMods" => _}} = actor
       ) do
-    {:ok, relay} = Kazarma.ActivityPub.Actor.get_relay_actor()
+    {:ok, activity_bot} = Kazarma.ActivityPub.Actor.get_activity_bot_actor()
 
-    Kazarma.ActivityPub.follow(%{actor: relay, object: actor})
+    Kazarma.ActivityPub.follow(%{actor: activity_bot, object: actor})
     create_outbox(actor)
   end
 

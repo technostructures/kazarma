@@ -902,7 +902,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     end
   end
 
-  describe "When an actor follows the relay actor" do
+  describe "When an actor follows the activity bot actor" do
     setup :set_mox_from_context
     setup :verify_on_exit!
 
@@ -932,12 +932,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
       {:ok, _user} =
         Kazarma.Bridge.create_user(%{
-          local_id: "@relay:kazarma",
-          remote_id: "http://kazarma/-/relay",
+          local_id: "@activity_bridge:kazarma",
+          remote_id: "http://kazarma/-/activity_bridge",
           data: %{
             "ap_data" => %{
-              "id" => "http://kazarma/-/relay",
-              "preferredUsername" => "relay",
+              "id" => "http://kazarma/-/activity_bridge",
+              "preferredUsername" => "activity_bridge",
               "name" => "Kazarma",
               "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/avatar"},
               "type" => "Application"
@@ -955,7 +955,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "type" => "Follow",
           "id" => "follow_object_id",
           "actor" => "http://pleroma/pub/actors/alice",
-          "object" => "http://kazarma/-/relay"
+          "object" => "http://kazarma/-/activity_bridge"
         }
       }
     end
@@ -968,13 +968,13 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "object" => %{
             "type" => "Follow",
             "id" => "follow_object_id",
-            "object" => "http://kazarma/-/relay"
+            "object" => "http://kazarma/-/activity_bridge"
           }
         }
       }
     end
 
-    test "following the relay actor makes it accept, follow back and creates the actor room" do
+    test "following the activity bot actor makes it accept, follow back and creates the actor room" do
       Kazarma.Matrix.TestClient
       |> expect_create_room(
         "@alice.pleroma:kazarma",
@@ -1005,14 +1005,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         %{
           actor: %ActivityPub.Actor{
             data: %{
-              "id" => "http://kazarma/-/relay",
+              "id" => "http://kazarma/-/activity_bridge",
               "name" => "Kazarma",
-              "preferredUsername" => "relay",
+              "preferredUsername" => "activity_bridge",
               "type" => "Application"
             },
             local: true,
-            ap_id: "http://kazarma/-/relay",
-            username: "relay@kazarma",
+            ap_id: "http://kazarma/-/activity_bridge",
+            username: "activity_bridge@kazarma",
             deactivated: false
           },
           object: "follow_object_id",
@@ -1024,14 +1024,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         %{
           actor: %ActivityPub.Actor{
             data: %{
-              "id" => "http://kazarma/-/relay",
+              "id" => "http://kazarma/-/activity_bridge",
               "name" => "Kazarma",
-              "preferredUsername" => "relay",
+              "preferredUsername" => "activity_bridge",
               "type" => "Application"
             },
             local: true,
-            ap_id: "http://kazarma/-/relay",
-            username: "relay@kazarma"
+            ap_id: "http://kazarma/-/activity_bridge",
+            username: "activity_bridge@kazarma"
           },
           object: %ActivityPub.Actor{
             data: %{
@@ -1061,7 +1061,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
              ] = Bridge.list_rooms()
     end
 
-    test "following the relay actor makes it accept, follow back and gets the actor room by alias if it already exists" do
+    test "following the activity bot actor makes it accept, follow back and gets the actor room by alias if it already exists" do
       Kazarma.Matrix.TestClient
       |> expect_create_room_existing("@alice.pleroma:kazarma",
         visibility: :public,
@@ -1089,14 +1089,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         %{
           actor: %ActivityPub.Actor{
             data: %{
-              "id" => "http://kazarma/-/relay",
+              "id" => "http://kazarma/-/activity_bridge",
               "name" => "Kazarma",
-              "preferredUsername" => "relay",
+              "preferredUsername" => "activity_bridge",
               "type" => "Application"
             },
             local: true,
-            ap_id: "http://kazarma/-/relay",
-            username: "relay@kazarma",
+            ap_id: "http://kazarma/-/activity_bridge",
+            username: "activity_bridge@kazarma",
             deactivated: false
           },
           object: "follow_object_id",
@@ -1108,14 +1108,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         %{
           actor: %ActivityPub.Actor{
             data: %{
-              "id" => "http://kazarma/-/relay",
+              "id" => "http://kazarma/-/activity_bridge",
               "name" => "Kazarma",
-              "preferredUsername" => "relay",
+              "preferredUsername" => "activity_bridge",
               "type" => "Application"
             },
             local: true,
-            ap_id: "http://kazarma/-/relay",
-            username: "relay@kazarma"
+            ap_id: "http://kazarma/-/activity_bridge",
+            username: "activity_bridge@kazarma"
           },
           object: %ActivityPub.Actor{
             data: %{
@@ -1145,7 +1145,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
              ] = Bridge.list_rooms()
     end
 
-    test "following the relay actor makes it accept, follow back and starts bridging again is relay had previously been unfollowed" do
+    test "following the activity bot actor makes it accept, follow back and starts bridging again is activity bot had previously been unfollowed" do
       Kazarma.Matrix.TestClient
       |> expect_send_message(
         "@alice.pleroma:kazarma",
@@ -1159,14 +1159,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         %{
           actor: %{
             data: %{
-              "id" => "http://kazarma/-/relay",
+              "id" => "http://kazarma/-/activity_bridge",
               "name" => "Kazarma",
-              "preferredUsername" => "relay",
+              "preferredUsername" => "activity_bridge",
               "type" => "Application"
             },
             local: true,
-            ap_id: "http://kazarma/-/relay",
-            username: "relay@kazarma",
+            ap_id: "http://kazarma/-/activity_bridge",
+            username: "activity_bridge@kazarma",
             deactivated: false
           },
           object: "follow_object_id",
@@ -1178,14 +1178,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         %{
           actor: %ActivityPub.Actor{
             data: %{
-              "id" => "http://kazarma/-/relay",
+              "id" => "http://kazarma/-/activity_bridge",
               "name" => "Kazarma",
-              "preferredUsername" => "relay",
+              "preferredUsername" => "activity_bridge",
               "type" => "Application"
             },
             local: true,
-            ap_id: "http://kazarma/-/relay",
-            username: "relay@kazarma"
+            ap_id: "http://kazarma/-/activity_bridge",
+            username: "activity_bridge@kazarma"
           },
           object: %ActivityPub.Actor{
             data: %{
@@ -1223,7 +1223,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     end
   end
 
-  describe "When an actor unfollows the relay actor" do
+  describe "When an actor unfollows the activity bot actor" do
     setup :set_mox_from_context
     setup :verify_on_exit!
 
@@ -1253,12 +1253,12 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
       {:ok, _user} =
         Kazarma.Bridge.create_user(%{
-          local_id: "@relay:kazarma",
-          remote_id: "http://kazarma/-/relay",
+          local_id: "@activity_bridge:kazarma",
+          remote_id: "http://kazarma/-/activity_bridge",
           data: %{
             "ap_data" => %{
-              "id" => "http://kazarma/-/relay",
-              "preferredUsername" => "relay",
+              "id" => "http://kazarma/-/activity_bridge",
+              "preferredUsername" => "activity_bridge",
               "name" => "Kazarma",
               "icon" => %{"url" => "http://matrix/_matrix/media/r0/download/server/avatar"},
               "type" => "Application"
@@ -1276,7 +1276,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "type" => "Follow",
           "id" => "follow_object_id",
           "actor" => "http://pleroma/pub/actors/alice",
-          "object" => "http://kazarma/-/relay"
+          "object" => "http://kazarma/-/activity_bridge"
         }
       }
     end
@@ -1289,13 +1289,13 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "object" => %{
             "type" => "Follow",
             "id" => "follow_object_id",
-            "object" => "http://kazarma/-/relay"
+            "object" => "http://kazarma/-/activity_bridge"
           }
         }
       }
     end
 
-    test "unfollowing the relay actor makes it unfollow back and deactivates the actor room" do
+    test "unfollowing the activity bot actor makes it unfollow back and deactivates the actor room" do
       Kazarma.Matrix.TestClient
       |> expect_send_message(
         "@alice.pleroma:kazarma",
@@ -1309,14 +1309,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         %{
           actor: %ActivityPub.Actor{
             data: %{
-              "id" => "http://kazarma/-/relay",
+              "id" => "http://kazarma/-/activity_bridge",
               "name" => "Kazarma",
-              "preferredUsername" => "relay",
+              "preferredUsername" => "activity_bridge",
               "type" => "Application"
             },
             local: true,
-            ap_id: "http://kazarma/-/relay",
-            username: "relay@kazarma"
+            ap_id: "http://kazarma/-/activity_bridge",
+            username: "activity_bridge@kazarma"
           },
           object: %ActivityPub.Actor{
             data: %{

@@ -276,7 +276,7 @@ defmodule Kazarma.ActivityPub.Adapter do
           object: activity.data["id"]
         })
 
-        if followed == Address.relay_ap_id() do
+        if followed == Address.activity_bot_ap_id() do
           Logger.debug("follow back remote actor")
           %{} = follower_actor = Address.get_actor(ap_id: follower)
           Kazarma.ActivityPub.follow(%{actor: followed_actor, object: follower_actor})
@@ -307,7 +307,7 @@ defmodule Kazarma.ActivityPub.Adapter do
 
     case Address.get_actor(ap_id: followed) do
       %ActivityPub.Actor{local: true} = followed_actor ->
-        if followed == Address.relay_ap_id() do
+        if followed == Address.activity_bot_ap_id() do
           Logger.debug("unfollow back remote actor")
           %{} = follower_actor = Address.get_actor(ap_id: follower)
           Kazarma.ActivityPub.unfollow(%{actor: followed_actor, object: follower_actor})
@@ -466,7 +466,8 @@ defmodule Kazarma.ActivityPub.Adapter do
 
   @impl true
   def get_or_create_service_actor() do
-    Kazarma.ActivityPub.Actor.get_relay_actor()
+    # @TODO: nope
+    Kazarma.ActivityPub.Actor.get_activity_bot_actor()
   end
 
   @impl true

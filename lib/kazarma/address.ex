@@ -25,28 +25,27 @@ defmodule Kazarma.Address do
   def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "_ap_")
 
   # @TODO: make configurable
-  def bot_localpart, do: "_kazarma"
+  def command_bot_localpart, do: "_kazarma"
 
-  def bot_matrix_id, do: "@#{bot_localpart()}:#{matrix_domain()}"
+  def command_bot_matrix_id, do: "@#{command_bot_localpart()}:#{matrix_domain()}"
 
-  # @TODO: make configurable
-  def relay_localpart, do: "relay"
+  def activity_bot_localpart, do: "activity_bridge"
 
-  def relay_username, do: "#{relay_localpart()}@#{ap_domain()}"
+  def activity_bot_username, do: "#{activity_bot_localpart()}@#{ap_domain()}"
 
-  def relay_matrix_id, do: "@#{relay_localpart()}:#{ap_domain()}"
+  def activity_bot_matrix_id, do: "@#{activity_bot_localpart()}:#{ap_domain()}"
 
-  def relay_ap_id,
+  def activity_bot_ap_id,
     do:
       KazarmaWeb.Router.Helpers.activity_pub_url(
         KazarmaWeb.Endpoint,
         :actor,
         "-",
-        relay_localpart()
+        activity_bot_localpart()
       )
 
-  def relay_actor do
-    {:ok, actor} = ActivityPub.Actor.get_cached(ap_id: relay_ap_id())
+  def activity_bot_actor do
+    {:ok, actor} = ActivityPub.Actor.get_cached(ap_id: activity_bot_ap_id())
     actor
   end
 
@@ -274,7 +273,7 @@ defmodule Kazarma.Address do
          %{path_params: %{"server" => server, "localpart" => localpart}} <-
            Phoenix.Router.route_info(KazarmaWeb.Router, "GET", path, host) do
       cond do
-        # server == "-" && localpart == relay_localpart() && Kazarma.Config.is_public_bridge() ->
+        # server == "-" && localpart == activity_bot_localpart() && Kazarma.Config.is_public_bridge() ->
         server == "-" && should_bridge_local_matrix_user() ->
           get_or_fetch_matrix_user(localpart, matrix_domain())
 
