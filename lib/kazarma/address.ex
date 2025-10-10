@@ -49,6 +49,26 @@ defmodule Kazarma.Address do
     actor
   end
 
+  def profile_bot_localpart, do: "profile_bridge"
+
+  def profile_bot_username, do: "#{profile_bot_localpart()}@#{ap_domain()}"
+
+  def profile_bot_matrix_id, do: "@#{profile_bot_localpart()}:#{ap_domain()}"
+
+  def profile_bot_ap_id,
+    do:
+      KazarmaWeb.Router.Helpers.activity_pub_url(
+        KazarmaWeb.Endpoint,
+        :actor,
+        "-",
+        profile_bot_localpart()
+      )
+
+  def profile_bot_actor do
+    {:ok, actor} = ActivityPub.Actor.get_cached(ap_id: profile_bot_ap_id())
+    actor
+  end
+
   # @TODO: make configurable
   def application_localpart, do: "kazarma"
 

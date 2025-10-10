@@ -91,6 +91,13 @@ defmodule Kazarma.ActivityPub.ActorTest do
 
       assert nil == get_actor_by_username("activity_bridge")
     end
+
+    test "profile bridging bot can not be found" do
+      Kazarma.Matrix.TestClient
+      |> expect_get_profile_not_found("@profile_bridge:kazarma")
+
+      assert nil == get_actor_by_username("profile_bridge")
+    end
   end
 
   describe "ActivityPub request for a remote Matrix user (get_actor_by_username/1) when public bridge" do
@@ -174,6 +181,11 @@ defmodule Kazarma.ActivityPub.ActorTest do
     test "public activity bridging bot can be found" do
       assert {:ok, %{ap_id: "http://kazarma/-/activity_bridge"}} =
                get_actor_by_username("activity_bridge")
+    end
+
+    test "profile bridging bot can be found" do
+      assert {:ok, %{ap_id: "http://kazarma/-/profile_bridge"}} =
+               get_actor_by_username("profile_bridge")
     end
   end
 

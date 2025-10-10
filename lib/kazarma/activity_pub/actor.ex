@@ -104,6 +104,42 @@ defmodule Kazarma.ActivityPub.Actor do
     }
   end
 
+  def build_profile_bot_actor do
+    ap_id = Address.profile_bot_ap_id()
+    {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
+
+    %Actor{
+      local: true,
+      deactivated: false,
+      username: Address.profile_bot_username(),
+      ap_id: ap_id,
+      data: build_profile_bot_actor_data(ap_id),
+      keys: keys
+    }
+  end
+
+  def build_profile_bot_actor_data(ap_id) do
+    localpart = Address.profile_bot_localpart()
+
+    %{
+      "preferredUsername" => localpart,
+      "capabilities" => %{"acceptsChatMessages" => false},
+      "id" => ap_id,
+      # required to follow on Lemmy
+      "type" => "Person",
+      "name" => "Kazarma",
+      # "icon" => avatar_url && %{"type" => "Image", "url" => avatar_url},
+      "followers" => Routes.activity_pub_url(Endpoint, :followers, "-", localpart),
+      "following" => Routes.activity_pub_url(Endpoint, :following, "-", localpart),
+      "inbox" => Routes.activity_pub_url(Endpoint, :inbox),
+      "outbox" => Routes.activity_pub_url(Endpoint, :outbox, "-", localpart),
+      "manuallyApprovesFollowers" => false,
+      endpoints: %{
+        "sharedInbox" => Routes.activity_pub_url(Endpoint, :inbox)
+      }
+    }
+  end
+
   def build_application_actor do
     ap_id = Address.application_ap_id()
     {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
@@ -153,6 +189,9 @@ defmodule Kazarma.ActivityPub.Actor do
       username == Address.activity_bot_username() && Kazarma.Config.public_bridge?() ->
         get_activity_bot_actor()
 
+      username == Address.profile_bot_username() && Kazarma.Config.public_bridge?() ->
+        get_profile_bot_actor()
+
       username == Address.application_username() ->
         get_application_actor()
 
@@ -168,6 +207,33 @@ defmodule Kazarma.ActivityPub.Actor do
 
     with nil <- Bridge.get_user_by_local_id(matrix_id),
          actor <- build_activity_bot_actor(),
+         {:ok, user} <-
+           Bridge.create_user(%{
+             local_id: matrix_id,
+             remote_id: actor.ap_id,
+             data: %{"ap_data" => actor.data, "keys" => actor.keys}
+           }) do
+      Kazarma.Logger.log_created_puppet(user,
+        type: :ap
+      )
+
+      {:ok, actor}
+    else
+      %{data: %{"ap_data" => ap_data, "keys" => keys}} ->
+        {:ok, build_actor_from_data(ap_data, keys)}
+
+      _ ->
+        {:error, :not_found}
+    end
+  end
+
+  # @TODO rename this function as it's unclear what it does
+  # `get_or_create_profile_bot_actor`?
+  def get_profile_bot_actor() do
+    matrix_id = Address.profile_bot_matrix_id()
+
+    with nil <- Bridge.get_user_by_local_id(matrix_id),
+         actor <- build_profile_bot_actor(),
          {:ok, user} <-
            Bridge.create_user(%{
              local_id: matrix_id,
