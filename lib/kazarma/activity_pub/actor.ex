@@ -186,11 +186,19 @@ defmodule Kazarma.ActivityPub.Actor do
       if String.contains?(username, "@"), do: username, else: "#{username}@#{Address.ap_domain()}"
 
     cond do
-      username == Address.activity_bot_username() && Kazarma.Config.public_bridge?() ->
-        get_activity_bot_actor()
+      username == Address.activity_bot_username() ->
+        if Kazarma.Config.public_bridge?() do
+          get_activity_bot_actor()
+        else
+          nil
+        end
 
-      username == Address.profile_bot_username() && Kazarma.Config.public_bridge?() ->
-        get_profile_bot_actor()
+      username == Address.profile_bot_username() ->
+        if Kazarma.Config.public_bridge?() do
+          get_profile_bot_actor()
+        else
+          nil
+        end
 
       username == Address.application_username() ->
         get_application_actor()
