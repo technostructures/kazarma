@@ -125,7 +125,7 @@ defmodule Kazarma.Matrix.Transaction do
     Kazarma.Logger.log_received_event(event, label: "Membership")
 
     cond do
-      user_id == Kazarma.Address.bot_matrix_id() ->
+      user_id == Kazarma.Address.command_bot_matrix_id() ->
         accept_appservice_bot_invitation(user_id, room_id, content)
 
       Kazarma.Address.get_user_for_actor(matrix_id: user_id) != nil ->

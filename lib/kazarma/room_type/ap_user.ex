@@ -43,8 +43,8 @@ defmodule Kazarma.RoomType.ApUser do
 
       Map.get(object_data, "tag", [])
       |> Enum.filter(fn tag -> Map.get(tag, "type") == "Mention" end)
-      |> Enum.each(fn %{"name" => mentioned_username} ->
-        case Address.get_user(username: mentioned_username) do
+      |> Enum.each(fn %{"href" => mentioned_ap_id} ->
+        case Address.get_user(ap_id: mentioned_ap_id) do
           %{local_id: mentioned_matrix_id} ->
             Client.invite(room_id, from_matrix_id, mentioned_matrix_id)
 
@@ -255,9 +255,9 @@ defmodule Kazarma.RoomType.ApUser do
   def create_outbox_if_public_group(
         %ActivityPub.Actor{data: %{"type" => "Group", "postingRestrictedToMods" => _}} = actor
       ) do
-    {:ok, relay} = Kazarma.ActivityPub.Actor.get_relay_actor()
+    {:ok, activity_bot} = Kazarma.ActivityPub.Actor.get_activity_bot_actor()
 
-    Kazarma.ActivityPub.follow(%{actor: relay, object: actor})
+    Kazarma.ActivityPub.follow(%{actor: activity_bot, object: actor})
     create_outbox(actor)
   end
 
@@ -316,6 +316,9 @@ defmodule Kazarma.RoomType.ApUser do
             send_emote_bridging_starts(matrix_id, room_id)
 
             {:ok, room}
+
+          {:error, 400, %{"errcode" => "M_EXCLUSIVE"}} ->
+            Logger.error("Application service has bad configuration for aliases")
         end
 
       %MatrixAppService.Bridge.Room{data: %{"type" => "ap_user"}} = room ->

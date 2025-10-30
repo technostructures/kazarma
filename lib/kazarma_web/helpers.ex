@@ -122,6 +122,7 @@ defmodule KazarmaWeb.Helpers do
                                                                     _matrix_id ->
       Kazarma.ActivityPub.Activity.parse_and_update_content(
         current_content,
+        username,
         actor,
         {"a",
          [

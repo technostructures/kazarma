@@ -13,7 +13,7 @@
     </li>
     <li>
       <%= gettext("Invite the bridge bot: ") %>
-      <pre class="inline p-2"><%= Kazarma.Address.bot_matrix_id() %></pre>
+      <pre class="inline p-2"><%= Kazarma.Address.command_bot_matrix_id() %></pre>
     </li>
     <li>
       <%= gettext("Send the following message: ") %>
@@ -39,8 +39,8 @@
     <%= gettext("Bridge yourself from ActivityPub") %>
   </h3>
   <p>
-    <%= gettext("To bridge your public posts, you need to follow the relay actor: ") %>
-    <pre class="inline p-2"><%= Kazarma.Address.relay_username() %></pre>
+    <%= gettext("To bridge your public posts, you need to follow the activity bridge bot: ") %>
+    <pre class="inline p-2"><%= Kazarma.Address.activity_bot_username() %></pre>
   </p>
   <p>
     <%= gettext(

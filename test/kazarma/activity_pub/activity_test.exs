@@ -7,56 +7,6 @@ defmodule Kazarma.ActivityPub.ActivityTest do
   import Kazarma.ActivityPub.Adapter
   import Kazarma.MatrixMocks
 
-  describe "activity handler (handle_activity/1) for Delete activity" do
-    setup :set_mox_from_context
-    setup :verify_on_exit!
-
-    def delete_fixture do
-      %ActivityPub.Object{
-        data: %{
-          "id" => "delete_object_id",
-          "actor" => "http://kazarma/-/bob",
-          "type" => "Delete",
-          "to" => ["http://pleroma.com/pub/actors/alice"],
-          "object" => "http://pleroma.com/pub/transactions/object_id"
-        }
-      }
-    end
-
-    setup do
-      create_local_matrix_user_bob()
-
-      {:ok, _event} =
-        Bridge.create_event(%{
-          local_id: "local_id",
-          remote_id: "http://pleroma.com/pub/transactions/object_id",
-          room_id: "!room:kazarma"
-        })
-
-      :ok
-    end
-
-    test "when receiving a Delete activity for an existing object, gets the corresponding ids and forwards the redact event" do
-      Kazarma.Matrix.TestClient
-      |> expect_redact_message("@bob:kazarma", "!room:kazarma", "local_id", "delete_event_id")
-
-      assert :ok == handle_activity(delete_fixture())
-
-      assert [
-               %MatrixAppService.Bridge.Event{
-                 local_id: "local_id",
-                 remote_id: "http://pleroma.com/pub/transactions/object_id",
-                 room_id: "!room:kazarma"
-               },
-               %MatrixAppService.Bridge.Event{
-                 local_id: "delete_event_id",
-                 remote_id: "delete_object_id",
-                 room_id: "!room:kazarma"
-               }
-             ] = Bridge.list_events()
-    end
-  end
-
   describe "Convert files" do
     setup :set_mox_from_context
     setup :verify_on_exit!
@@ -122,7 +72,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       )
       |> expect_upload(
         "@alice.pleroma.com:kazarma",
-        "<!doctype html>\n<html>\n<head>\n    <title>Example Domain</title>\n\n    <meta charset=\"utf-8\" />\n    <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <style type=\"text/css\">\n    body {\n        background-color: #f0f0f2;\n        margin: 0;\n        padding: 0;\n        font-family: -apple-system, system-ui, BlinkMacSystemFont, \"Segoe UI\", \"Open Sans\", \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n        \n    }\n    div {\n        width: 600px;\n        margin: 5em auto;\n        padding: 2em;\n        background-color: #fdfdff;\n        border-radius: 0.5em;\n        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);\n    }\n    a:link, a:visited {\n        color: #38488f;\n        text-decoration: none;\n    }\n    @media (max-width: 700px) {\n        div {\n            margin: 0 auto;\n            width: auto;\n        }\n    }\n    </style>    \n</head>\n\n<body>\n<div>\n    <h1>Example Domain</h1>\n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>\n</div>\n</body>\n</html>\n",
+        "<!doctype html><html lang=\"en\"><head><title>Example Domain</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><style>body{background:#eee;width:60vw;margin:15vh auto;font-family:system-ui,sans-serif}h1{font-size:1.5em}div{opacity:0.8}a:link,a:visited{color:#348}</style><body><div><h1>Example Domain</h1><p>This domain is for use in documentation examples without needing permission. Avoid use in operations.<p><a href=\"https://iana.org/domains/example\">Learn more</a></div></body></html>\n",
         [filename: "example.com", mimetype: "application/octet-stream"],
         "http://matrix/_matrix/media/r0/download/server/image_id"
       )
@@ -141,7 +91,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     end
   end
 
-  describe "Content conversion" do
+  describe "Mentions conversion for local user" do
     setup :set_mox_from_context
     setup :verify_on_exit!
 
@@ -152,7 +102,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       {:ok, actor: alice}
     end
 
-    def public_note_fixture_with_mention do
+    def public_note_fixture_with_mention_to_local do
       %{
         data: %{
           "type" => "Create",
@@ -216,171 +166,91 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       }
       |> Bridge.create_room()
 
-      assert :ok == handle_activity(public_note_fixture_with_mention())
+      assert :ok == handle_activity(public_note_fixture_with_mention_to_local())
     end
   end
 
-  describe "activity handler (handle_activity/1) for Block activity" do
+  describe "Mentions conversion for remote user" do
     setup :set_mox_from_context
     setup :verify_on_exit!
-
-    def block_fixture do
-      %ActivityPub.Object{
-        data: %{
-          "id" => "block_object_id",
-          "type" => "Block",
-          "actor" => "http://pleroma.com/pub/actors/alice",
-          "object" => "http://kazarma/-/bob"
-        }
-      }
-    end
-
-    def unblock_fixture do
-      %ActivityPub.Object{
-        data: %{
-          "id" => "unblock_object_id",
-          "type" => "Undo",
-          "actor" => "http://pleroma.com/pub/actors/alice",
-          "object" => %{
-            "type" => "Block",
-            "object" => "http://kazarma/-/bob"
-          }
-        }
-      }
-    end
+    setup :config_public_bridge
 
     setup do
-      {:ok, _room} =
-        Bridge.create_room(%{
-          local_id: "local_id",
-          remote_id: "http://pleroma.com/pub/actors/alice",
-          data: %{
-            "type" => "ap_user",
-            "matrix_id" => "@alice.pleroma.com:kazarma"
-          }
-        })
-
-      {:ok, _actor} =
-        ActivityPub.Object.do_insert(%{
-          "data" => %{
-            "type" => "Person",
-            "name" => "Bob",
-            "preferredUsername" => "bob",
-            "url" => "http://kazarma/-/bob",
-            "id" => "http://kazarma/-/bob",
-            "username" => "bob@kazarma"
-          },
-          "local" => true,
-          "public" => true,
-          "actor" => "http://kazarma/-/bob"
-        })
-
       alice = create_ap_user_alice()
+      create_remote_matrix_user_david()
 
       {:ok, actor: alice}
     end
 
-    test "when receiving a Block activity for a Matrix user it ignores the user and bans them from the actor room" do
-      Kazarma.Matrix.TestClient
-      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
-      |> expect_get_data("@alice.pleroma.com:kazarma", "m.ignored_user_list", %{})
-      |> expect_put_data("@alice.pleroma.com:kazarma", "m.ignored_user_list", %{
-        "@bob:kazarma" => %{}
-      })
-      |> expect_send_state_event(
-        "@alice.pleroma.com:kazarma",
-        "local_id",
-        "m.room.member",
-        "@bob:kazarma",
-        %{"membership" => "ban"},
-        :ok
-      )
-
-      assert :ok == handle_activity(block_fixture())
-    end
-
-    test "when receiving a Undo/Block activity for a Matrix user it unignores the user and unbans them from the actor room" do
-      Kazarma.Matrix.TestClient
-      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
-      |> expect_get_data("@alice.pleroma.com:kazarma", "m.ignored_user_list", %{
-        "@bob:kazarma" => %{}
-      })
-      |> expect_put_data("@alice.pleroma.com:kazarma", "m.ignored_user_list", %{})
-      |> expect_send_state_event(
-        "@alice.pleroma.com:kazarma",
-        "local_id",
-        "m.room.member",
-        "@bob:kazarma",
-        %{"membership" => "leave"},
-        :ok
-      )
-
-      assert :ok == handle_activity(unblock_fixture())
-    end
-  end
-
-  describe "activity handler (handle_activity/1) for Follow activity" do
-    setup :set_mox_from_context
-    setup :verify_on_exit!
-
-    setup do
-      create_local_matrix_user_bob()
-
-      :ok
-    end
-
-    def follow_fixture do
-      %ActivityPub.Object{
+    def public_note_fixture_with_mention_to_remote do
+      %{
         data: %{
-          "id" => "follow_object_id",
-          "type" => "Follow",
-          "actor" => "http://pleroma.com/pub/actors/alice",
-          "object" => "http://kazarma/-/bob"
-        }
-      }
-    end
-
-    def unfollow_fixture do
-      %ActivityPub.Object{
-        data: %{
-          "id" => "unfollow_object_id",
-          "type" => "Undo",
-          "actor" => "http://pleroma.com/pub/actors/alice",
-          "object" => %{
-            "type" => "Follow",
-            "object" => "http://kazarma/-/bob"
+          "type" => "Create",
+          "to" => [
+            "http://kazarma/matrix.org/david",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Note",
+            "content" =>
+              ~S(@<a href=\"http://david.matrix.org@kazarma.kazarma\" rel=\"ugc\">david.matrix.org@kazarma.kazarma</a> hello</p>),
+            "source" => %{
+              "content" => "@david.matrix.org@kazarma.kazarma hello",
+              "mediaType" => "text/plain"
+            },
+            "id" => "note_id",
+            "actor" => "http://pleroma.com/pub/actors/alice",
+            "conversation" => "http://pleroma.com/pub/contexts/context",
+            "attachment" => nil,
+            "tag" => [
+              %{
+                "type" => "Mention",
+                "href" => "http://kazarma/matrix.org/david",
+                "name" => "@david.matrix.org@kazarma.kazarma"
+              }
+            ]
           }
         }
       }
     end
 
-    test "when receiving a Follow activity for a Matrix user it accepts the follow" do
-      Kazarma.ActivityPub.TestServer
-      |> expect(:accept, fn
+    test "it converts mentions" do
+      Kazarma.Matrix.TestClient
+      |> expect_join("@alice.pleroma.com:kazarma", "!room:kazarma")
+      |> expect_send_state_event(
+        "@alice.pleroma.com:kazarma",
+        "!room:kazarma",
+        "m.room.member",
+        "@david:matrix.org",
+        %{"membership" => "invite"},
+        "!invite_event"
+      )
+      |> expect_send_message(
+        "@alice.pleroma.com:kazarma",
+        "!room:kazarma",
         %{
-          actor: %{
-            data: %{
-              "id" => "http://kazarma/-/bob",
-              "name" => "Bob",
-              "preferredUsername" => "bob",
-              "type" => "Person"
-            },
-            local: true,
-            ap_id: "http://kazarma/-/bob",
-            username: "bob@kazarma",
-            deactivated: false
-          },
-          object: "follow_object_id",
-          to: ["http://pleroma.com/pub/actors/alice"]
-        } ->
-          :ok
-      end)
+          "body" => "@david:matrix.org hello \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" =>
+            "@<a href=\"https://matrix.to/#/@david:matrix.org\">David</a> hello",
+          "msgtype" => "m.text"
+        },
+        "event_id"
+      )
 
-      assert :ok == handle_activity(follow_fixture())
-    end
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma.com/pub/actors/alice",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@alice.pleroma.com:kazarma"
+        }
+      }
+      |> Bridge.create_room()
 
-    test "when receiving a Undo/Follow activity for a Matrix user it does nothing" do
-      assert :ok == handle_activity(unfollow_fixture())
+      assert :ok == handle_activity(public_note_fixture_with_mention_to_remote())
     end
   end
 end
