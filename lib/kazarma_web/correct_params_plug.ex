@@ -3,7 +3,7 @@
 defmodule KazarmaWeb.CorrectParamsPlug do
   @moduledoc """
   Instead of modifying controllers in the ActivityPub library,
-  we generate :usersame from :server and :localpart
+  we generate :username from :server and :localpart
   """
 
   @behaviour Plug
@@ -19,7 +19,18 @@ defmodule KazarmaWeb.CorrectParamsPlug do
   end
 
   def call(%{params: %{"localpart" => localpart, "server" => server} = params} = conn, _action) do
-    new_params = Map.put(params, "username", "#{localpart}@#{server}")
+    actor =
+      Kazarma.Address.get_actor(matrix_id: "@#{localpart}:#{server}") ||
+        Kazarma.Address.get_actor(username: "#{localpart}@#{server}")
+
+    new_params =
+      case actor do
+        %{username: username} ->
+          Map.put(params, "username", username)
+
+        _ ->
+          Map.put(params, "username", nil)
+      end
 
     %{conn | params: new_params}
   end

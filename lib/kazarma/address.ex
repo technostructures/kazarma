@@ -9,15 +9,6 @@ defmodule Kazarma.Address do
 
   alias ActivityPub.Actor
 
-  # @alphanum "A-z0-9"
-  # @alphanum_lowercased "a-z0-9"
-  # @ap_chars @alphanum <> "_"
-  # @matrix_chars @alphanum_lowercased <> "_\\.\\-\\/"
-  # @valid_domain "[#{@alphanum}][#{@alphanum}\\.\\-]*[#{@alphanum}]"
-  #
-  # @matrix_puppet_separation "___"
-  # @ap_puppet_separation "___"
-
   def ap_domain, do: Application.fetch_env!(:activity_pub, :domain)
 
   def matrix_domain, do: Application.fetch_env!(:kazarma, :matrix_domain)
@@ -88,34 +79,50 @@ defmodule Kazarma.Address do
     actor
   end
 
-  # def get_username_localpart(username) do
-  #   username
-  #   |> String.replace_suffix("@#{Kazarma.Address.ap_domain()}", "")
-  #   |> String.replace_leading("@", "")
-  # end
-
-  # def get_matrix_id_localpart(username) do
-  #   username
-  #   |> String.replace_suffix(":#{Kazarma.Address.matrix_domain()}", "")
-  #   |> String.replace_leading("@", "")
-  # end
-
-  def localpart(%{username: username}) do
+  def localpart(%{local: false, data: %{"username" => username}}) do
     [localpart, _server] = String.split(username, "@")
     localpart
   end
 
-  def localpart(%{data: %{"username" => username}}) do
-    localpart(%{username: username})
+  def localpart(%{local: true, ap_id: ap_id}) do
+    %URI{host: host, path: path} = URI.parse(ap_id)
+
+    %{path_params: %{"localpart" => localpart}} =
+      Phoenix.Router.route_info(KazarmaWeb.Router, "GET", path, host)
+
+    localpart
   end
 
-  def server(%{username: username}) do
+  def localpart(%{local: true, data: %{"id" => ap_id}}) do
+    %URI{host: host, path: path} = URI.parse(ap_id)
+
+    %{path_params: %{"localpart" => localpart}} =
+      Phoenix.Router.route_info(KazarmaWeb.Router, "GET", path, host)
+
+    localpart
+  end
+
+  def server(%{local: false, data: %{"username" => username}}) do
     [_localpart, server] = String.split(username, "@")
     server
   end
 
-  def server(%{data: %{"username" => username}}) do
-    server(%{username: username})
+  def server(%{local: true, ap_id: ap_id}) do
+    %URI{host: host, path: path} = URI.parse(ap_id)
+
+    %{path_params: %{"server" => server}} =
+      Phoenix.Router.route_info(KazarmaWeb.Router, "GET", path, host)
+
+    server
+  end
+
+  def server(%{local: true, data: %{"id" => ap_id}}) do
+    %URI{host: host, path: path} = URI.parse(ap_id)
+
+    %{path_params: %{"server" => server}} =
+      Phoenix.Router.route_info(KazarmaWeb.Router, "GET", path, host)
+
+    server
   end
 
   def matrix_id_localpart(matrix_id) do

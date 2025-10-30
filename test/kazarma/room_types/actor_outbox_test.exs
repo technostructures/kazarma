@@ -345,6 +345,14 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
     test "receiving a public note with a mention of Matrix user mentions them" do
       Kazarma.Matrix.TestClient
       |> expect_join("@alice.pleroma:kazarma", "!room:kazarma")
+      |> expect_send_state_event(
+        "@alice.pleroma:kazarma",
+        "!room:kazarma",
+        "m.room.member",
+        "@bob.matrix:kazarma",
+        %{"membership" => "invite"},
+        "invite_id"
+      )
       |> expect_send_message(
         "@alice.pleroma:kazarma",
         "!room:kazarma",
@@ -922,11 +930,11 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
           "actor" => "http://pleroma/pub/actors/alice"
         })
 
-      {:ok, _user} =
-        Kazarma.Bridge.create_user(%{
-          local_id: "@alice.pleroma:kazarma",
-          remote_id: "http://pleroma/pub/actors/alice"
-        })
+      # {:ok, _user} =
+      #   Kazarma.Bridge.create_user(%{
+      #     local_id: "@alice.pleroma:kazarma",
+      #     remote_id: "http://pleroma/pub/actors/alice"
+      #   })
 
       {:ok, keys} = ActivityPub.Safety.Keys.generate_rsa_pem()
 
@@ -976,6 +984,11 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "following the activity bot actor makes it accept, follow back and creates the actor room" do
       Kazarma.Matrix.TestClient
+      |> expect_register(%{
+        username: "alice.pleroma",
+        matrix_id: "@alice.pleroma:kazarma",
+        displayname: "Alice"
+      })
       |> expect_create_room(
         "@alice.pleroma:kazarma",
         [
@@ -1063,6 +1076,11 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "following the activity bot actor makes it accept, follow back and gets the actor room by alias if it already exists" do
       Kazarma.Matrix.TestClient
+      |> expect_register(%{
+        username: "alice.pleroma",
+        matrix_id: "@alice.pleroma:kazarma",
+        displayname: "Alice"
+      })
       |> expect_create_room_existing("@alice.pleroma:kazarma",
         visibility: :public,
         name: "Alice",
@@ -1147,6 +1165,11 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
 
     test "following the activity bot actor makes it accept, follow back and starts bridging again is activity bot had previously been unfollowed" do
       Kazarma.Matrix.TestClient
+      |> expect_register(%{
+        username: "alice.pleroma",
+        matrix_id: "@alice.pleroma:kazarma",
+        displayname: "Alice"
+      })
       |> expect_send_message(
         "@alice.pleroma:kazarma",
         "!room:kazarma",

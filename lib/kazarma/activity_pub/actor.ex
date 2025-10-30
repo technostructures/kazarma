@@ -183,7 +183,9 @@ defmodule Kazarma.ActivityPub.Actor do
 
   def get_local_actor(username) do
     username =
-      if String.contains?(username, "@"), do: username, else: "#{username}@#{Address.ap_domain()}"
+      if String.contains?(username, "@"),
+        do: username,
+        else: "#{username}@#{Address.ap_domain()}"
 
     cond do
       username == Address.activity_bot_username() ->

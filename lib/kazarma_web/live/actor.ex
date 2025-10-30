@@ -5,30 +5,20 @@ defmodule KazarmaWeb.Actor do
   @moduledoc false
   use KazarmaWeb, :live_view
 
-  def get_actor(username) do
-    include_remote = Application.get_env(:kazarma, :html_actor_view_include_remote, false)
-
-    case Kazarma.Address.get_actor(username: username) do
-      %{local: true} = actor -> {:ok, actor}
-      %{local: false} = actor when include_remote == true -> {:ok, actor}
-      _ -> nil
-    end
-  end
-
   @impl true
   def mount(%{"localpart" => localpart, "server" => "-"}, session, socket) do
-    mount(%{"username" => "#{localpart}@#{Kazarma.Address.ap_domain()}"}, session, socket)
+    mount(%{"localpart" => localpart, "server" => Kazarma.Address.ap_domain()}, session, socket)
   end
 
   def mount(%{"localpart" => localpart, "server" => server}, session, socket) do
-    mount(%{"username" => "#{localpart}@#{server}"}, session, socket)
-  end
-
-  def mount(%{"username" => username}, session, socket) do
     put_session_locale(session)
 
-    case get_actor(username) do
-      {:ok, %{data: data} = actor} ->
+    actor =
+      Kazarma.Address.get_actor(matrix_id: "@#{localpart}:#{server}") ||
+        Kazarma.Address.get_actor(username: "#{localpart}@#{server}")
+
+    case actor do
+      %{data: data} = actor ->
         public_activities = public_activities(actor)
 
         name = Map.get(data, "name") || Map.get(data, "preferredUsername")

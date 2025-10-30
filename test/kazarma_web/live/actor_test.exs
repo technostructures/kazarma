@@ -100,7 +100,7 @@ defmodule KazarmaWeb.ActorTest do
 
     test "it shows an error and redirects if the user is not found", %{conn: conn} do
       Kazarma.Matrix.TestClient
-      |> expect(:get_profile, fn "@not_found:kazarma" ->
+      |> expect(:get_profile, 2, fn "@not_found:kazarma" ->
         {:error, :not_found}
       end)
 

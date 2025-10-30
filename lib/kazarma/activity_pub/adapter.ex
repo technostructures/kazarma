@@ -38,8 +38,7 @@ defmodule Kazarma.ActivityPub.Adapter do
     )
   end
 
-  defp server_for_url(%{local: true}), do: "-"
-  defp server_for_url(%{local: false} = actor), do: Address.server(actor)
+  defp server_for_url(%{} = actor), do: Address.server(actor)
 
   def federate_actor?(_, _, _), do: true
 
@@ -453,6 +452,9 @@ defmodule Kazarma.ActivityPub.Adapter do
     case Phoenix.Router.route_info(KazarmaWeb.Router, "GET", path, host) do
       %{path_params: %{"server" => "-", "localpart" => localpart}} ->
         get_actor_by_username(localpart)
+
+      %{path_params: %{"server" => server, "localpart" => localpart}} ->
+        get_actor_by_username("#{localpart}.#{server}")
 
       _ ->
         nil
