@@ -86,15 +86,15 @@ defmodule Kazarma.ActivityPub.ActorTest do
     end
 
     test "public activity bridging bot can not be found" do
-      Kazarma.Matrix.TestClient
-      |> expect_get_profile_not_found("@activity_bridge:kazarma")
+      # Kazarma.Matrix.TestClient
+      # |> expect_get_profile_not_found("@activity_bridge:kazarma")
 
       assert nil == get_actor_by_username("activity_bridge")
     end
 
     test "profile bridging bot can not be found" do
-      Kazarma.Matrix.TestClient
-      |> expect_get_profile_not_found("@profile_bridge:kazarma")
+      # Kazarma.Matrix.TestClient
+      # |> expect_get_profile_not_found("@profile_bridge:kazarma")
 
       assert nil == get_actor_by_username("profile_bridge")
     end

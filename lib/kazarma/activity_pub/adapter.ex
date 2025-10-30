@@ -267,25 +267,51 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity, label: "Follow")
 
-    case Address.get_actor(ap_id: followed) do
-      %ActivityPub.Actor{local: true} = followed_actor ->
+    cond do
+      followed == Address.activity_bot_ap_id() ->
+        Logger.debug("follow back remote actor")
+        {:ok, follower_actor} = Actor.get_cached_or_fetch(ap_id: follower)
+        %{} = Address.create_matrix_puppet_if_not_exists(follower_actor)
+
         Kazarma.ActivityPub.accept(%{
           to: [follower],
-          actor: followed_actor,
+          actor: Address.activity_bot_actor(),
           object: activity.data["id"]
         })
 
-        if followed == Address.activity_bot_ap_id() do
-          Logger.debug("follow back remote actor")
-          %{} = follower_actor = Address.get_actor(ap_id: follower)
-          Kazarma.ActivityPub.follow(%{actor: followed_actor, object: follower_actor})
-          {:ok, _} = Kazarma.RoomType.ApUser.create_outbox(follower_actor)
-        end
+        Kazarma.ActivityPub.follow(%{actor: Address.activity_bot_actor(), object: follower_actor})
+
+        {:ok, _} = Kazarma.RoomType.ApUser.create_outbox(follower_actor)
+        :ok
+
+      followed == Address.profile_bot_ap_id() ->
+        {:ok, follower_actor} = Actor.get_cached_or_fetch(ap_id: follower)
+        %{} = Address.create_matrix_puppet_if_not_exists(follower_actor)
+
+        Kazarma.ActivityPub.accept(%{
+          to: [follower],
+          actor: Address.profile_bot_actor(),
+          object: activity.data["id"]
+        })
+
+        Kazarma.ActivityPub.follow(%{actor: Address.profile_bot_actor(), object: follower_actor})
 
         :ok
 
-      _ ->
-        :error
+      true ->
+        case Address.get_actor(ap_id: followed) do
+          %ActivityPub.Actor{local: true} = followed_actor ->
+            Kazarma.ActivityPub.accept(%{
+              to: [follower],
+              actor: followed_actor,
+              object: activity.data["id"]
+            })
+
+            :ok
+
+          _ ->
+            :error
+        end
     end
   end
 
@@ -304,19 +330,36 @@ defmodule Kazarma.ActivityPub.Adapter do
       ) do
     Kazarma.Logger.log_received_activity(activity, label: "Unfollow")
 
-    case Address.get_actor(ap_id: followed) do
-      %ActivityPub.Actor{local: true} = followed_actor ->
-        if followed == Address.activity_bot_ap_id() do
-          Logger.debug("unfollow back remote actor")
-          %{} = follower_actor = Address.get_actor(ap_id: follower)
-          Kazarma.ActivityPub.unfollow(%{actor: followed_actor, object: follower_actor})
-          Kazarma.RoomType.ApUser.deactivate_outbox(follower_actor)
-        end
+    cond do
+      followed == Address.activity_bot_ap_id() ->
+        Logger.debug("unfollow back remote actor")
+        %{} = follower_actor = Address.get_actor(ap_id: follower)
 
+        Kazarma.ActivityPub.unfollow(%{
+          actor: Address.activity_bot_actor(),
+          object: follower_actor
+        })
+
+        Kazarma.RoomType.ApUser.deactivate_outbox(follower_actor)
         :ok
 
-      _ ->
-        :error
+      followed == Address.profile_bot_ap_id() ->
+        Logger.debug("unfollow back remote actor")
+        %{} = follower_actor = Address.get_actor(ap_id: follower)
+
+        Kazarma.ActivityPub.unfollow(%{actor: Address.profile_bot_actor(), object: follower_actor})
+
+        case Bridge.get_user_by_remote_id(follower) do
+          %{} = user ->
+            {:ok, _} = Bridge.delete_user(user)
+            :ok
+
+          _ ->
+            :error
+        end
+
+      true ->
+        :ok
     end
   end
 

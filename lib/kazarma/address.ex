@@ -333,14 +333,18 @@ defmodule Kazarma.Address do
   end
 
   def maybe_create_matrix_puppet(actor) do
+    if should_bridge_actor(actor) do
+      create_matrix_puppet_if_not_exists(actor)
+    end
+  end
+
+  def create_matrix_puppet_if_not_exists(actor) do
     case Kazarma.Bridge.get_user_by_remote_id(actor.ap_id) do
       %{} = bridged_user ->
         bridged_user
 
       _ ->
-        if should_bridge_actor(actor) do
-          create_matrix_puppet(actor)
-        end
+        create_matrix_puppet(actor)
     end
   end
 
