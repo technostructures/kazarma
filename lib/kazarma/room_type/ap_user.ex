@@ -316,6 +316,9 @@ defmodule Kazarma.RoomType.ApUser do
             send_emote_bridging_starts(matrix_id, room_id)
 
             {:ok, room}
+
+          {:error, 400, %{"errcode" => "M_EXCLUSIVE"}} ->
+            Logger.error("Application service has bad configuration for aliases")
         end
 
       %MatrixAppService.Bridge.Room{data: %{"type" => "ap_user"}} = room ->
