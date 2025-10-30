@@ -43,8 +43,8 @@ defmodule Kazarma.RoomType.ApUser do
 
       Map.get(object_data, "tag", [])
       |> Enum.filter(fn tag -> Map.get(tag, "type") == "Mention" end)
-      |> Enum.each(fn %{"name" => mentioned_username} ->
-        case Address.get_user(username: mentioned_username) do
+      |> Enum.each(fn %{"href" => mentioned_ap_id} ->
+        case Address.get_user(ap_id: mentioned_ap_id) do
           %{local_id: mentioned_matrix_id} ->
             Client.invite(room_id, from_matrix_id, mentioned_matrix_id)
 

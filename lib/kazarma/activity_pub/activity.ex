@@ -374,8 +374,8 @@ defmodule Kazarma.ActivityPub.Activity do
     make_content(%{"source" => source, "content" => content})
   end
 
-  defp make_content(%{"source" => %{"content" => source}, "content" => content}) do
-    make_content(%{"source" => source, "content" => content})
+  defp make_content(%{"source" => %{"content" => source}} = data) do
+    make_content(%{data | "source" => source})
   end
 
   defp make_content(%{"source" => nil, "content" => nil}), do: nil
@@ -456,10 +456,11 @@ defmodule Kazarma.ActivityPub.Activity do
   defp convert_mentions_html(content, tags) do
     convert_mentions(content, tags, fn current_content, actor, _ap_id, username, matrix_id ->
       display_name = actor.data["name"]
-      "@" <> _username_without_at = username
+      "@" <> username = username
 
       parse_and_update_content(
         current_content,
+        username,
         actor,
         {"a", [{"href", "https://matrix.to/#/" <> matrix_id}], [display_name]}
       )
@@ -499,7 +500,7 @@ defmodule Kazarma.ActivityPub.Activity do
     end)
   end
 
-  def parse_and_update_content(content, actor, replacement) do
+  def parse_and_update_content(content, username, actor, replacement) do
     update_fun = fn
       {"span", span_attrs, [{"a", a_attrs, ["@", {"span", _, [_username_without_at]}]}]} = elem ->
         if {"class", "h-card"} in span_attrs &&
@@ -509,6 +510,9 @@ defmodule Kazarma.ActivityPub.Activity do
         else
           elem
         end
+
+      {"a", _, [^username]} ->
+        replacement
 
       other ->
         other

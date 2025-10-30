@@ -91,7 +91,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
     end
   end
 
-  describe "Content conversion" do
+  describe "Mentions conversion for local user" do
     setup :set_mox_from_context
     setup :verify_on_exit!
 
@@ -102,7 +102,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       {:ok, actor: alice}
     end
 
-    def public_note_fixture_with_mention do
+    def public_note_fixture_with_mention_to_local do
       %{
         data: %{
           "type" => "Create",
@@ -166,7 +166,91 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       }
       |> Bridge.create_room()
 
-      assert :ok == handle_activity(public_note_fixture_with_mention())
+      assert :ok == handle_activity(public_note_fixture_with_mention_to_local())
+    end
+  end
+
+  describe "Mentions conversion for remote user" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+    setup :config_public_bridge
+
+    setup do
+      alice = create_ap_user_alice()
+      create_remote_matrix_user_david()
+
+      {:ok, actor: alice}
+    end
+
+    def public_note_fixture_with_mention_to_remote do
+      %{
+        data: %{
+          "type" => "Create",
+          "to" => [
+            "http://kazarma/matrix.org/david",
+            "https://www.w3.org/ns/activitystreams#Public"
+          ]
+        },
+        object: %ActivityPub.Object{
+          data: %{
+            "type" => "Note",
+            "content" =>
+              ~S(@<a href=\"http://david.matrix.org@kazarma.kazarma\" rel=\"ugc\">david.matrix.org@kazarma.kazarma</a> hello</p>),
+            "source" => %{
+              "content" => "@david.matrix.org@kazarma.kazarma hello",
+              "mediaType" => "text/plain"
+            },
+            "id" => "note_id",
+            "actor" => "http://pleroma.com/pub/actors/alice",
+            "conversation" => "http://pleroma.com/pub/contexts/context",
+            "attachment" => nil,
+            "tag" => [
+              %{
+                "type" => "Mention",
+                "href" => "http://kazarma/matrix.org/david",
+                "name" => "@david.matrix.org@kazarma.kazarma"
+              }
+            ]
+          }
+        }
+      }
+    end
+
+    test "it converts mentions" do
+      Kazarma.Matrix.TestClient
+      |> expect_join("@alice.pleroma.com:kazarma", "!room:kazarma")
+      |> expect_send_state_event(
+        "@alice.pleroma.com:kazarma",
+        "!room:kazarma",
+        "m.room.member",
+        "@david:matrix.org",
+        %{"membership" => "invite"},
+        "!invite_event"
+      )
+      |> expect_send_message(
+        "@alice.pleroma.com:kazarma",
+        "!room:kazarma",
+        %{
+          "body" => "@david:matrix.org hello \uFEFF",
+          "format" => "org.matrix.custom.html",
+          "formatted_body" =>
+            "@<a href=\"https://matrix.to/#/@david:matrix.org\">David</a> hello",
+          "msgtype" => "m.text"
+        },
+        "event_id"
+      )
+
+      %{
+        local_id: "!room:kazarma",
+        remote_id: "http://pleroma.com/pub/actors/alice",
+        data: %{
+          "type" => "ap_user",
+          "matrix_id" => "@alice.pleroma.com:kazarma"
+        }
+      }
+      |> Bridge.create_room()
+
+      assert :ok == handle_activity(public_note_fixture_with_mention_to_remote())
     end
   end
 end
