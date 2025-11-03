@@ -17,8 +17,8 @@ defmodule Kazarma.Matrix.TransactionTest do
   @pleroma_user_server "pleroma.interhacker.space"
   @pleroma_user_name "pierre"
   @pleroma_user_displayname "Pierre"
-  @pleroma_user_full_username "pierre@pleroma.interhacker.space"
-  @pleroma_user_ap_id "https://pleroma.interhacker.space/users/pierre"
+  # @pleroma_user_full_username "pierre@pleroma.interhacker.space"
+  # @pleroma_user_ap_id "https://pleroma.interhacker.space/users/pierre"
   @pleroma_puppet_username "#{@pleroma_user_name}.#{@pleroma_user_server}"
   @pleroma_puppet_address "@#{@pleroma_puppet_username}:kazarma"
 

@@ -347,7 +347,10 @@ defmodule Kazarma.ActivityPub.Adapter do
         Logger.debug("unfollow back remote actor")
         %{} = follower_actor = Address.get_actor(ap_id: follower)
 
-        Kazarma.ActivityPub.unfollow(%{actor: Address.profile_bot_actor(), object: follower_actor})
+        Kazarma.ActivityPub.unfollow(%{
+          actor: Address.profile_bot_actor(),
+          object: follower_actor
+        })
 
         case Bridge.get_user_by_remote_id(follower) do
           %{} = user ->

@@ -503,7 +503,7 @@ defmodule Kazarma.RoomTypes.CollectionTest do
     end
 
     setup do
-      {:ok, actor} =
+      {:ok, _actor} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",

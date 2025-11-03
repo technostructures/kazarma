@@ -15,7 +15,7 @@ defmodule KazarmaWeb.CoreComponents do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
-  import KazarmaWeb.Gettext
+  use Gettext, backend: KazarmaWeb.Gettext
 
   @doc """
   Renders a modal.

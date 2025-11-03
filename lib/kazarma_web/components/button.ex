@@ -3,10 +3,8 @@
 
 defmodule KazarmaWeb.Button do
   @moduledoc false
-  use Phoenix.Component
+  use KazarmaWeb, :html
   import KazarmaWeb.Components.Icon
-  import KazarmaWeb.Gettext
-  use Phoenix.HTML
 
   def copy(assigns) do
     ~H"""

@@ -27,7 +27,7 @@ defmodule KazarmaWeb do
         layouts: [html: KazarmaWeb.Layouts]
 
       import Plug.Conn
-      import KazarmaWeb.Gettext
+      use Gettext, backend: KazarmaWeb.Gettext
       alias KazarmaWeb.Router.Helpers, as: Routes
     end
   end
@@ -61,7 +61,7 @@ defmodule KazarmaWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import KazarmaWeb.Gettext
+      use Gettext, backend: KazarmaWeb.Gettext
     end
   end
 
@@ -106,7 +106,7 @@ defmodule KazarmaWeb do
 
       import KazarmaWeb.CoreComponents
 
-      import KazarmaWeb.Gettext
+      use Gettext, backend: KazarmaWeb.Gettext
       alias KazarmaWeb.Router.Helpers, as: Routes
     end
   end

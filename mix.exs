@@ -19,15 +19,20 @@ defmodule Kazarma.MixProject do
         assets: "doc_diagrams"
       ],
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
+      # temporarily disable svadilfari
+      releases: [kazarma: [applications: [prom_ex: :permanent]]]
+      # releases: [kazarma: [applications: [svadilfari: :permanent, prom_ex: :permanent]]]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
-      ],
-      # temporarily disable svadilfari
-      releases: [kazarma: [applications: [prom_ex: :permanent]]]
-      # releases: [kazarma: [applications: [svadilfari: :permanent, prom_ex: :permanent]]]
+      ]
     ]
   end
 

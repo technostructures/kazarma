@@ -78,7 +78,7 @@ defmodule Kazarma.ActivityPub.FollowTest do
     setup :config_public_bridge
 
     setup do
-      {:ok, actor} =
+      {:ok, _actor} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",
@@ -204,7 +204,7 @@ defmodule Kazarma.ActivityPub.FollowTest do
     setup :config_public_bridge
 
     setup do
-      {:ok, actor} =
+      {:ok, _actor} =
         ActivityPub.Object.do_insert(%{
           "data" => %{
             "type" => "Person",

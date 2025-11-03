@@ -968,20 +968,6 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       }
     end
 
-    def unfollow_fixture do
-      %{
-        data: %{
-          "type" => "Undo",
-          "actor" => "http://pleroma/pub/actors/alice",
-          "object" => %{
-            "type" => "Follow",
-            "id" => "follow_object_id",
-            "object" => "http://kazarma/-/activity_bridge"
-          }
-        }
-      }
-    end
-
     test "following the activity bot actor makes it accept, follow back and creates the actor room" do
       Kazarma.Matrix.TestClient
       |> expect_register(%{
@@ -1291,17 +1277,6 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
         })
 
       {:ok, actor: actor}
-    end
-
-    def follow_fixture do
-      %{
-        data: %{
-          "type" => "Follow",
-          "id" => "follow_object_id",
-          "actor" => "http://pleroma/pub/actors/alice",
-          "object" => "http://kazarma/-/activity_bridge"
-        }
-      }
     end
 
     def unfollow_fixture do

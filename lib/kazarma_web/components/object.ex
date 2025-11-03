@@ -3,11 +3,8 @@
 
 defmodule KazarmaWeb.Components.Object do
   @moduledoc false
-  use Phoenix.Component
-  use Phoenix.HTML
+  use KazarmaWeb, :html
   import KazarmaWeb.Components.Icon
-  import KazarmaWeb.Helpers
-  import KazarmaWeb.Gettext
 
   def datetime(%ActivityPub.Object{data: %{"published" => published}}) do
     with {:ok, dt, _n} <- published |> DateTime.from_iso8601(),

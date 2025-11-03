@@ -8,7 +8,7 @@ defmodule Kazarma.Matrix.RoomTest do
   @ap_user_server "pleroma.interhacker.space"
   @ap_user_name "test_user_bob2"
   @ap_puppet_username "#{@ap_user_name}.#{@ap_user_server}"
-  @ap_puppet_matrix_id "@#{@ap_puppet_username}:kazarma"
+  # @ap_puppet_matrix_id "@#{@ap_puppet_username}:kazarma"
   @ap_puppet_matrix_timeline "##{@ap_puppet_username}:kazarma"
 
   describe "Room search (Synapse asks the application service for a room in its namespace)" do

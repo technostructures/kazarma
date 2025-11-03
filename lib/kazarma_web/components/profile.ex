@@ -2,10 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 defmodule KazarmaWeb.Components.Profile do
   @moduledoc false
-  use Phoenix.Component
-  use Phoenix.HTML
-  import KazarmaWeb.Helpers
-  import KazarmaWeb.Gettext
+  use KazarmaWeb, :html
 
   defp profile_address(%{actor: %ActivityPub.Actor{local: true}} = assigns) do
     ~H"""
