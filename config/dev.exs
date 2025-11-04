@@ -89,6 +89,7 @@ config :matrix_app_service, :app_service,
 
 config :matrix_app_service, :client_options,
   ssl_options: [
+    insecure: true,
     verify: :verify_none
   ]
 
@@ -97,6 +98,7 @@ config :activity_pub, :domain, "kazarma.com"
 config :activity_pub, :http,
   adapter: [
     ssl_options: [
+      insecure: true,
       verify: :verify_none
     ]
   ]
