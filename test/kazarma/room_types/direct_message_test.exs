@@ -123,7 +123,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(note_fixture())
+      assert {:ok, _} = handle_activity(note_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -161,7 +161,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(note_fixture_adding_another_user())
+      assert {:ok, _} = handle_activity(note_fixture_adding_another_user())
 
       assert [
                %MatrixAppService.Bridge.Room{
@@ -204,7 +204,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         "event_id"
       )
 
-      assert :ok = handle_activity(note_fixture())
+      assert {:ok, _} = handle_activity(note_fixture())
 
       assert [
                %MatrixAppService.Bridge.Room{
@@ -259,7 +259,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(note_with_attachments_fixture())
+      assert {:ok, _} = handle_activity(note_with_attachments_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -308,7 +308,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
         |> update_in([Access.key!(:object), Access.key!(:data), "content"], fn _ -> nil end)
         |> update_in([Access.key!(:object), Access.key!(:data), "source"], fn _ -> nil end)
 
-      assert :ok = handle_activity(note)
+      assert {:ok, _} = handle_activity(note)
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -388,7 +388,7 @@ defmodule Kazarma.RoomTypes.DirectMessageTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(note_with_reply_fixture())
+      assert {:ok, _} = handle_activity(note_with_reply_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{

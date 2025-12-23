@@ -295,7 +295,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(public_note_fixture())
+      assert {:ok, _} = handle_activity(public_note_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -331,7 +331,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(public_note_fixture_with_content())
+      assert {:ok, _} = handle_activity(public_note_fixture_with_content())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -376,7 +376,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(public_note_fixture_with_mention())
+      assert {:ok, _} = handle_activity(public_note_fixture_with_mention())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -500,7 +500,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(public_note_with_reply_fixture())
+      assert {:ok, _} = handle_activity(public_note_with_reply_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -825,7 +825,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(public_page_fixture())
+      assert {:ok, _} = handle_activity(public_page_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -861,7 +861,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(public_page_with_link_fixture())
+      assert {:ok, _} = handle_activity(public_page_with_link_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -898,7 +898,7 @@ defmodule Kazarma.RoomTypes.ActorOutboxTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(public_page_with_link_and_description_fixture())
+      assert {:ok, _} = handle_activity(public_page_with_link_and_description_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{

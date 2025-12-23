@@ -139,10 +139,10 @@ defmodule Kazarma.ActivityPub.Adapter do
         Logger.error(error)
 
       {:ok, _} ->
-        :ok
+        {:ok, "fake_pointer"}
 
       :ok ->
-        :ok
+        {:ok, "fake_pointer"}
 
       other ->
         Logger.debug(inspect(other))

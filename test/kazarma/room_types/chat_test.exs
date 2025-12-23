@@ -96,7 +96,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
         "event_id"
       )
 
-      assert :ok = handle_activity(chat_message_fixture())
+      assert {:ok, _} = handle_activity(chat_message_fixture())
 
       assert [
                %MatrixAppService.Bridge.Room{
@@ -134,7 +134,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
         "event_id"
       )
 
-      assert :ok = handle_activity(chat_message_fixture())
+      assert {:ok, _} = handle_activity(chat_message_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -166,7 +166,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
         "event_id1"
       )
 
-      assert :ok = handle_activity(chat_message_with_attachment_fixture())
+      assert {:ok, _} = handle_activity(chat_message_with_attachment_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -205,7 +205,7 @@ defmodule Kazarma.RoomTypes.ChatTest do
           fn _ -> nil end
         )
 
-      assert :ok = handle_activity(chat_message)
+      assert {:ok, _} = handle_activity(chat_message)
 
       assert [
                %MatrixAppService.Bridge.Event{
