@@ -36,14 +36,20 @@ defmodule Kazarma.Matrix.Transaction do
   def new_event(
         %Event{
           content: %{
-            "m.new_content" => _,
-            "m.relates_to" => %{"rel_type" => "m.replace"},
-            "org.matrix.msc1767.text" => _
+            "m.new_content" => new_content,
+            "m.relates_to" => %{"rel_type" => "m.replace", "event_id" => replaced_id}
           },
-          type: "m.room.message"
+          type: "m.room.message",
+          room_id: room_id,
+          sender: sender_id,
+          event_id: replacing_id
         } = event
       ) do
-    Kazarma.Logger.log_received_event(event, label: "Replace event")
+    if !tagged_message?(event) do
+      Kazarma.Logger.log_received_event(event, label: "Replace event")
+
+      Kazarma.ActivityPub.Activity.forward_edition(event, replaced_id, new_content)
+    end
   end
 
   def new_event(%Event{type: "m.room.message", content: content}) when content == %{}, do: :ok

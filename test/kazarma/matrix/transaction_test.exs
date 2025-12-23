@@ -1072,6 +1072,105 @@ defmodule Kazarma.Matrix.TransactionTest do
     end
   end
 
+  describe "Message edition" do
+    setup :set_mox_from_context
+    setup :verify_on_exit!
+
+    setup do
+      ActivityPub.Object.do_insert(%{data: %{"id" => "remote_id", "content" => "hi1"}})
+
+      {:ok, _event} =
+        Bridge.create_event(%{
+          local_id: "local_id",
+          remote_id: "remote_id",
+          room_id: "!room:kazarma"
+        })
+
+      {:ok, _room} =
+        Bridge.create_room(%{
+          local_id: "!room:kazarma",
+          remote_id: nil,
+          data: %{"to_ap_id" => "alice@pleroma", "type" => "chat"}
+        })
+
+      :ok
+    end
+
+    def replace_fixture do
+      %Event{
+        sender: "@bob:kazarma",
+        room_id: "!room:kazarma",
+        event_id: "update_event_id",
+        type: "m.room.message",
+        content: %{
+          "m.new_content" => %{"msgtype" => "m.text", "body" => "hi!"},
+          "m.relates_to" => %{"rel_type" => "m.replace", "event_id" => "local_id"}
+        }
+      }
+    end
+
+    test "when receiving a redaction event it forwards it as Update activity" do
+      Kazarma.Matrix.TestClient
+      |> expect_get_profile("@bob:kazarma", %{"displayname" => "Bob"})
+
+      Kazarma.ActivityPub.TestServer
+      |> expect(:update, fn
+        %{
+          to: _,
+          actor: %{
+            ap_id: "http://kazarma/-/bob",
+            data: %{
+              :endpoints => %{"sharedInbox" => "http://kazarma/shared_inbox"},
+              "capabilities" => %{"acceptsChatMessages" => true},
+              "followers" => "http://kazarma/-/bob/followers",
+              "following" => "http://kazarma/-/bob/following",
+              "icon" => nil,
+              "id" => "http://kazarma/-/bob",
+              "inbox" => "http://kazarma/-/bob/inbox",
+              "manuallyApprovesFollowers" => false,
+              "name" => "Bob",
+              "outbox" => "http://kazarma/-/bob/outbox",
+              "preferredUsername" => "bob",
+              "type" => "Person"
+            },
+            deactivated: false,
+            id: nil,
+            keys: _,
+            local: true,
+            pointer_id: nil,
+            username: "bob@kazarma"
+          },
+          object: %{
+            "id" => "remote_id",
+            "type" => "Note",
+            "content" => "hi!",
+            "formerRepresentations" => %{
+              "orderedItems" => [%{"content" => "hi1"}],
+              "totalItems" => 1,
+              "type" => "OrderedCollection"
+            }
+          }
+        } ->
+          {:ok, %{object: %ActivityPub.Object{data: %{"id" => "update_object_id"}}}}
+      end)
+
+      assert :ok = new_event(replace_fixture())
+
+      assert [
+               %MatrixAppService.Bridge.Event{
+                 local_id: "local_id",
+                 remote_id: "remote_id",
+                 room_id: "!room:kazarma"
+               },
+               %MatrixAppService.Bridge.Event{
+                 local_id: "update_event_id",
+                 remote_id: "update_object_id",
+                 room_id: "!room:kazarma"
+               }
+             ] = Bridge.list_events()
+    end
+  end
+
   def formatted_message_fixture do
     %Event{
       event_id: "event_id",
