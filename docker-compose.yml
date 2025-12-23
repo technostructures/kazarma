@@ -13,6 +13,7 @@ volumes:
   postgres_synapse_files:
   postgres_dendrite_files:
   synapse_files:
+  synapse2_files:
   pleroma_uploads:
   grafana_data:
 
@@ -83,6 +84,46 @@ services:
     #   - postgres_synapse
     # ports:
     #   - 8008:8008/tcp
+    extra_hosts:
+      - "kazarma.kzrm.tstt.dev:host-gateway"
+      - "remote.tstt.dev:host-gateway"
+
+  synapse2:
+    image: matrixdotorg/synapse:v1.108.0
+    # domainname: matrix.local
+    # Since synapse does not retry to connect to the database, restart upon
+    # failure
+    restart: unless-stopped
+    # Need to do it via YAML
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.matrix2.loadbalancer.server.port=8008
+      - traefik.http.routers.matrix2.entryPoints=http
+      - traefik.http.routers.matrix2.rule=Host(`remote.tstt.dev`)
+      # - traefik.http.routers.matrix.middlewares=https_redirect
+      - traefik.http.routers.matrixs2.entryPoints=https
+      - traefik.http.routers.matrixs2.rule=Host(`remote.tstt.dev`)
+      - traefik.http.routers.matrixs2.tls=true
+    environment:
+      - SYNAPSE_SERVER_NAME=remote.tstt.dev
+      - SYNAPSE_REPORT_STATS=no
+      - SYNAPSE_ENABLE_REGISTRATION=yes
+      - SYNAPSE_LOG_LEVEL=INFO
+      # - SYNAPSE_LOG_LEVEL=DEBUG
+      # - POSTGRES_HOST=postgres_synapse
+      # - POSTGRES_USER=synapse
+      # - POSTGRES_PASSWORD=postgres
+    volumes:
+      - synapse2_files:/data
+      - ./infra/dev/synapse/remote_homeserver.yaml:/data/homeserver.yaml
+      - ./infra/dev/synapse/remote_log.config:/data/log.config
+    # depends_on:
+    #   - postgres_synapse
+    # ports:
+    #   - 8008:8008/tcp
+    extra_hosts:
+      - "kzrm.tstt.dev:host-gateway"
+      - "matrix.kzrm.tstt.dev:host-gateway"
 
   # dendrite:
   #   image: matrixdotorg/dendrite-monolith:latest
