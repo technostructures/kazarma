@@ -76,19 +76,18 @@ prepare_dev:
 
 .docker:
   stage: setup
-  image: ezkrg/buildx:v0.11.2
+  image: docker:28.5
   services:
     - name: docker:dind
       command: ["dockerd", "--host=tcp://0.0.0.0:2375"]
       alias: 'docker'
   variables:
-    - DOCKER_DRIVER: overlay2
-    - DOCKER_HOST: tcp://docker:2375/
-    - DOCKER_BUILDKIT: 1
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_BUILDKIT: 1
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   before_script:
     - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-  variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
 
 .docker_tag:
   extends: .docker
