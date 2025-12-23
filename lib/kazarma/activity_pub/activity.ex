@@ -73,25 +73,26 @@ defmodule Kazarma.ActivityPub.Activity do
     replied_activity =
       get_replied_activity_if_exists(event) || Keyword.get(params, :fallback_reply)
 
-    manual_mentions =
-      Kazarma.Matrix.Transaction.get_mentions_from_event_content(event.content)
-
-    additional_mentions = Keyword.get(params, :additional_mentions, [])
-
-    tags = Enum.map(manual_mentions ++ additional_mentions, &mention_tag_for_actor/1)
+    context = Keyword.get(params, :context, make_context(replied_activity, sender))
 
     case create(
-           type: Keyword.get(params, :type, "Note"),
+           object(
+             event,
+             type: Keyword.get(params, :type, "Note"),
+             to: Keyword.fetch!(params, :to),
+             cc: Keyword.get(params, :cc, []),
+             context: context,
+             actor_id: sender.ap_id,
+             replied_activity: replied_activity,
+             fallback_reply: Keyword.get(params, :fallback_reply),
+             additional_mentions: Keyword.get(params, :additional_mentions, []),
+             name: Keyword.get(params, :name),
+             attributed_to: Keyword.get(params, :attributed_to, sender.ap_id)
+           ),
            sender: sender,
            to: Keyword.fetch!(params, :to),
            cc: Keyword.get(params, :cc, []),
-           context: Keyword.get(params, :context, make_context(replied_activity, sender)),
-           in_reply_to: make_in_reply_to(replied_activity),
-           content: Kazarma.Matrix.Transaction.build_text_content(event.content),
-           attachment: attachment_from_matrix_event_content(event.content),
-           tags: tags,
-           name: Keyword.get(params, :name),
-           attributed_to: Keyword.get(params, :attributed_to, sender.ap_id)
+           context: context
          ) do
       {:ok, %{object: %Object{data: %{"id" => remote_id}}} = activity} ->
         Bridge.create_event(%{
@@ -107,25 +108,39 @@ defmodule Kazarma.ActivityPub.Activity do
     end
   end
 
-  def create(params) do
-    sender = Keyword.fetch!(params, :sender)
+  def object(event, content \\ nil, params) do
+    content = content || event.content
 
-    object =
-      %{
-        "type" => Keyword.fetch!(params, :type),
-        "content" => Keyword.fetch!(params, :content),
-        "actor" => sender.ap_id,
-        "attributedTo" => Keyword.fetch!(params, :attributed_to),
-        "to" => Keyword.fetch!(params, :to),
-        "cc" => Keyword.get(params, :cc, []),
-        "conversation" => Keyword.get(params, :context),
-        "tag" => Keyword.get(params, :tags, [])
-      }
-      |> maybe_put("context", Keyword.get(params, :context))
-      |> maybe_put("attachment", Keyword.get(params, :attachment))
-      |> maybe_put("tag", Keyword.get(params, :tags))
-      |> maybe_put("inReplyTo", Keyword.get(params, :in_reply_to))
-      |> maybe_put("name", Keyword.get(params, :name))
+    replied_activity =
+      Keyword.get(params, :replied_activity) || get_replied_activity_if_exists(event) ||
+        Keyword.get(params, :fallback_reply)
+
+    manual_mentions =
+      Kazarma.Matrix.Transaction.get_mentions_from_event_content(content)
+
+    additional_mentions = Keyword.get(params, :additional_mentions, [])
+    tags = Enum.map(manual_mentions ++ additional_mentions, &mention_tag_for_actor/1)
+
+    %{
+      "type" => Keyword.fetch!(params, :type),
+      "content" => Kazarma.Matrix.Transaction.build_text_content(content),
+      "actor" => Keyword.fetch!(params, :actor_id),
+      "attributedTo" => Keyword.get(params, :attributed_to, Keyword.fetch!(params, :actor_id)),
+      "to" => Keyword.fetch!(params, :to),
+      "cc" => Keyword.get(params, :cc, []),
+      "conversation" => Keyword.get(params, :context),
+      "tag" => tags
+    }
+    |> maybe_put("context", Keyword.get(params, :context))
+    |> maybe_put("attachment", attachment_from_matrix_event_content(content))
+    |> maybe_put("tag", tags)
+    |> maybe_put("inReplyTo", make_in_reply_to(replied_activity))
+    |> maybe_put("name", Keyword.get(params, :name))
+    |> maybe_put("id", Keyword.get(params, :id))
+  end
+
+  def create(object, params) do
+    sender = Keyword.fetch!(params, :sender)
 
     create_params = %{
       actor: Keyword.fetch!(params, :sender),
@@ -165,6 +180,60 @@ defmodule Kazarma.ActivityPub.Activity do
 
       Kazarma.Logger.log_bridged_event(event,
         room_type: room_type
+      )
+    end
+
+    :ok
+  end
+
+  def forward_edition(event, replaced_id, new_content) do
+    %{} = actor = Kazarma.Address.get_actor(matrix_id: event.sender)
+
+    for %BridgeEvent{remote_id: remote_replaced_id} <- Bridge.get_events_by_local_id(replaced_id) do
+      {:ok, %Object{} = object} =
+        ActivityPub.Object.get_cached(ap_id: remote_replaced_id)
+
+      cleaned_object_data = Map.drop(object.data, ["id", "formerRepresentations"])
+
+      new_object =
+        object(event, new_content,
+          type: "Note",
+          actor_id: object.data["actor"],
+          context: object.data["context"],
+          to: object.data["to"],
+          cc: object.data["cc"],
+          id: remote_replaced_id
+        )
+        |> Map.update(
+          "formerRepresentations",
+          %{
+            "orderedItems" => [cleaned_object_data],
+            "totalItems" => 1,
+            "type" => "OrderedCollection"
+          },
+          fn %{"orderedItems" => items, "totalItems" => total} ->
+            %{"orderedItems" => [cleaned_object_data | items], "totalItems" => total + 1}
+          end
+        )
+
+      {:ok, %{object: %ActivityPub.Object{data: %{"id" => update_remote_id}}} = activity} =
+        Kazarma.ActivityPub.update(%{
+          to: object.data["to"],
+          actor: actor,
+          object: new_object
+        })
+
+      Bridge.create_event(%{
+        local_id: event.event_id,
+        remote_id: update_remote_id,
+        room_id: event.room_id
+      })
+
+      %Room{data: %{"type" => room_type}} = Bridge.get_room_by_local_id(event.room_id)
+
+      Kazarma.Logger.log_bridged_activity(activity,
+        room_type: room_type,
+        room_id: event.room_id
       )
     end
 
@@ -228,6 +297,17 @@ defmodule Kazarma.ActivityPub.Activity do
     }
   end
 
+  def make_full_content(object_data, room_id, matrix_id, attachments) do
+    {content, room_id} =
+      object_data
+      |> make_content()
+      |> add_reply(object_data, room_id)
+
+    content = add_attachments(matrix_id, content, attachments)
+
+    {content, room_id}
+  end
+
   def send_message_and_attachment(
         matrix_id,
         room_id,
@@ -235,11 +315,7 @@ defmodule Kazarma.ActivityPub.Activity do
         attachments
       ) do
     {content, room_id} =
-      object_data
-      |> make_content()
-      |> add_reply(object_data, room_id)
-
-    content = add_attachments(matrix_id, content, attachments)
+      make_full_content(object_data, room_id, matrix_id, attachments)
 
     case content &&
            Kazarma.Matrix.Client.send_tagged_message(

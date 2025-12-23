@@ -408,7 +408,7 @@ defmodule Kazarma.RoomTypes.CollectionTest do
         "event_id"
       )
 
-      assert :ok = handle_activity(note_fixture())
+      assert {:ok, _} = handle_activity(note_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{
@@ -448,7 +448,7 @@ defmodule Kazarma.RoomTypes.CollectionTest do
       }
       |> Bridge.create_event()
 
-      assert :ok = handle_activity(note_with_reply_fixture())
+      assert {:ok, _} = handle_activity(note_with_reply_fixture())
 
       assert [
                %MatrixAppService.Bridge.Event{

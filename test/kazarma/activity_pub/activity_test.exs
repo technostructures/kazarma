@@ -87,7 +87,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       }
       |> Bridge.create_room()
 
-      assert :ok = handle_activity(public_note_fixture_with_attachment())
+      assert {:ok, _} = handle_activity(public_note_fixture_with_attachment())
     end
   end
 
@@ -166,7 +166,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       }
       |> Bridge.create_room()
 
-      assert :ok == handle_activity(public_note_fixture_with_mention_to_local())
+      assert {:ok, _} = handle_activity(public_note_fixture_with_mention_to_local())
     end
   end
 
@@ -250,7 +250,7 @@ defmodule Kazarma.ActivityPub.ActivityTest do
       }
       |> Bridge.create_room()
 
-      assert :ok == handle_activity(public_note_fixture_with_mention_to_remote())
+      assert {:ok, _} = handle_activity(public_note_fixture_with_mention_to_remote())
     end
   end
 end
