@@ -186,6 +186,55 @@ defmodule Kazarma.ActivityPub.Adapter do
     :ok
   end
 
+  # Update activity
+  def handle_activity(
+        %Object{
+          data: %{
+            "id" => update_remote_id,
+            "actor" => sender_ap_id,
+            "type" => "Update",
+            # "to" => [to_id],
+            "object" => object_ap_id
+          },
+          object: %{data: object_data}
+        } = activity
+      ) do
+    Kazarma.Logger.log_received_activity(activity)
+
+    %{local_id: sender_matrix_id} =
+      Kazarma.Address.get_user(ap_id: sender_ap_id)
+
+    for %BridgeEvent{local_id: event_id, room_id: room_id} <-
+          Bridge.get_events_by_remote_id(object_ap_id) do
+      attachments = Map.get(object_data, "attachment")
+
+      {content, _room_id} =
+        Kazarma.ActivityPub.Activity.make_full_content(
+          object_data,
+          room_id,
+          sender_matrix_id,
+          attachments
+        )
+
+      replacing_content = Polyjuice.Client.Message.edit(content, %{"event_id" => event_id})
+
+      {:ok, update_event_id} =
+        Kazarma.Matrix.Client.send_tagged_message(
+          room_id,
+          sender_matrix_id,
+          replacing_content
+        )
+
+      Bridge.create_event(%{
+        local_id: update_event_id,
+        remote_id: update_remote_id,
+        room_id: room_id
+      })
+    end
+
+    :ok
+  end
+
   # @TODO check if user can invite (same origin)
   def handle_activity(
         %{
