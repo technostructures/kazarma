@@ -25,10 +25,10 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - ./:/opt/app:rw
-      - kazarma_deps:/opt/app/deps
-      - kazarma_node_deps:/opt/app/assets/node_modules
-      - kazarma_build_files:/opt/app/_build
+      - ./:/app:rw
+      - kazarma_deps:/app/deps
+      - kazarma_node_deps:/app/assets/node_modules
+      - kazarma_build_files:/app/_build
     depends_on:
       - postgres_kazarma
     labels:

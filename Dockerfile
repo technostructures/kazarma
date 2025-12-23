@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2020-2024 Technostructures
 # SPDX-License-Identifier: AGPL-3.0-only
 
-FROM bitwalker/alpine-elixir-phoenix:1.15
+FROM elixir:1.19-otp-28
 
 ENV HEX_HTTP_CONCURRENCY=1
 ENV HEX_HTTP_TIMEOUT=240
@@ -36,6 +36,13 @@ ENV MIX_ENV=dev
 # VOLUME ["/opt/app/lib"]
 # VOLUME ["/opt/app/assets"]
 # VOLUME ["/opt/app/priv"]
+
+# prepare build dir
+WORKDIR /app
+
+# install hex + rebar
+RUN mix local.hex --force \
+  && mix local.rebar --force
 
 ## Add the wait script to the image
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.6.0/wait /wait
