@@ -1,0 +1,4 @@
+https://kzrm.tstt.dev, https://kazarma.kzrm.tstt.dev, https://matrix.kzrm.tstt.dev, https://element.tstt.dev, https://pleroma.tstt.dev, https://remote.tstt.dev {
+	tls fullchain.pem privkey.pem
+	reverse_proxy localhost:8888
+}

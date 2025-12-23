@@ -42,7 +42,9 @@ git submodule update --init --recursive
 docker compose run --rm synapse generate
 docker compose run --rm kazarma mix do deps.get, ecto.setup
 docker compose run --rm kazarma npm --prefix assets install
-docker compose up
+caddy start
+docker compose up -d
+docker compose exec pleroma pleroma/bin/pleroma_ctl frontend install pleroma-fe --ref stable
 ```
 
 On Linux, use `docker-hoster` to make container domains accessible:

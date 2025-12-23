@@ -2,8 +2,8 @@
     "brand": "Matrix side",
     "default_server_config": {
         "m.homeserver": {
-            "base_url": "http://matrix.kazarma.com",
-            "server_name": "kazarma.com"
+            "base_url": "https://matrix.kzrm.tstt.dev",
+            "server_name": "kzrm.tstt.dev"
         }
     },
     "roomDirectory": {

@@ -13,7 +13,7 @@
 # e.g. matrix.org, localhost:8080, etc.
 # This is also the last part of your UserID.
 #
-server_name: "kazarma.com"
+server_name: "kzrm.tstt.dev"
 
 # When running as a daemon, the file to store the pid in
 #
@@ -30,7 +30,7 @@ pid_file: /data/homeserver.pid
 # use synapse with a reverse proxy, this should be the URL to reach
 # synapse via the proxy.
 #
-public_baseurl: http://matrix.kazarma.com
+public_baseurl: https://matrix.kzrm.tstt.dev
 
 # Set the soft limit on the number of file descriptors synapse can use
 # Zero is used to indicate synapse should set the soft limit to the
@@ -120,16 +120,19 @@ public_baseurl: http://matrix.kazarma.com
 # (0.0.0.0 and :: are always blacklisted, whether or not they are explicitly
 # listed here, since they correspond to unroutable addresses.)
 #
-federation_ip_range_blacklist:
-  - '127.0.0.0/8'
-  - '10.0.0.0/8'
-  - '172.16.0.0/12'
-  - '192.168.0.0/16'
-  - '100.64.0.0/10'
-  - '169.254.0.0/16'
-  - '::1/128'
-  - 'fe80::/64'
-  - 'fc00::/7'
+# federation_ip_range_blacklist:
+#   - '127.0.0.0/8'
+#   - '10.0.0.0/8'
+#   - '172.16.0.0/12'
+#   - '192.168.0.0/16'
+#   - '100.64.0.0/10'
+#   - '169.254.0.0/16'
+#   - '::1/128'
+#   - 'fe80::/64'
+#   - 'fc00::/7'
+
+ip_range_whitelist:
+  - 172.0.0.0/8
 
 # List of ports that Synapse should listen on, their purpose and their
 # configuration.

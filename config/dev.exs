@@ -19,8 +19,8 @@ config :kazarma, Kazarma.Repo,
 config :kazarma, KazarmaWeb.Endpoint,
   http: [port: 4000],
   live_reload: [interval: 1000],
-  # url: [host: "kazarma.kazarma.com", scheme: "https", port: 443],
-  url: [host: "kazarma.kazarma.com", scheme: "http", port: 80],
+  url: [host: "kazarma.kzrm.tstt.dev", scheme: "https", port: 443],
+  # url: [host: "kazarma.kzrm.tstt.dev", scheme: "http", port: 80],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
@@ -81,7 +81,7 @@ config :phoenix, :plug_init_mode, :runtime
 
 # MatrixAppService configuration
 config :matrix_app_service, :app_service,
-  base_url: "http://matrix.kazarma.com",
+  base_url: "https://matrix.kzrm.tstt.dev",
   access_token:
     "MDAyMGxvY2F0aW9uIG1hdHJpeC5pbWFnby5sb2NhbAowMDEzaWRlbnRpZmllciBrZXkKMDAxMGNpZCBnZW4gPSAxCjAwMmNjaWQgdXNlcl9pZCA9IEBhbGljZTptYXRyaXguaW1hZ28ubG9jYWwKMDAxNmNpZCB0eXBlID0gYWNjZXNzCjAwMjFjaWQgbm9uY2UgPSAjRC5ieWJrMEUuMU0qT0xJCjAwMmZzaWduYXR1cmUg-jGyjY9CK07mRt1h4p_86D6SJr1ZqrGr8YlsIW_jLtMK",
   homeserver_token:
@@ -93,7 +93,7 @@ config :matrix_app_service, :client_options,
     verify: :verify_none
   ]
 
-config :activity_pub, :domain, "kazarma.com"
+config :activity_pub, :domain, "kzrm.tstt.dev"
 
 config :activity_pub, :http,
   adapter: [
@@ -109,6 +109,6 @@ config :kazarma, html_actor_view_include_remote: true
 config :kazarma, frontpage_help: true
 config :kazarma, frontpage_before_text: nil
 config :kazarma, frontpage_after_text: nil
-config :kazarma, :matrix_domain, "kazarma.com"
+config :kazarma, :matrix_domain, "kzrm.tstt.dev"
 
 config :matrix_app_service, ignore_exceptions: true

@@ -3,7 +3,7 @@
 import Config
 
 config :pleroma, Pleroma.Web.Endpoint,
-  url: [host: System.get_env("DOMAIN", "localhost"), scheme: "http", port: 80],
+  url: [host: System.get_env("DOMAIN", "localhost"), scheme: "https", port: 443],
   http: [ip: {0, 0, 0, 0}, port: 4000]
 
 config :pleroma, :instance,
@@ -11,7 +11,7 @@ config :pleroma, :instance,
   registrations_open: true
 
 config :cors_plug,
-  origin: ["http://pleroma.com", "https://pleroma.com"]
+  origin: ["http://pleroma.tstt.dev", "https://pleroma.tstt.dev"]
 
 config :pleroma, Pleroma.Emails.Mailer, enabled: false
 
