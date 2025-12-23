@@ -10,59 +10,145 @@
       </h1>
       <p>
         <%= gettext("Kazarma is a bridge between Matrix and ActivityPub.") %>
-        <%= gettext(
-          "It currently supports the following ActivityPub servers: Mastodon, Pleroma, PeerTube, Mobilizon."
-        ) %>
+        <!-- <%= gettext(
+          "It currently supports the following ActivityPub servers: Mastodon, Pleroma, PeerTube, Mobilizon, Lemmy."
+        ) %> -->
       </p>
-      <h3>
-        <%= gettext("Find someone") %>
-      </h3>
-      <p>
-        <%= gettext("Use the search field to lookup for someone, and see how to reach them.") %>
-      </p>
-      <ul>
-        <li><%= gettext("For a Matrix user, use their Matrix ID (@user:server)") %></li>
-        <li>
-          <%= gettext("For an ActivityPub user, user either:") %>
+      <%= if Kazarma.Config.private_bridge? do %>
+        <h2>
+          <%= gettext("Private bridge") %>
+        </h2>
+        <p>
+          <%= gettext(
+            "This instance of kazarma only bridges users from the following Matrix homeserver: "
+          ) %><.formatted content={Kazarma.Address.matrix_domain()} />
+        </p>
+        <h2>
+          <%= gettext("Usage") %>
+        </h2>
+        <h3>
+          <%= gettext("As an ActivityPub user") %>
+        </h3>
+        <p>
+          <%= gettext(
+            "You can use the search bar to lookup for one of those Matrix users. You'll be able to see how to reach (and mention) them, and find their public activity if they have published something."
+          ) %>
+        </p>
+        <p>
+          <%= gettext("You can use:") %>
           <ul>
             <li>
-              <%= gettext("their ActivityPub username, in the form user@server;") %>
+              <%= gettext("Their Matrix ID: ") %>
+              <.formatted content={"@user:" <> Kazarma.Address.matrix_domain()} />
             </li>
             <li>
-              <%= gettext(
-                "their ActivityPub ID, which is often the URL of their profile page (https://server/@user)."
-              ) %>
+              <%= gettext("Their ActivityPub username: ") %>
+              <.formatted content={"user@" <> Kazarma.Address.ap_domain()} />
+            </li>
+            <li>
+              <%= gettext("Their ActivityPub ID: ") %>
+              <.formatted content={
+                Routes.activity_pub_url(KazarmaWeb.Endpoint, :actor, "-", "user")
+              } />
             </li>
           </ul>
-        </li>
-      </ul>
-      <h3>
-        <%= gettext("Bridge yourself") %>
-      </h3>
-      <div class="flex flex-row flex-grow flex-wrap">
-        <button
-          class="btn btn-accent btn-lg grow m-2 normal-case"
-          phx-click={KazarmaWeb.CoreComponents.show_modal("bridge-matrix-modal")}
-        >
-          <%= gettext("From Matrix") %>
-        </button>
-        <button
-          class="btn btn-accent btn-lg grow m-2 normal-case"
-          phx-click={KazarmaWeb.CoreComponents.show_modal("bridge-ap-modal")}
-        >
-          <%= gettext("From ActivityPub") %>
-        </button>
-      </div>
-      <h3>
+        </p>
+        <h3>
+          <%= gettext("As a Matrix user of the %{matrix_domain} homeserver",
+            matrix_domain: Kazarma.Address.matrix_domain()
+          ) %>
+        </h3>
+        <p>
+          <%= gettext(
+            "You can DM an ActivityPub user by using a Matrix version of their username. For instance, %{ap_username_example} becomes %{matrix_id_example}.",
+            ap_username_example:
+              formatted(%{content: "user@mastodon.social"}) |> Phoenix.HTML.Safe.to_iodata(),
+            matrix_id_example:
+              formatted(%{content: "@user.mastodon.social:#{Kazarma.Address.matrix_domain()}"})
+              |> Phoenix.HTML.Safe.to_iodata()
+          )
+          |> raw() %>
+        </p>
+        <p>
+          <%= gettext(
+            "You can make a Matrix room your \"outbox room\", so that your messages in the room are published as public activities on ActivityPub. To achieve that, invite the bridge bot %{command_bot_id} to a room that you're an administrator of, then send %{outbox_command}.",
+            command_bot_id:
+              formatted(%{content: "@_kazarma:kzrm.tstt.dev"}) |> Phoenix.HTML.Safe.to_iodata(),
+            outbox_command:
+              formatted(%{content: "!kazarma outbox"}) |> Phoenix.HTML.Safe.to_iodata()
+          )
+          |> raw() %>
+        </p>
+      <% else %>
+        <h2>
+          <%= gettext("Public bridge") %>
+        </h2>
+        <p>
+          <%= gettext(
+            "This instance of kazarma bridges users of the Matrix network with ActivityPub users that have consented to it."
+          ) %>
+        </p>
+        <h2>
+          <%= gettext("Usage") %>
+        </h2>
+        <h3>
+          <%= gettext("As an ActivityPub user") %>
+        </h3>
+        <p>
+          <%= gettext(
+            "You can use the search bar to lookup for a Matrix user. You'll be able to see how to reach (and mention) them, and find their public activity if they have published something."
+          ) %>
+        </p>
+        <p>
+          <%= gettext(
+            "You can opt-in to being discoverable, receive DMs and mentions from Matrix, by following the profile bot: "
+          ) %><.formatted content={Kazarma.Address.profile_bot_username()} />
+        </p>
+        <p>
+          <%= gettext(
+            "You can also opt-in to having your public activities posted in a Matrix room. To that end, follow the activity bot: "
+          ) %><.formatted content={Kazarma.Address.activity_bot_username()} />
+        </p>
+        <h3>
+          <%= gettext("As a Matrix user") %>
+        </h3>
+        <p>
+          <%= gettext(
+            "You can use the search bar to lookup for an ActivityPub user that has opted-in to being bridged, using their username (%{ap_username_example}) or ActivityPub ID (often the URL of their profile). You will see how to send them a DM, and their Matrix room if they have opted-in to the public activity bridging.",
+            ap_username_example:
+              formatted(%{content: "user@mastodon.social"}) |> Phoenix.HTML.Safe.to_iodata()
+          )
+          |> raw() %>
+        </p>
+        <p>
+          <%= gettext(
+            "You can make a Matrix room your \"outbox room\", so that your messages in the room are published as public activities on ActivityPub. To achieve that, invite the bridge bot %{command_bot_id} to a room that you're an administrator of, then send %{outbox_command}.",
+            command_bot_id:
+              formatted(%{content: "@_kazarma:kzrm.tstt.dev"}) |> Phoenix.HTML.Safe.to_iodata(),
+            outbox_command:
+              formatted(%{content: "!kazarma outbox"}) |> Phoenix.HTML.Safe.to_iodata()
+          )
+          |> raw() %>
+        </p>
+      <% end %>
+      <h2>
         <%= gettext("Consent and privacy") %>
-      </h3>
-      <p>
-        <%= gettext("Kazarma waits for explicit user action to bridge activities and events.") %>
-        <%= gettext(
-          "It can be direct messages, or following of the relay actor to opt-in to public activites bridging."
-        ) %>
-        <%= gettext("Unfollowing the relay actor deactivates public activities bridging.") %>
-      </p>
+      </h2>
+      <%= if Kazarma.Config.private_bridge? do %>
+        <p>
+          <%= gettext(
+            "This kazarma instance does not bridge ActivityPub users' activity. It bridges direct messages, and allows Matrix users to publish on the ActivityPub network."
+          ) %>
+        </p>
+      <% else %>
+        <p>
+          <%= gettext("Kazarma waits for explicit user action to bridge activities and events.") %>
+          <%= gettext(
+            "It can be direct messages, or following of the relay actor to opt-in to public activites bridging."
+          ) %>
+          <%= gettext("Unfollowing the relay actor deactivates public activities bridging.") %>
+        </p>
+      <% end %>
       <p>
         <%= gettext("ActivityPub moderation tools are implemented.") %>
         <%= gettext(
@@ -75,9 +161,9 @@
           "Since ActivityPub clients do not implement end-to-end encryption, kazarma does not work in encrypted Matrix rooms."
         ) %>
       </p>
-      <h3>
+      <h2>
         <%= gettext("Links") %>
-      </h3>
+      </h2>
       <ul>
         <li>
           <.link

@@ -291,4 +291,12 @@ defmodule KazarmaWeb.CoreComponents do
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
+
+  attr :content, :string, required: true
+
+  def formatted(assigns) do
+    ~H"""
+    <span class="font-mono text-sm text-bold"><%= @content %></span>
+    """
+  end
 end

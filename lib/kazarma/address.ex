@@ -13,7 +13,7 @@ defmodule Kazarma.Address do
 
   def matrix_domain, do: Application.fetch_env!(:kazarma, :matrix_domain)
 
-  def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "_ap_")
+  # def puppet_prefix, do: Application.get_env(:kazarma, :prefix_puppet_username, "_ap_")
 
   # @TODO: make configurable
   def command_bot_localpart, do: "_kazarma"
