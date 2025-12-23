@@ -79,6 +79,11 @@ defmodule Kazarma.Address do
     actor
   end
 
+  def localpart(%{local: false, username: username}) when not is_nil(username) do
+    [localpart, _server] = String.split(username, "@")
+    localpart
+  end
+
   def localpart(%{local: false, data: %{"username" => username}}) do
     [localpart, _server] = String.split(username, "@")
     localpart
@@ -100,6 +105,11 @@ defmodule Kazarma.Address do
       Phoenix.Router.route_info(KazarmaWeb.Router, "GET", path, host)
 
     localpart
+  end
+
+  def server(%{local: false, username: username}) when not is_nil(username) do
+    [_localpart, server] = String.split(username, "@")
+    server
   end
 
   def server(%{local: false, data: %{"username" => username}}) do
