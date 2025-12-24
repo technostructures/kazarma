@@ -16,6 +16,12 @@
   }
 >
   <p>
-    Log level: <%= @level |> to_string() |> String.upcase() %>
+    <%= gettext("Log level:") %> <%= @level |> to_string() |> String.upcase() %>
+    <br />
+    <%= if Kazarma.Config.public_bridge? do %>
+      <%= gettext("Public bridge") %>
+    <% else %>
+      <%= gettext("Private bridge") %>
+    <% end %>
   </p>
 </div>
